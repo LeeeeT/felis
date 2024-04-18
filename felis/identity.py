@@ -26,7 +26,8 @@ class Join(Protocol):
     def __call__[T](value: T, /) -> T: ...
 
 
-join: Join = inject(identity)
+_join = inject(identity)
+join: Join = _join
 
 
 class Bind(Protocol):
@@ -35,7 +36,7 @@ class Bind(Protocol):
     def __call__[From, To](value: From, function: Callable[[From], To], /) -> To: ...
 
 
-bind = monad.bind(map)(join)
+bind: Bind = monad.bind(map)(join)
 
 
 class Compose(Protocol):
