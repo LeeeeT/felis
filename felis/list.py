@@ -45,3 +45,12 @@ class Compose(Protocol):
 
 
 compose: Compose = monad.compose(bind)
+
+
+@curry
+@curry
+def fold_left[T](list: List[T], empty: T, add: Callable[[T], Callable[[T], T]]) -> T:
+    result = empty
+    for value in list:
+        result = add(value)(result)
+    return result
