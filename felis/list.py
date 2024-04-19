@@ -3,7 +3,7 @@ from collections.abc import Callable
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["List", "identity", "map", "join", "bind", "compose", "then"]
+__all__ = ["List", "identity", "map", "join", "bind", "compose", "then", "fold_left"]
 
 
 type List[T] = list[T]
