@@ -5,7 +5,7 @@ from typing import Any
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["Coroutine", "identity", "map", "join", "bind", "compose"]
+__all__ = ["Coroutine", "identity", "map", "join", "bind", "compose", "then"]
 
 
 type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
@@ -28,3 +28,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

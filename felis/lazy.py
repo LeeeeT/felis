@@ -3,7 +3,7 @@ from collections.abc import Callable
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["Lazy", "identity", "map", "join", "bind", "compose"]
+__all__ = ["Lazy", "identity", "map", "join", "bind", "compose", "then"]
 
 
 type Lazy[T] = Callable[[], T]
@@ -26,3 +26,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

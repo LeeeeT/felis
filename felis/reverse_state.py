@@ -3,7 +3,7 @@ from felis.currying import curry
 from felis.lazy import Lazy
 from felis.state import State
 
-__all__ = ["ReverseState", "identity", "map", "join", "bind", "compose"]
+__all__ = ["ReverseState", "identity", "map", "join", "bind", "compose", "then"]
 
 
 type ReverseState[S, T] = State[Lazy[S], T]
@@ -26,3 +26,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

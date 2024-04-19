@@ -3,7 +3,7 @@ from typing import Protocol
 import felis.identity
 from felis import Coroutine, Option, coroutine, monad, option
 
-__all__ = ["identity", "map", "join", "bind", "compose"]
+__all__ = ["identity", "map", "join", "bind", "compose", "then"]
 
 
 class Identity(Protocol):
@@ -24,3 +24,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

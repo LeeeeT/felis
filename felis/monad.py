@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from felis.currying import curry
 
-__all__ = ["bind", "compose"]
+__all__ = ["bind", "compose", "then"]
 
 
 @curry
@@ -27,3 +27,9 @@ def compose[From, Intermediate, MIntermediate, MTo](
     bind: Callable[[Callable[[Intermediate], MTo]], Callable[[MIntermediate], MTo]],
 ) -> MTo:
     return bind(second)(first(value))
+
+
+@curry
+@curry
+def then[First, MFirst, MSecond](first: MFirst, second: MSecond, bind: Callable[[Callable[[First], MSecond]], Callable[[MFirst], MSecond]]) -> MSecond:
+    return bind(lambda _: second)(first)

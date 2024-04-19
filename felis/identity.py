@@ -3,7 +3,7 @@ from collections.abc import Callable
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["identity", "map", "inject", "join", "bind", "compose"]
+__all__ = ["identity", "map", "inject", "join", "bind", "compose", "then"]
 
 
 def identity[T](value: T) -> T:
@@ -27,3 +27,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

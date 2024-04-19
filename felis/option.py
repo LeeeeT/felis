@@ -5,7 +5,7 @@ import felis.identity
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["Option", "Nothing", "Some", "identity", "map", "inject", "join", "bind", "compose"]
+__all__ = ["Option", "Nothing", "Some", "identity", "map", "inject", "join", "bind", "compose", "then"]
 
 
 type Option[T] = Nothing | Some[T]
@@ -50,3 +50,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

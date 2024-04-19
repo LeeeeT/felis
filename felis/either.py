@@ -6,7 +6,7 @@ import felis.identity
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["Either", "Left", "Right", "identity", "map", "inject", "join", "bind", "compose"]
+__all__ = ["Either", "Left", "Right", "identity", "map", "inject", "join", "bind", "compose", "then"]
 
 
 type Either[L, R] = Left[L] | Right[R]
@@ -56,3 +56,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)

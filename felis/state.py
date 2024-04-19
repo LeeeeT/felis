@@ -3,7 +3,7 @@ from collections.abc import Callable
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["State", "identity", "map", "join", "bind", "compose"]
+__all__ = ["State", "identity", "map", "join", "bind", "compose", "then"]
 
 
 type State[S, T] = Callable[[S], tuple[T, S]]
@@ -33,3 +33,6 @@ bind = monad.bind(map)(join)
 
 
 compose = monad.compose(bind)
+
+
+then = monad.then(bind)
