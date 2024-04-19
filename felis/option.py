@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Protocol
 
 import felis.identity
 from felis import monad
@@ -44,33 +43,10 @@ def inject[T, MOptionT](option_m_option_value: Option[MOptionT], m_identity: Cal
             return m_option_value
 
 
-class Join(Protocol):
-    @staticmethod
-    def __call__[T](option_option_value: Option[Option[T]], /) -> Option[T]: ...
+join = inject(felis.identity.identity)
 
 
-join: Join = inject(felis.identity.identity)
+bind = monad.bind(map)(join)
 
 
-class Bind(Protocol):
-    @staticmethod
-    @curry
-    def __call__[From, To](option_value: Option[From], function: Callable[[From], Option[To]], /) -> Option[To]: ...
-
-
-bind: Bind = monad.bind(map)(join)
-
-
-class Compose(Protocol):
-    @staticmethod
-    @curry
-    @curry
-    def __call__[From, Intermediate, To](
-        value: From,
-        first: Callable[[From], Option[Intermediate]],
-        second: Callable[[Intermediate], Option[To]],
-        /,
-    ) -> Option[To]: ...
-
-
-compose: Compose = monad.compose(bind)
+compose = monad.compose(bind)

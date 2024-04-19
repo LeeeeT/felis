@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Protocol
 
 from felis import monad
 from felis.currying import curry
@@ -23,25 +22,7 @@ def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]:
     return lambda: lazy_lazy_value()()
 
 
-class Bind(Protocol):
-    @staticmethod
-    @curry
-    def __call__[From, To](lazy_value: Lazy[From], function: Callable[[From], Lazy[To]], /) -> Lazy[To]: ...
+bind = monad.bind(map)(join)
 
 
-bind: Bind = monad.bind(map)(join)
-
-
-class Compose(Protocol):
-    @staticmethod
-    @curry
-    @curry
-    def __call__[From, Intermediate, To](
-        value: From,
-        first: Callable[[From], Lazy[Intermediate]],
-        second: Callable[[Intermediate], Lazy[To]],
-        /,
-    ) -> Lazy[To]: ...
-
-
-compose: Compose = monad.compose(bind)
+compose = monad.compose(bind)

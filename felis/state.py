@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Protocol
 
 from felis import monad
 from felis.currying import curry
@@ -30,25 +29,7 @@ def join[S, T](state: S, state_state_value: State[S, State[S, T]]) -> tuple[T, S
     return value, new_state
 
 
-class Bind(Protocol):
-    @staticmethod
-    @curry
-    def __call__[S, From, To](state_value: State[S, From], function: Callable[[From], State[S, To]], /) -> State[S, To]: ...
+bind = monad.bind(map)(join)
 
 
-bind: Bind = monad.bind(map)(join)
-
-
-class Compose(Protocol):
-    @staticmethod
-    @curry
-    @curry
-    def __call__[S, From, Intermediate, To](
-        value: From,
-        first: Callable[[From], State[S, Intermediate]],
-        second: Callable[[Intermediate], State[S, To]],
-        /,
-    ) -> State[S, To]: ...
-
-
-compose: Compose = monad.compose(bind)
+compose = monad.compose(bind)

@@ -52,25 +52,7 @@ class Join(Protocol):
 join: Join = inject(felis.identity.identity)
 
 
-class Bind(Protocol):
-    @staticmethod
-    @curry
-    def __call__[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]], /) -> Either[L, To]: ...
+bind = monad.bind(map)(join)
 
 
-bind: Bind = monad.bind(map)(join)
-
-
-class Compose(Protocol):
-    @staticmethod
-    @curry
-    @curry
-    def __call__[L, From, Intermediate, To](
-        value: Either[L, From],
-        first: Callable[[From], Either[L, Intermediate]],
-        second: Callable[[Intermediate], Either[L, To]],
-        /,
-    ) -> Either[L, To]: ...
-
-
-compose: Compose = monad.compose(bind)
+compose = monad.compose(bind)

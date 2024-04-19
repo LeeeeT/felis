@@ -1,6 +1,6 @@
 import collections.abc
 from collections.abc import Callable
-from typing import Any, Protocol
+from typing import Any
 
 from felis import monad
 from felis.currying import curry
@@ -24,25 +24,7 @@ async def join[T](coroutine_coroutine__value: Coroutine[Coroutine[T]]) -> T:
     return await (await coroutine_coroutine__value)
 
 
-class Bind(Protocol):
-    @staticmethod
-    @curry
-    def __call__[From, To](coroutine_value: Coroutine[From], function: Callable[[From], Coroutine[To]], /) -> Coroutine[To]: ...
+bind = monad.bind(map)(join)
 
 
-bind: Bind = monad.bind(map)(join)
-
-
-class Compose(Protocol):
-    @staticmethod
-    @curry
-    @curry
-    def __call__[From, Intermediate, To](
-        value: From,
-        first: Callable[[From], Coroutine[Intermediate]],
-        second: Callable[[Intermediate], Coroutine[To]],
-        /,
-    ) -> Coroutine[To]: ...
-
-
-compose: Compose = monad.compose(bind)
+compose = monad.compose(bind)
