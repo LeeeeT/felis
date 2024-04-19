@@ -21,8 +21,7 @@ class Some[T]:
     value: T
 
 
-def identity[T](value: T) -> Option[T]:
-    return Some(value)
+identity = Some
 
 
 @curry

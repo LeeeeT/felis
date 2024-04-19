@@ -22,8 +22,7 @@ class Right[T]:
     value: T
 
 
-def identity[L, R](value: R) -> Either[L, R]:
-    return Right(value)
+identity = Right
 
 
 @curry
