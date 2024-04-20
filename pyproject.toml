@@ -45,5 +45,6 @@ select = ["ALL"]
 ignore = ["A", "ARG", "D"]
 
 [tool.pyright]
+pythonVersion = "3.12"
 include = ["felis"]
 typeCheckingMode = "strict"
