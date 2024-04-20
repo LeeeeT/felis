@@ -1,14 +1,7 @@
-from typing import Protocol
-
 import felis.identity
 from felis import Coroutine, Option, coroutine, monad, option
 
 __all__ = ["identity", "map", "join", "bind", "compose", "then"]
-
-
-class Identity(Protocol):
-    @staticmethod
-    def __call__[T](value: T, /) -> Coroutine[Option[T]]: ...
 
 
 identity = felis.identity.compose(coroutine.identity)(option.identity)
