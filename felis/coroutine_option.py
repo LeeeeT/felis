@@ -1,5 +1,5 @@
 import felis.identity
-from felis import Coroutine, Option, coroutine, monad, option
+from felis import coroutine, monad, option
 
 __all__ = ["identity", "map", "join", "bind", "compose", "then"]
 
