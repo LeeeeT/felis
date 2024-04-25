@@ -33,9 +33,6 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 path = "felis/__init__.py"
 
-[tool.hatch.envs.default]
-dependencies = ["sort-all", "ruff", "pyright", "pytest", "pytest-cov"]
-
 [tool.ruff]
 line-length = 160
 target-version = "py312"
