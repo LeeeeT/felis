@@ -1,0 +1,13 @@
+from typing import Protocol, Self
+
+__all__ = ["SupportsRichComparison"]
+
+
+class SupportsRichComparison(Protocol):
+    def __lt__(self, other: Self, /) -> bool: ...
+
+    def __gt__(self, other: Self, /) -> bool: ...
+
+    def __le__(self, other: Self, /) -> bool: ...
+
+    def __ge__(self, other: Self, /) -> bool: ...
