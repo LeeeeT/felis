@@ -6,7 +6,7 @@ import felis.identity
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["Either", "Left", "Right", "identity", "map", "inject", "join", "bind", "compose", "then"]
+__all__ = ["Either", "Left", "Right", "identity", "map", "inject", "join", "bind", "compose", "then", "catch"]
 
 
 type Either[L, R] = Left[L] | Right[R]
@@ -58,3 +58,12 @@ compose = monad.compose(bind)
 
 
 then = monad.then(bind)
+
+
+@curry
+@curry
+def catch[E: BaseException, From, To](value: From, function: Callable[[From], To], exception: type[E]) -> Either[E, To]:
+    try:
+        return Right(function(value))
+    except exception as e:
+        return Left(e)
