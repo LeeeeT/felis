@@ -10,7 +10,7 @@ type Environment[E, T] = Callable[[E], T]
 
 
 @curry
-def identity[T, E](environment: object, value: T) -> T:
+def identity[T](environment: object, value: T) -> T:
     return value
 
 
