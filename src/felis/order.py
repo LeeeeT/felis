@@ -1,13 +1,13 @@
 from collections.abc import Callable
 
-from felis import Ordering, ordering
+from felis import ordering
 from felis.currying import curry
 from felis.typing import SupportsRichComparison
 
 __all__ = ["Order", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add", "map", "dunder"]
 
 
-type Order[T] = Callable[[T], Callable[[T], Ordering]]
+type Order[T] = Callable[[T], Callable[[T], ordering.Ordering]]
 
 
 @curry
@@ -36,31 +36,31 @@ def not_better[T](first: T, second: T, order: Order[T]) -> bool:
 
 @curry
 @curry
-def reverse[T](first: T, second: T, order: Order[T]) -> Ordering:
+def reverse[T](first: T, second: T, order: Order[T]) -> ordering.Ordering:
     return ordering.reverse(order(second)(first))
 
 
 @curry
-def neutral[T](first: T, second: T) -> Ordering:
+def neutral[T](first: T, second: T) -> ordering.Ordering:
     return ordering.neutral
 
 
 @curry
 @curry
 @curry
-def add[T](first: T, second: T, order_first: Order[T], order_second: Order[T]) -> Ordering:
+def add[T](first: T, second: T, order_first: Order[T], order_second: Order[T]) -> ordering.Ordering:
     return ordering.add(order_second(second)(first))(order_first(second)(first))
 
 
 @curry
 @curry
 @curry
-def map[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> Ordering:
+def map[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> ordering.Ordering:
     return order(function(second))(function(first))
 
 
 @curry
-def dunder[T: SupportsRichComparison](first: T, second: T) -> Ordering:
+def dunder[T: SupportsRichComparison](first: T, second: T) -> ordering.Ordering:
     if first > second:
         return ordering.Better()
     if first < second:

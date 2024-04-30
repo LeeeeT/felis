@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from felis import Lazy, monad
+from felis import lazy, monad
 from felis.currying import curry
 
 __all__ = [
@@ -22,7 +22,7 @@ __all__ = [
 type State[S, T] = Callable[[S], tuple[T, S]]
 
 
-type ReversedState[S, T] = State[Lazy[S], T]
+type ReversedState[S, T] = State[lazy.Lazy[S], T]
 
 
 @curry
@@ -54,7 +54,7 @@ then = monad.then(bind)
 
 
 @curry
-def reversed_join[S, T](state: Lazy[S], reversed_state_reversed_state_value: ReversedState[S, ReversedState[S, T]]) -> tuple[T, Lazy[S]]:
+def reversed_join[S, T](state: lazy.Lazy[S], reversed_state_reversed_state_value: ReversedState[S, ReversedState[S, T]]) -> tuple[T, lazy.Lazy[S]]:
     reversed_state_value, new_state = reversed_state_reversed_state_value(lambda: state())
     value, state = reversed_state_value(state)
     return value, new_state
