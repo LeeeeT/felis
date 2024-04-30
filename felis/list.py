@@ -4,22 +4,19 @@ import felis.order
 from felis import Order, monad
 from felis.currying import curry
 
-__all__ = ["List", "identity", "map", "join", "bind", "compose", "then", "fold_left"]
+__all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left"]
 
 
-type List[T] = list[T]
-
-
-def identity[T](value: T) -> List[T]:
+def identity[T](value: T) -> list[T]:
     return [value]
 
 
 @curry
-def map[From, To](list_value: List[From], function: Callable[[From], To]) -> List[To]:
+def map[From, To](list_value: list[From], function: Callable[[From], To]) -> list[To]:
     return [function(value) for value in list_value]
 
 
-def join[T](list_list_value: List[List[T]]) -> List[T]:
+def join[T](list_list_value: list[list[T]]) -> list[T]:
     return [value for list_value in list_list_value for value in list_value]
 
 
@@ -34,7 +31,7 @@ then = monad.then(bind)
 
 @curry
 @curry
-def fold_left[T](list: List[T], empty: T, add: Callable[[T], Callable[[T], T]]) -> T:
+def fold_left[T](list: list[T], empty: T, add: Callable[[T], Callable[[T], T]]) -> T:
     result = empty
     for value in list:
         result = add(value)(result)
