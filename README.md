@@ -10,9 +10,6 @@ Build the latest version from [source]:
 pip install git+https://github.com/LeeeeT/felis
 ```
 
-[docs]: https://valtypes.rtfd.io
-[source]: https://github.com/LeeeeT/felis
-
 ## Examples
 
 Curry and uncurry functions:
@@ -76,3 +73,6 @@ io.run(main)
 ```
 
 That's all monads, btw 🐈.
+
+[docs]: https://felis.rtfd.io
+[source]: https://github.com/LeeeeT/felis
