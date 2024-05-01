@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import felis.order
-from felis import order, monad
+from felis import monad, order
 from felis.currying import curry
 
 __all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left"]
@@ -45,10 +45,4 @@ def filter[T](list: list[T], condition: Callable[[T], bool]) -> list[T]:
 
 @curry
 def sort[T](list: list[T], order: order.Order[T]) -> list[T]:
-    match list:
-        case [head, *tail]:
-            bad = filter(felis.order.worse(order)(head))(tail)
-            good = filter(felis.order.not_worse(order)(head))(tail)
-            return [*sort(order)(bad), head, *sort(order)(good)]
-        case _:
-            return []
+    return sorted(list, key=felis.order.rich_comparison(order))

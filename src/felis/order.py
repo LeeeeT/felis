@@ -1,10 +1,12 @@
 from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Self
 
 from felis import ordering
 from felis.currying import curry
 from felis.typing import SupportsRichComparison
 
-__all__ = ["Order", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add", "map", "dunder"]
+__all__ = ["Order", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add", "map", "dunder", "rich_comparison"]
 
 
 type Order[T] = Callable[[T], Callable[[T], ordering.Ordering]]
@@ -66,3 +68,23 @@ def dunder[T: SupportsRichComparison](first: T, second: T) -> ordering.Ordering:
     if first < second:
         return ordering.Worse()
     return ordering.Equal()
+
+
+def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]:
+    @dataclass(frozen=True)
+    class RichComparison:
+        value: T
+
+        def __lt__(self, other: Self, /) -> bool:
+            return worse(order)(other.value)(self.value)
+
+        def __gt__(self, other: Self, /) -> bool:
+            return better(order)(other.value)(self.value)
+
+        def __le__(self, other: Self, /) -> bool:
+            return not_better(order)(other.value)(self.value)
+
+        def __ge__(self, other: Self, /) -> bool:
+            return not_worse(order)(other.value)(self.value)
+
+    return RichComparison
