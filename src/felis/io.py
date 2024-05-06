@@ -2,15 +2,16 @@ import builtins
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from felis import lazy, monad
+from felis import monad
 from felis.currying import curry
+from felis.lazy import Lazy
 
 __all__ = ["IO", "run", "identity", "map", "join", "bind", "compose", "then", "input", "print"]
 
 
 @dataclass(frozen=True)
 class IO[T]:
-    value: lazy.Lazy[T]
+    value: Lazy[T]
 
 
 def run[T](io_value: IO[T]) -> T:
