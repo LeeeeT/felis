@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from felis.currying import curry
 
-__all__ = ["Ordering", "Worse", "Equal", "Better", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add"]
+__all__ = ["Ordering", "Worse", "Same", "Better", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add"]
 
 
-type Ordering = Worse | Equal | Better
+type Ordering = Worse | Same | Better
 
 
 @dataclass(frozen=True)
@@ -14,7 +14,7 @@ class Worse:
 
 
 @dataclass(frozen=True)
-class Equal:
+class Same:
     pass
 
 
@@ -59,19 +59,19 @@ def reverse(ordering: Ordering) -> Ordering:
     match ordering:
         case Worse():
             return Better()
-        case Equal():
-            return Equal()
+        case Same():
+            return Same()
         case Better():
             return Worse()
 
 
-neutral = Equal()
+neutral = Same()
 
 
 @curry
 def add(first: Ordering, second: Ordering) -> Ordering:
     match first:
-        case Equal():
+        case Same():
             return second
         case _:
             return first

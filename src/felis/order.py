@@ -68,7 +68,7 @@ def dunder[T: SupportsRichComparison](first: T, second: T) -> Ordering:
         return ordering.Better()
     if first < second:
         return ordering.Worse()
-    return ordering.Equal()
+    return ordering.Same()
 
 
 def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]:
