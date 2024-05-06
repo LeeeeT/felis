@@ -88,6 +88,16 @@ def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]
     class RichComparison:
         value: T
 
+        def __eq__(self, other: object, /) -> bool:
+            if isinstance(other, RichComparison):
+                return same(order)(other.value)(self.value)
+            return NotImplemented
+
+        def __ne__(self, other: object, /) -> bool:
+            if isinstance(other, RichComparison):
+                return different(order)(other.value)(self.value)
+            return NotImplemented
+
         def __lt__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
                 return worse(order)(other.value)(self.value)
