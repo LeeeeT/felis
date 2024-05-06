@@ -1,8 +1,9 @@
 from collections.abc import Callable
 
 import felis.order
-from felis import monad, order
+from felis import monad
 from felis.currying import curry
+from felis.order import Order
 
 __all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left"]
 
@@ -44,5 +45,5 @@ def filter[T](list: list[T], condition: Callable[[T], bool]) -> list[T]:
 
 
 @curry
-def sort[T](list: list[T], order: order.Order[T]) -> list[T]:
+def sort[T](list: list[T], order: Order[T]) -> list[T]:
     return sorted(list, key=felis.order.rich_comparison(order))
