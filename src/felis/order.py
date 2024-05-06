@@ -7,7 +7,7 @@ from felis.currying import curry
 from felis.ordering import Ordering
 from felis.typing import SupportsRichComparison
 
-__all__ = ["Order", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add", "map", "dunder", "rich_comparison"]
+__all__ = ["Order", "worse", "not_worse", "same", "different", "better", "not_better", "reverse", "neutral", "add", "map", "dunder", "rich_comparison"]
 
 
 type Order[T] = Callable[[T], Callable[[T], Ordering]]
@@ -23,6 +23,18 @@ def worse[T](first: T, second: T, order: Order[T]) -> bool:
 @curry
 def not_worse[T](first: T, second: T, order: Order[T]) -> bool:
     return ordering.not_worse(order(second)(first))
+
+
+@curry
+@curry
+def same[T](first: T, second: T, order: Order[T]) -> bool:
+    return ordering.same(order(second)(first))
+
+
+@curry
+@curry
+def different[T](first: T, second: T, order: Order[T]) -> bool:
+    return ordering.different(order(second)(first))
 
 
 @curry

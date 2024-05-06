@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from felis.currying import curry
 
-__all__ = ["Ordering", "Worse", "Same", "Better", "worse", "not_worse", "better", "not_better", "reverse", "neutral", "add"]
+__all__ = ["Ordering", "Worse", "Same", "Better", "worse", "not_worse", "same", "different", "better", "not_better", "reverse", "neutral", "add"]
 
 
 type Ordering = Worse | Same | Better
@@ -34,6 +34,22 @@ def worse(ordering: Ordering) -> bool:
 def not_worse(ordering: Ordering) -> bool:
     match ordering:
         case Worse():
+            return False
+        case _:
+            return True
+
+
+def same(ordering: Ordering) -> bool:
+    match ordering:
+        case Same():
+            return True
+        case _:
+            return False
+
+
+def different(ordering: Ordering) -> bool:
+    match ordering:
+        case Same():
             return False
         case _:
             return True
