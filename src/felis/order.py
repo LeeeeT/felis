@@ -89,15 +89,23 @@ def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]
         value: T
 
         def __lt__(self, other: Self, /) -> bool:
-            return worse(order)(other.value)(self.value)
+            if isinstance(other, RichComparison):
+                return worse(order)(other.value)(self.value)
+            return NotImplemented
 
         def __gt__(self, other: Self, /) -> bool:
-            return better(order)(other.value)(self.value)
+            if isinstance(other, RichComparison):
+                return better(order)(other.value)(self.value)
+            return NotImplemented
 
         def __le__(self, other: Self, /) -> bool:
-            return not_better(order)(other.value)(self.value)
+            if isinstance(other, RichComparison):
+                return not_better(order)(other.value)(self.value)
+            return NotImplemented
 
         def __ge__(self, other: Self, /) -> bool:
-            return not_worse(order)(other.value)(self.value)
+            if isinstance(other, RichComparison):
+                return not_worse(order)(other.value)(self.value)
+            return NotImplemented
 
     return RichComparison
