@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Self
 
-from felis import ordering
+from felis import identity, ordering
 from felis.currying import curry
 from felis.ordering import Ordering
 from felis.typing import SupportsRichComparison
@@ -13,46 +13,25 @@ __all__ = ["Order", "worse", "not_worse", "same", "different", "better", "not_be
 type Order[T] = Callable[[T], Callable[[T], Ordering]]
 
 
-@curry
-@curry
-def worse[T](first: T, second: T, order: Order[T]) -> bool:
-    return ordering.worse(order(second)(first))
+worse = identity.compose2(ordering.worse)
 
 
-@curry
-@curry
-def not_worse[T](first: T, second: T, order: Order[T]) -> bool:
-    return ordering.not_worse(order(second)(first))
+not_worse = identity.compose2(ordering.not_worse)
 
 
-@curry
-@curry
-def same[T](first: T, second: T, order: Order[T]) -> bool:
-    return ordering.same(order(second)(first))
+same = identity.compose2(ordering.same)
 
 
-@curry
-@curry
-def different[T](first: T, second: T, order: Order[T]) -> bool:
-    return ordering.different(order(second)(first))
+different = identity.compose2(ordering.different)
 
 
-@curry
-@curry
-def better[T](first: T, second: T, order: Order[T]) -> bool:
-    return ordering.better(order(second)(first))
+better = identity.compose2(ordering.better)
 
 
-@curry
-@curry
-def not_better[T](first: T, second: T, order: Order[T]) -> bool:
-    return ordering.not_better(order(second)(first))
+not_better = identity.compose2(ordering.not_better)
 
 
-@curry
-@curry
-def reverse[T](first: T, second: T, order: Order[T]) -> Ordering:
-    return ordering.reverse(order(second)(first))
+reverse = identity.compose2(ordering.reverse)
 
 
 @curry
