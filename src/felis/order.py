@@ -34,9 +34,7 @@ not_better = identity.compose2(ordering.not_better)
 reverse = identity.compose2(ordering.reverse)
 
 
-@curry
-def neutral[T](first: T, second: T) -> Ordering:
-    return ordering.neutral
+neutral = identity.neutral2(ordering.neutral)
 
 
 add = identity.add2(ordering.add)

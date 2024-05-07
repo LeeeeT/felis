@@ -3,7 +3,7 @@ from collections.abc import Callable
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["neutral", "add", "identity", "map", "inject", "join", "bind", "compose", "then", "add2", "compose2"]
+__all__ = ["neutral", "add", "identity", "map", "inject", "join", "bind", "compose", "then", "neutral2", "add2", "compose2"]
 
 
 @curry
@@ -45,6 +45,9 @@ def compose[From, Intermediate, To](value: From, first: Callable[[From], Interme
 
 
 then = monad.then(bind)
+
+
+neutral2 = compose(neutral)(neutral)
 
 
 add2 = compose(add)(add)
