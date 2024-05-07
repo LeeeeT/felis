@@ -7,7 +7,23 @@ from felis.currying import curry
 from felis.ordering import Ordering
 from felis.typing import SupportsRichComparison
 
-__all__ = ["Order", "worse", "not_worse", "same", "different", "better", "not_better", "reverse", "neutral", "add", "map", "dunder", "rich_comparison"]
+__all__ = [
+    "Order",
+    "worse",
+    "same_or_better",
+    "not_worse",
+    "same",
+    "different",
+    "better",
+    "same_or_worse",
+    "not_better",
+    "reverse",
+    "neutral",
+    "add",
+    "map",
+    "dunder",
+    "rich_comparison",
+]
 
 
 type Order[T] = Callable[[T], Callable[[T], Ordering]]
@@ -16,7 +32,7 @@ type Order[T] = Callable[[T], Callable[[T], Ordering]]
 worse = identity.compose2(ordering.worse)
 
 
-not_worse = identity.compose2(ordering.not_worse)
+same_or_better = not_worse = identity.compose2(ordering.not_worse)
 
 
 same = identity.compose2(ordering.same)
@@ -28,7 +44,7 @@ different = identity.compose2(ordering.different)
 better = identity.compose2(ordering.better)
 
 
-not_better = identity.compose2(ordering.not_better)
+same_or_worse = not_better = identity.compose2(ordering.not_better)
 
 
 reverse = identity.compose2(ordering.reverse)
@@ -83,12 +99,12 @@ def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]
 
         def __le__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
-                return not_better(order)(other.value)(self.value)
+                return same_or_worse(order)(other.value)(self.value)
             return NotImplemented
 
         def __ge__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
-                return not_worse(order)(other.value)(self.value)
+                return same_or_better(order)(other.value)(self.value)
             return NotImplemented
 
     return RichComparison
