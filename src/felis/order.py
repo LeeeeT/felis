@@ -39,11 +39,7 @@ def neutral[T](first: T, second: T) -> Ordering:
     return ordering.neutral
 
 
-@curry
-@curry
-@curry
-def add[T](first: T, second: T, order_first: Order[T], order_second: Order[T]) -> Ordering:
-    return ordering.add(order_second(second)(first))(order_first(second)(first))
+add = identity.add2(ordering.add)
 
 
 @curry
