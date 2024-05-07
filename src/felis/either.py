@@ -43,6 +43,7 @@ def inject[L, R, MEitherR](either_m_either_value: Either[L, MEitherR], m_identit
             return m_either_value
 
 
+# TODO: remove this
 class Join(Protocol):
     @staticmethod
     def __call__[L, R](either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...

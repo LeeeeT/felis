@@ -38,6 +38,7 @@ join = inject(identity)
 bind = monad.bind(map)(join)
 
 
+# TODO: use `monad.compose` instead of this
 @curry
 @curry
 def compose[From, Intermediate, To](value: From, first: Callable[[From], Intermediate], second: Callable[[Intermediate], To]) -> To:
