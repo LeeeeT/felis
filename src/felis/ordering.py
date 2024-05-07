@@ -24,51 +24,27 @@ class Better:
 
 
 def worse(ordering: Ordering) -> bool:
-    match ordering:
-        case Worse():
-            return True
-        case _:
-            return False
+    return isinstance(ordering, Worse)
 
 
 def not_worse(ordering: Ordering) -> bool:
-    match ordering:
-        case Worse():
-            return False
-        case _:
-            return True
+    return not worse(ordering)
 
 
 def same(ordering: Ordering) -> bool:
-    match ordering:
-        case Same():
-            return True
-        case _:
-            return False
+    return isinstance(ordering, Same)
 
 
 def different(ordering: Ordering) -> bool:
-    match ordering:
-        case Same():
-            return False
-        case _:
-            return True
+    return not same(ordering)
 
 
 def better(ordering: Ordering) -> bool:
-    match ordering:
-        case Better():
-            return True
-        case _:
-            return False
+    return isinstance(ordering, Better)
 
 
 def not_better(ordering: Ordering) -> bool:
-    match ordering:
-        case Better():
-            return False
-        case _:
-            return True
+    return not better(ordering)
 
 
 def reverse(ordering: Ordering) -> Ordering:
