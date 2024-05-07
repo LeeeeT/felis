@@ -1,8 +1,25 @@
 from dataclasses import dataclass
 
+from felis import predicate
 from felis.currying import curry
 
-__all__ = ["Ordering", "Worse", "Same", "Better", "worse", "not_worse", "same", "different", "better", "not_better", "reverse", "neutral", "add"]
+__all__ = [
+    "Ordering",
+    "Worse",
+    "Same",
+    "Better",
+    "worse",
+    "same_or_better",
+    "not_worse",
+    "same",
+    "different",
+    "better",
+    "same_or_worse",
+    "not_better",
+    "reverse",
+    "neutral",
+    "add",
+]
 
 
 type Ordering = Worse | Same | Better
@@ -23,28 +40,22 @@ class Better:
     pass
 
 
-def worse(ordering: Ordering) -> bool:
-    return isinstance(ordering, Worse)
+worse = curry(isinstance)(Worse)
 
 
-def not_worse(ordering: Ordering) -> bool:
-    return not worse(ordering)
+same_or_better = not_worse = predicate.negate(worse)
 
 
-def same(ordering: Ordering) -> bool:
-    return isinstance(ordering, Same)
+same = curry(isinstance)(Same)
 
 
-def different(ordering: Ordering) -> bool:
-    return not same(ordering)
+different = predicate.negate(same)
 
 
-def better(ordering: Ordering) -> bool:
-    return isinstance(ordering, Better)
+better = curry(isinstance)(Better)
 
 
-def not_better(ordering: Ordering) -> bool:
-    return not better(ordering)
+same_or_worse = not_better = predicate.negate(better)
 
 
 def reverse(ordering: Ordering) -> Ordering:
