@@ -62,8 +62,8 @@ then = monad.then(bind)
 
 @curry
 @curry
-def catch[E: BaseException, From, To](value: From, function: Callable[[From], To], exception: type[E]) -> Either[E, To]:
+def catch[E: BaseException, From, To](value: From, function: Callable[[From], To], exception_type: type[E]) -> Either[E, To]:
     try:
         return Right(function(value))
-    except exception as e:
-        return Left(e)
+    except exception_type as exception:
+        return Left(exception)
