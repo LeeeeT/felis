@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Self
 
-from felis import identity, ordering
+from felis import function, ordering
 from felis.currying import curry
 from felis.ordering import Ordering
 from felis.typing import SupportsRichComparison
@@ -29,31 +29,31 @@ __all__ = [
 type Order[T] = Callable[[T], Callable[[T], Ordering]]
 
 
-worse = identity.compose2(ordering.worse)
+worse = function.map2(ordering.worse)
 
 
-same_or_better = not_worse = identity.compose2(ordering.not_worse)
+same_or_better = not_worse = function.map2(ordering.not_worse)
 
 
-same = identity.compose2(ordering.same)
+same = function.map2(ordering.same)
 
 
-different = identity.compose2(ordering.different)
+different = function.map2(ordering.different)
 
 
-better = identity.compose2(ordering.better)
+better = function.map2(ordering.better)
 
 
-same_or_worse = not_better = identity.compose2(ordering.not_better)
+same_or_worse = not_better = function.map2(ordering.not_better)
 
 
-reverse = identity.compose2(ordering.reverse)
+reverse = function.map2(ordering.reverse)
 
 
-neutral = identity.neutral2(ordering.neutral)
+neutral = function.neutral2(ordering.neutral)
 
 
-add = identity.add2(ordering.add)
+add = function.add2(ordering.add)
 
 
 @curry

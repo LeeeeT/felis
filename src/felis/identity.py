@@ -3,19 +3,7 @@ from collections.abc import Callable
 from felis import monad
 from felis.currying import curry
 
-__all__ = ["neutral", "add", "identity", "map", "inject", "join", "bind", "compose", "then", "neutral2", "add2", "compose2"]
-
-
-@curry
-def neutral[M](value: object, m_neutral: M) -> M:
-    return m_neutral
-
-
-@curry
-@curry
-@curry
-def add[M, T](value: T, first: Callable[[T], M], second: Callable[[T], M], m_add: Callable[[M], Callable[[M], M]]) -> M:
-    return m_add(second(value))(first(value))
+__all__ = ["identity", "map", "inject", "join", "bind", "compose", "then"]
 
 
 def identity[T](value: T) -> T:
@@ -38,20 +26,7 @@ join = inject(identity)
 bind = monad.bind(map)(join)
 
 
-# TODO: use `monad.compose` instead of this
-@curry
-@curry
-def compose[From, Intermediate, To](value: From, first: Callable[[From], Intermediate], second: Callable[[Intermediate], To]) -> To:
-    return second(first(value))
+compose = monad.compose(bind)
 
 
 then = monad.then(bind)
-
-
-neutral2 = compose(neutral)(neutral)
-
-
-add2 = compose(add)(add)
-
-
-compose2 = compose(compose)(compose)
