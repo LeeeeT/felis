@@ -20,8 +20,8 @@ async def map[From, To](coroutine_value: Coroutine[From], function: Callable[[Fr
     return function(await coroutine_value)
 
 
-async def join[T](coroutine_coroutine__value: Coroutine[Coroutine[T]]) -> T:
-    return await (await coroutine_coroutine__value)
+async def join[T](coroutine_coroutine_value: Coroutine[Coroutine[T]]) -> T:
+    return await (await coroutine_coroutine_value)
 
 
 bind = monad.bind(map)(join)
