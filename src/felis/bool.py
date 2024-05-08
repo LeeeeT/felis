@@ -1,3 +1,4 @@
+from felis import identity
 from felis.currying import curry
 
 __all__ = ["both", "either", "negate", "same", "different"]
@@ -22,6 +23,4 @@ def same(first: bool, second: bool) -> bool:
     return first is second
 
 
-@curry
-def different(first: bool, second: bool) -> bool:
-    return first is not second
+different = identity.compose2(negate)(same)
