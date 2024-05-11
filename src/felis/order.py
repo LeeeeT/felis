@@ -56,11 +56,7 @@ neutral = function.neutral2(ordering.neutral)
 add = function.add2(ordering.add)
 
 
-@curry
-@curry
-@curry
-def map[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> Ordering:
-    return order(function(second))(function(first))
+map = function.apply(function.bimap)(function.comap)
 
 
 @curry
