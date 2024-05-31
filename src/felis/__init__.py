@@ -9,5 +9,3 @@ from felis.ordering import Ordering
 from felis.state import ReversedState, State
 
 __all__ = ["Coroutine", "Either", "Function", "IO", "Lazy", "Option", "Order", "Ordering", "ReversedState", "State"]
-
-__version__ = "0.dev0"

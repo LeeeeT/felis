@@ -1,9 +1,10 @@
 [project]
 name = "felis"
-description = "Felis Catus"
+version = "0.dev0"
+description = "🐈 Felis Catus – functional bits for Python"
 readme = "README.md"
 requires-python = ">=3.12"
-license = "0BSD"
+license = { file = "LICENSE" }
 authors = [{ name = "LeeeeT", email = "me@LeeeeT.dev" }]
 classifiers = [
     "Development Status :: 1 - Planning",
@@ -19,19 +20,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/LeeeeT/felis"
 Documentation = "https://felis.rtfd.io"
 Repository = "https://github.com/LeeeeT/felis"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.version]
-path = "src/felis/__init__.py"
 
 [tool.ruff]
 line-length = 160
