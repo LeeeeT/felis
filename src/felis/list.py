@@ -5,7 +5,7 @@ from felis import monad
 from felis.currying import curry
 from felis.order import Order
 
-__all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left"]
+__all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left", "filter", "sort"]
 
 
 def identity[T](value: T) -> list[T]:
