@@ -7,7 +7,6 @@ requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "LeeeeT", email = "me@LeeeeT.dev" }]
 classifiers = [
-    "Development Status :: 1 - Planning",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "License :: OSI Approved :: Zero-Clause BSD (0BSD)",
