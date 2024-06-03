@@ -6,6 +6,7 @@ from felis.lazy import Lazy
 from felis.option import Option
 from felis.order import Order
 from felis.ordering import Ordering
+from felis.predicate import Predicate
 from felis.state import ReversedState, State
 
-__all__ = ["Coroutine", "Either", "Function", "IO", "Lazy", "Option", "Order", "Ordering", "ReversedState", "State"]
+__all__ = ["Coroutine", "Either", "Function", "IO", "Lazy", "Option", "Order", "Ordering", "Predicate", "ReversedState", "State"]
