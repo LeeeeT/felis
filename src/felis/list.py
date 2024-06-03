@@ -4,6 +4,7 @@ import felis.order
 from felis import monad
 from felis.currying import curry
 from felis.order import Order
+from felis.predicate import Predicate
 
 __all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left", "filter", "sort"]
 
@@ -40,8 +41,8 @@ def fold_left[T](list: list[T], empty: T, add: Callable[[T], Callable[[T], T]]) 
 
 
 @curry
-def filter[T](list: list[T], condition: Callable[[T], bool]) -> list[T]:
-    return [value for value in list if condition(value)]
+def filter[T](list: list[T], predicate: Predicate[T]) -> list[T]:
+    return [value for value in list if predicate(value)]
 
 
 @curry
