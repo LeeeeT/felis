@@ -24,6 +24,7 @@ classifiers = [
 Homepage = "https://github.com/LeeeeT/felis"
 Documentation = "https://felis.rtfd.io"
 Repository = "https://github.com/LeeeeT/felis"
+PyPI = "https://pypi.org/project/felis-catus"
 
 [tool.ruff]
 line-length = 160

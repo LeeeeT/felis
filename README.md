@@ -4,7 +4,13 @@
 
 ## Installation
 
-Build the latest version from [source]:
+Install from [PyPI]:
+
+```console
+pip install felis-catus
+```
+
+Build and install from [source]:
 
 ```console
 pip install git+https://github.com/LeeeeT/felis
@@ -72,7 +78,8 @@ main = \
 io.run(main)
 ```
 
-That's all monads, btw 🐈.
+That's all monads, btw. 🐈
 
 [docs]: https://felis.rtfd.io
 [source]: https://github.com/LeeeeT/felis
+[PyPI]: https://pypi.org/project/felis-catus

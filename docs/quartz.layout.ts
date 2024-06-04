@@ -8,7 +8,7 @@ export const sharedPageComponents: SharedLayout = {
   footer: Component.Footer({
     links: {
       GitHub: "https://github.com/LeeeeT/felis",
-      PyPI: "https://pypi.org/project/felis",
+      PyPI: "https://pypi.org/project/felis-catus",
     },
   }),
 }
