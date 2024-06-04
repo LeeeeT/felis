@@ -1,5 +1,5 @@
 [project]
-name = "felis"
+name = "felis-catus"
 version = "0.dev0"
 description = "🐈 Felis Catus – functional bits for Python"
 readme = "README.md"
