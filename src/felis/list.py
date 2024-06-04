@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from collections.abc import Callable
+from dataclasses import dataclass
 
 import felis.order
 from felis import monad
@@ -6,20 +9,59 @@ from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["identity", "map", "join", "bind", "compose", "then", "fold_left", "filter", "sort"]
+__all__ = ["List", "Empty", "Constructor", "identity", "map", "join", "bind", "compose", "then", "fold_left", "filter", "sort"]
 
 
-def identity[T](value: T) -> list[T]:
-    return [value]
+type List[T] = Empty | Constructor[T]
+
+
+@dataclass(frozen=True)
+class Empty:
+    pass
+
+
+@dataclass(frozen=True)
+class Constructor[T]:
+    head: T
+    tail: List[T]
+
+
+neutral = Empty()
 
 
 @curry
-def map[From, To](list_value: list[From], function: Callable[[From], To]) -> list[To]:
-    return [function(value) for value in list_value]
+def add[T](augend: List[T], addend: List[T]) -> List[T]:
+    match augend:
+        case Empty():
+            return addend
+        case Constructor(head, tail):
+            return Constructor(head, add(addend)(tail))
 
 
-def join[T](list_list_value: list[list[T]]) -> list[T]:
-    return [value for list_value in list_list_value for value in list_value]
+def identity[T](value: T) -> List[T]:
+    return Constructor(value, Empty())
+
+
+@curry
+@curry
+def fold_left[T](list: List[T], empty: T, add: Callable[[T], Callable[[T], T]]) -> T:
+    match list:
+        case Empty():
+            return empty
+        case Constructor(head, tail):
+            return fold_left(add)(add(head)(empty))(tail)
+
+
+@curry
+def map[From, To](list_value: List[From], function: Callable[[From], To]) -> List[To]:
+    match list_value:
+        case Empty():
+            return Empty()
+        case Constructor(head, tail):
+            return Constructor(function(head), map(function)(tail))
+
+
+join = fold_left(add)(neutral)
 
 
 bind = monad.bind(map)(join)
@@ -32,19 +74,20 @@ then = monad.then(bind)
 
 
 @curry
-@curry
-def fold_left[T](list: list[T], empty: T, add: Callable[[T], Callable[[T], T]]) -> T:
-    result = empty
-    for value in list:
-        result = add(value)(result)
-    return result
+def filter[T](list: List[T], predicate: Predicate[T]) -> List[T]:
+    match list:
+        case Empty():
+            return Empty()
+        case Constructor(head, tail):
+            return Constructor(head, filter(predicate)(tail)) if predicate(head) else filter(predicate)(tail)
 
 
 @curry
-def filter[T](list: list[T], predicate: Predicate[T]) -> list[T]:
-    return [value for value in list if predicate(value)]
-
-
-@curry
-def sort[T](list: list[T], order: Order[T]) -> list[T]:
-    return sorted(list, key=felis.order.rich_comparison(order))
+def sort[T](list: List[T], order: Order[T]) -> List[T]:
+    match list:
+        case Empty():
+            return Empty()
+        case Constructor(head, tail):
+            worse = filter(felis.order.worse(order)(head))(tail)
+            not_worse = filter(felis.order.not_worse(order)(head))(tail)
+            return add(sort(order)(not_worse))(add(identity(head))(sort(order)(worse)))
