@@ -21,8 +21,8 @@ neutral2 = felis.identity.compose(neutral)(neutral)
 @curry
 @curry
 @curry
-def add[M, T](value: T, first: Function[T, M], second: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
-    return m_add(second(value))(first(value))
+def add[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
+    return m_add(addend(value))(augend(value))
 
 
 add2 = felis.identity.compose(add)(add)

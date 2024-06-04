@@ -72,9 +72,9 @@ neutral = Same()
 
 
 @curry
-def add(first: Ordering, second: Ordering) -> Ordering:
-    match first:
+def add(augend: Ordering, addend: Ordering) -> Ordering:
+    match augend:
         case Same():
-            return second
+            return addend
         case _:
-            return first
+            return augend
