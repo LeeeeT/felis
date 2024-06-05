@@ -45,8 +45,7 @@ def inject[L, R, MEitherR](either_m_either_value: Either[L, MEitherR], m_identit
 
 # TODO: remove this
 class Join(Protocol):
-    @staticmethod
-    def __call__[L, R](either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
+    def __call__[L, R](self, either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
 
 
 join: Join = inject(felis.identity.identity)
