@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Protocol, cast
 
 import felis.order
 from felis import monad
@@ -44,12 +45,12 @@ def identity[T](value: T) -> List[T]:
 
 @curry
 @curry
-def fold[T](list: List[T], neutral: T, add: Callable[[T], Callable[[T], T]]) -> T:
+def fold[M](list: List[M], add: Callable[[M], Callable[[M], M]], neutral: M) -> M:
     match list:
         case Empty():
             return neutral
         case Constructor(head, tail):
-            return add(fold(add)(neutral)(tail))(head)
+            return add(fold(neutral)(add)(tail))(head)
 
 
 @curry
@@ -61,7 +62,13 @@ def map[From, To](list_value: List[From], function: Callable[[From], To]) -> Lis
             return Constructor(function(head), map(function)(tail))
 
 
-join = fold(add)(neutral)
+# TODO: remove this
+class Join(Protocol):
+    def __call__[T](self, list_list_value: List[List[T]], /) -> List[T]: ...
+
+
+# TODO: remove the cast
+join = cast(Join, fold(neutral)(add))  # type: ignore
 
 
 bind = monad.bind(map)(join)
