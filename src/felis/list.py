@@ -9,7 +9,7 @@ from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["List", "Empty", "Constructor", "identity", "map", "join", "bind", "compose", "then", "fold_left", "filter", "sort"]
+__all__ = ["List", "Empty", "Constructor", "identity", "map", "join", "bind", "compose", "then", "fold", "filter", "sort"]
 
 
 type List[T] = Empty | Constructor[T]
@@ -44,12 +44,12 @@ def identity[T](value: T) -> List[T]:
 
 @curry
 @curry
-def fold_left[T](list: List[T], empty: T, add: Callable[[T], Callable[[T], T]]) -> T:
+def fold[T](list: List[T], neutral: T, add: Callable[[T], Callable[[T], T]]) -> T:
     match list:
         case Empty():
-            return empty
+            return neutral
         case Constructor(head, tail):
-            return fold_left(add)(add(head)(empty))(tail)
+            return add(fold(add)(neutral)(tail))(head)
 
 
 @curry
@@ -61,7 +61,7 @@ def map[From, To](list_value: List[From], function: Callable[[From], To]) -> Lis
             return Constructor(function(head), map(function)(tail))
 
 
-join = fold_left(add)(neutral)
+join = fold(add)(neutral)
 
 
 bind = monad.bind(map)(join)
