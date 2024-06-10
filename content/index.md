@@ -4,5 +4,5 @@ title: Welcome to 🐈 Felis Catus
 
 See the [docs] for how to get started.
 
-[docs]: https://felis.rtfd.io
+[docs]: https://felis.LeeeeT.dev
 [source]: https://github.com/LeeeeT/felis
