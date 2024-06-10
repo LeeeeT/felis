@@ -22,7 +22,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/LeeeeT/felis"
-Documentation = "https://felis.rtfd.io"
+Documentation = "https://felis.LeeeeT.dev"
 Repository = "https://github.com/LeeeeT/felis"
 PyPI = "https://pypi.org/project/felis-catus"
 

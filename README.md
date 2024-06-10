@@ -80,6 +80,6 @@ io.run(main)
 
 That's all monads, btw. 🐈
 
-[docs]: https://felis.rtfd.io
+[docs]: https://felis.LeeeeT.dev
 [source]: https://github.com/LeeeeT/felis
 [PyPI]: https://pypi.org/project/felis-catus
