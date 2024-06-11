@@ -10,7 +10,7 @@ from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["List", "Empty", "Constructor", "identity", "map", "join", "bind", "compose", "then", "fold", "filter", "sort"]
+__all__ = ["List", "Empty", "Constructor", "neutral", "add", "identity", "map", "join", "bind", "compose", "then", "fold", "filter", "sort"]
 
 
 type List[T] = Empty | Constructor[T]
