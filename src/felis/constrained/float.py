@@ -17,6 +17,8 @@ __all__ = [
     "positive",
     "Portion",
     "portion",
+    "Finite",
+    "finite",
 ]
 
 
