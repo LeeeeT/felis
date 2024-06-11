@@ -1,46 +1,37 @@
 import builtins
-from collections.abc import Callable
-from dataclasses import dataclass
 
-from felis import monad
-from felis.currying import curry
+from felis import lazy
 from felis.lazy import Lazy
 
 __all__ = ["IO", "run", "identity", "map", "join", "bind", "compose", "then", "input", "print"]
 
 
-@dataclass(frozen=True)
-class IO[T]:
-    value: Lazy[T]
+type IO[T] = Lazy[T]
 
 
-def run[T](io_value: IO[T]) -> T:
-    return io_value.value()
+run = lazy.run
 
 
-identity = IO
+identity = lazy.identity
 
 
-@curry
-def map[From, To](io_value: IO[From], function: Callable[[From], To]) -> IO[To]:
-    return IO(lambda: function(io_value.value()))
+map = lazy.map
 
 
-def join[T](io_io_value: IO[IO[T]]) -> IO[T]:
-    return IO(lambda: io_io_value.value().value())
+join = lazy.join
 
 
-bind = monad.bind(map)(join)
+bind = lazy.bind
 
 
-compose = monad.compose(bind)
+compose = lazy.compose
 
 
-then = monad.then(bind)
+then = lazy.then
 
 
-input = IO(builtins.input)
+input = builtins.input
 
 
 def print(value: object) -> IO[None]:
-    return IO(lambda: builtins.print(value))
+    return lambda: builtins.print(value)
