@@ -1,7 +1,7 @@
 from typing import NewType
 
 import felis.predicate.bool
-from felis.type import smart_constructor
+from felis.constrained import smart_constructor
 
 __all__ = ["NonEmpty", "non_empty"]
 
