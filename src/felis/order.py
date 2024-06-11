@@ -2,6 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Self
 
+import felis.bool
 from felis import function, ordering
 from felis.currying import curry
 from felis.ordering import Ordering
@@ -75,32 +76,32 @@ def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]
 
         def __eq__(self, other: object, /) -> bool:
             if isinstance(other, RichComparison):
-                return same(order)(other.value)(self.value)
+                return felis.bool.to_builtin(same(order)(other.value)(self.value))
             return NotImplemented
 
         def __ne__(self, other: object, /) -> bool:
             if isinstance(other, RichComparison):
-                return different(order)(other.value)(self.value)
+                return felis.bool.to_builtin(different(order)(other.value)(self.value))
             return NotImplemented
 
         def __lt__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
-                return worse(order)(other.value)(self.value)
+                return felis.bool.to_builtin(worse(order)(other.value)(self.value))
             return NotImplemented
 
         def __gt__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
-                return better(order)(other.value)(self.value)
+                return felis.bool.to_builtin(better(order)(other.value)(self.value))
             return NotImplemented
 
         def __le__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
-                return same_or_worse(order)(other.value)(self.value)
+                return felis.bool.to_builtin(same_or_worse(order)(other.value)(self.value))
             return NotImplemented
 
         def __ge__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):
-                return same_or_better(order)(other.value)(self.value)
+                return felis.bool.to_builtin(same_or_better(order)(other.value)(self.value))
             return NotImplemented
 
     return RichComparison

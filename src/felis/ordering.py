@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from felis import predicate
+from felis import bool, identity, predicate
 from felis.currying import curry
 
 __all__ = [
@@ -40,19 +40,19 @@ class Better:
     pass
 
 
-worse = curry(isinstance)(Worse)
+worse = identity.compose(bool.from_builtin)(curry(isinstance)(Worse))
 
 
 same_or_better = not_worse = predicate.negate(worse)
 
 
-same = curry(isinstance)(Same)
+same = identity.compose(bool.from_builtin)(curry(isinstance)(Same))
 
 
 different = predicate.negate(same)
 
 
-better = curry(isinstance)(Better)
+better = identity.compose(bool.from_builtin)(curry(isinstance)(Better))
 
 
 same_or_worse = not_better = predicate.negate(better)
