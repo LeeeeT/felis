@@ -3,18 +3,7 @@ from typing import NewType
 import felis.predicate.float
 from felis.constrained import smart_constructor
 
-__all__ = [
-    "Negative",
-    "negative",
-    "NonPositive",
-    "non_positive",
-    "NonZero",
-    "non_zero",
-    "NonNegative",
-    "non_negative",
-    "Positive",
-    "positive",
-]
+__all__ = ["Negative", "negative", "NonPositive", "non_positive", "NonZero", "non_zero", "NonNegative", "non_negative", "Positive", "positive"]
 
 
 Negative = NewType("Negative", float)
