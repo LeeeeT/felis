@@ -1,3 +1,4 @@
+import math
 from typing import NewType
 
 import felis.predicate.float
@@ -47,3 +48,8 @@ positive = smart_constructor(Positive)(felis.predicate.float.positive)
 Portion = NewType("Portion", float)
 
 portion = smart_constructor(Portion)(felis.predicate.float.portion)
+
+
+Finite = NewType("Finite", float)
+
+finite = smart_constructor(Finite)(math.isfinite)
