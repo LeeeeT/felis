@@ -8,7 +8,7 @@ from felis.currying import curry, uncurry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["neutral", "append", "add", "map", "identity", "when", "fold", "traverse", "join", "bind", "compose", "then", "filter", "sort"]
+__all__ = ["neutral", "append", "add", "map", "identity", "when", "fold", "traverse", "join", "bind", "compose", "then", "guard", "filter", "sort"]
 
 
 neutral: list[Any] = []
@@ -64,6 +64,9 @@ compose = monad.compose(bind)
 
 
 then = monad.then(bind)
+
+
+guard = uncurry(monad.guard)(identity, neutral)
 
 
 @curry
