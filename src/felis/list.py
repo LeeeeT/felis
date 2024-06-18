@@ -8,7 +8,7 @@ from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["neutral", "add", "identity", "fold", "map", "join", "bind", "compose", "then", "filter", "sort"]
+__all__ = ["neutral", "append", "add", "identity", "fold", "traverse", "map", "join", "bind", "compose", "then", "filter", "sort"]
 
 
 neutral: list[Any] = []
