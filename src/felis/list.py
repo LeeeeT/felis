@@ -1,3 +1,4 @@
+import builtins
 from collections.abc import Callable
 from typing import Any
 
@@ -8,7 +9,7 @@ from felis.currying import curry, uncurry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["neutral", "append", "add", "map", "identity", "when", "fold", "traverse", "join", "bind", "compose", "then", "guard", "filter", "sort"]
+__all__ = ["neutral", "append", "add", "map", "identity", "when", "fold", "traverse", "join", "bind", "compose", "then", "guard", "filter", "sort", "range"]
 
 
 neutral: list[Any] = []
@@ -77,3 +78,8 @@ def filter[T](list: list[T], predicate: Predicate[T]) -> list[T]:
 @curry
 def sort[T](list: list[T], order: Order[T]) -> list[T]:
     return sorted(list, key=felis.order.rich_comparison(order))
+
+
+@curry
+def range(stop: int, start: int) -> list[int]:
+    return list(builtins.range(start, stop))
