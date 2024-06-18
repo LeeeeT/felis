@@ -78,6 +78,24 @@ main = \
 io.run(main)
 ```
 
+Finding pythagorean triples (analogue to list comprehension):
+
+```python
+from felis.currying import uncurry
+from felis.list import bind, guard, identity, range, then
+
+pythags = \
+    uncurry(bind)(range(1)(20), lambda z:
+    uncurry(bind)(range(1)(z), lambda x:
+    uncurry(bind)(range(x)(z), lambda y:
+    uncurry(then)(guard(x**2 + y**2 == z**2),
+    identity((x, y, z)),
+))))
+
+print(pythags)
+# [(3, 4, 5), (6, 8, 10), (5, 12, 13), (9, 12, 15), (8, 15, 17)]
+```
+
 That's all monads, btw. 🐈
 
 [docs]: https://felis.LeeeeT.dev
