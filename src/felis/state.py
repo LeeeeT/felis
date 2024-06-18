@@ -9,11 +9,15 @@ __all__ = [
     "ReversedState",
     "map",
     "identity",
+    "apply",
+    "lift2",
     "when",
     "join",
     "bind",
     "compose",
     "then",
+    "reversed_apply",
+    "reversed_lift2",
     "reversed_join",
     "reversed_bind",
     "reversed_compose",
@@ -39,6 +43,16 @@ def identity[S, T](state: S, value: T) -> tuple[T, S]:
     return (value, state)
 
 
+@curry
+@curry
+def apply[S, From, To](state: S, state_value: State[S, From], state_function: State[S, Callable[[From], To]]) -> tuple[To, S]:
+    function, state = state_function(state)
+    return map(function)(state_value)(state)
+
+
+lift2 = applicative.lift2(map)(apply)
+
+
 when = applicative.when(identity)
 
 
@@ -56,6 +70,21 @@ compose = monad.compose(bind)
 
 
 then = monad.then(bind)
+
+
+@curry
+@curry
+def reversed_apply[S, From, To](
+    state: Lazy[S],
+    reversed_state_value: ReversedState[S, From],
+    reversed_state_function: ReversedState[S, Callable[[From], To]],
+) -> tuple[To, Lazy[S]]:
+    function, new_state = reversed_state_function(lambda: state())
+    value, state = map(function)(reversed_state_value)(new_state)
+    return value, new_state
+
+
+reversed_lift2 = applicative.lift2(map)(reversed_apply)
 
 
 @curry

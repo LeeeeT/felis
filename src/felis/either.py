@@ -6,7 +6,7 @@ import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Either", "Left", "Right", "map", "identity", "when", "inject", "join", "bind", "compose", "then", "catch"]
+__all__ = ["Either", "Left", "Right", "map", "identity", "apply", "lift2", "when", "inject", "join", "bind", "compose", "then", "catch"]
 
 
 type Either[L, R] = Left[L] | Right[R]
@@ -37,6 +37,18 @@ if TYPE_CHECKING:
 
 else:
     identity = Right
+
+
+@curry
+def apply[L, From, To](either_value: Either[L, From], either_function: Either[L, Callable[[From], To]]) -> Either[L, To]:
+    match either_function:
+        case Left(value):
+            return Left(value)
+        case Right(function):
+            return map(function)(either_value)
+
+
+lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)

@@ -4,7 +4,7 @@ import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Function", "neutral", "neutral2", "add", "add2", "map", "map2", "identity", "apply", "when", "join", "bind", "compose", "then"]
+__all__ = ["Function", "neutral", "neutral2", "add", "add2", "map", "map2", "identity", "apply", "lift2", "when", "join", "bind", "compose", "then"]
 
 
 type Function[From, To] = Callable[[From], To]
@@ -46,6 +46,9 @@ def identity[T](_: object, value: T) -> T:
 @curry
 def apply[T, From, To](value: T, function_value: Function[T, From], function: Function[T, Callable[[From], To]]) -> To:
     return function(value)(function_value(value))
+
+
+lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)

@@ -6,7 +6,7 @@ import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "map", "identity", "when", "inject", "join", "bind", "compose", "then"]
+__all__ = ["Option", "Some", "map", "identity", "apply", "lift2", "when", "inject", "join", "bind", "compose", "then"]
 
 
 type Option[T] = None | Some[T]
@@ -32,6 +32,18 @@ if TYPE_CHECKING:
 
 else:
     identity = Some
+
+
+@curry
+def apply[From, To](option_value: Option[From], option_function: Option[Callable[[From], To]]) -> Option[To]:
+    match option_function:
+        case None:
+            return None
+        case Some(function):
+            return map(function)(option_value)
+
+
+lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)

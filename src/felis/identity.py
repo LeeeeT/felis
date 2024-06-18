@@ -3,27 +3,37 @@ from collections.abc import Callable
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["map", "identity", "when", "inject", "join", "bind", "compose", "then"]
+__all__ = ["Identity", "map", "identity", "apply", "lift2", "when", "inject", "join", "bind", "compose", "then"]
+
+
+type Identity[T] = T
 
 
 @curry
-def map[From, To](value: From, function: Callable[[From], To]) -> To:
+def map[From, To](value: Identity[From], function: Callable[[From], To]) -> Identity[To]:
     return function(value)
 
 
-def identity[T](value: T) -> T:
+def identity[T](value: T) -> Identity[T]:
     return value
+
+
+@curry
+def apply[From, To](identity_value: Identity[From], identity_function: Identity[Callable[[From], To]]) -> Identity[To]:
+    return identity_function(identity_value)
+
+
+lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)
 
 
-@curry
-def inject[T, MT](m_value: MT, m_identity: Callable[[T], MT]) -> MT:
+def inject[MT](m_value: MT) -> MT:
     return m_value
 
 
-join = inject(identity)
+join = inject
 
 
 bind = monad.bind(map)(join)
