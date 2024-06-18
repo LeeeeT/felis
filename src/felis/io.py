@@ -3,7 +3,7 @@ import builtins
 from felis import lazy
 from felis.lazy import Lazy
 
-__all__ = ["IO", "run", "identity", "when", "map", "join", "bind", "compose", "then", "input", "print"]
+__all__ = ["IO", "run", "map", "identity", "when", "join", "bind", "compose", "then", "input", "print"]
 
 
 type IO[T] = Lazy[T]
@@ -12,13 +12,13 @@ type IO[T] = Lazy[T]
 run = lazy.run
 
 
+map = lazy.map
+
+
 identity = lazy.identity
 
 
 when = lazy.when
-
-
-map = lazy.map
 
 
 join = lazy.join

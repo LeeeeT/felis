@@ -5,10 +5,15 @@ from typing import Any
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Coroutine", "identity", "when", "map", "join", "bind", "compose", "then"]
+__all__ = ["Coroutine", "map", "identity", "when", "join", "bind", "compose", "then"]
 
 
 type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
+
+
+@curry
+async def map[From, To](coroutine_value: Coroutine[From], function: Callable[[From], To]) -> To:
+    return function(await coroutine_value)
 
 
 async def identity[T](value: T) -> T:
@@ -16,11 +21,6 @@ async def identity[T](value: T) -> T:
 
 
 when = applicative.when(identity)
-
-
-@curry
-async def map[From, To](coroutine_value: Coroutine[From], function: Callable[[From], To]) -> To:
-    return function(await coroutine_value)
 
 
 async def join[T](coroutine_coroutine_value: Coroutine[Coroutine[T]]) -> T:

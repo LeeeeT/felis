@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "identity", "map", "inject", "join", "bind", "compose", "then"]
+__all__ = ["Option", "Some", "map", "identity", "when", "inject", "join", "bind", "compose", "then"]
 
 
 type Option[T] = None | Some[T]
@@ -17,6 +17,15 @@ class Some[T]:
     value: T
 
 
+@curry
+def map[From, To](option_value: Option[From], function: Callable[[From], To]) -> Option[To]:
+    match option_value:
+        case None:
+            return None
+        case Some(value):
+            return Some(function(value))
+
+
 if TYPE_CHECKING:
 
     def identity[T](value: T) -> Option[T]: ...
@@ -25,13 +34,7 @@ else:
     identity = Some
 
 
-@curry
-def map[From, To](option_value: Option[From], function: Callable[[From], To]) -> Option[To]:
-    match option_value:
-        case None:
-            return None
-        case Some(value):
-            return Some(function(value))
+when = applicative.when(identity)
 
 
 @curry

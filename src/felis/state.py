@@ -7,9 +7,9 @@ from felis.lazy import Lazy
 __all__ = [
     "State",
     "ReversedState",
+    "map",
     "identity",
     "when",
-    "map",
     "join",
     "bind",
     "compose",
@@ -28,18 +28,18 @@ type ReversedState[S, T] = State[Lazy[S], T]
 
 
 @curry
+@curry
+def map[S, From, To](state: S, state_value: State[S, From], function: Callable[[From], To]) -> tuple[To, S]:
+    value, new_state = state_value(state)
+    return function(value), new_state
+
+
+@curry
 def identity[S, T](state: S, value: T) -> tuple[T, S]:
     return (value, state)
 
 
 when = applicative.when(identity)
-
-
-@curry
-@curry
-def map[S, From, To](state: S, state_value: State[S, From], function: Callable[[From], To]) -> tuple[To, S]:
-    value, new_state = state_value(state)
-    return function(value), new_state
 
 
 @curry

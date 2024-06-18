@@ -8,7 +8,7 @@ from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["neutral", "append", "add", "identity", "when", "fold", "traverse", "map", "join", "bind", "compose", "then", "filter", "sort"]
+__all__ = ["neutral", "append", "add", "map", "identity", "when", "fold", "traverse", "join", "bind", "compose", "then", "filter", "sort"]
 
 
 neutral: list[Any] = []
@@ -22,6 +22,11 @@ def append[T](list: list[T], value: T) -> list[T]:
 @curry
 def add[T](augend: list[T], addend: list[T]) -> list[T]:
     return augend + addend
+
+
+@curry
+def map[From, To](list_value: list[From], function: Callable[[From], To]) -> list[To]:
+    return [function(value) for value in list_value]
 
 
 def identity[T](value: T) -> list[T]:
@@ -47,11 +52,6 @@ def traverse[From, To, ATo, AListTo](
     a_identity: Callable[[list[To]], AListTo],
 ) -> Callable[[list[From]], AListTo]:
     return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
-
-
-@curry
-def map[From, To](list_value: list[From], function: Callable[[From], To]) -> list[To]:
-    return [function(value) for value in list_value]
 
 
 if TYPE_CHECKING:
