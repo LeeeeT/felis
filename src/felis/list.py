@@ -1,10 +1,10 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import felis.identity
 import felis.order
 from felis import applicative, monad
-from felis.currying import curry
+from felis.currying import curry, uncurry
 from felis.order import Order
 from felis.predicate import Predicate
 
@@ -54,12 +54,7 @@ def traverse[From, To, ATo, AListTo](
     return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
 
 
-if TYPE_CHECKING:
-
-    def join[T](list_list_value: list[list[T]], /) -> list[T]: ...
-
-
-join = fold(neutral)(add)
+join = uncurry(fold)(add, neutral)
 
 
 bind = monad.bind(map)(join)
