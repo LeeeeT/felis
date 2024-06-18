@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+import felis.identity
 import felis.order
 from felis import monad
 from felis.currying import curry
@@ -14,6 +15,11 @@ neutral: list[Any] = []
 
 
 @curry
+def append[T](list: list[T], value: T) -> list[T]:
+    return [*list, value]
+
+
+@curry
 def add[T](augend: list[T], addend: list[T]) -> list[T]:
     return augend + addend
 
@@ -24,12 +30,20 @@ def identity[T](value: T) -> list[T]:
 
 @curry
 @curry
-def fold[T](list: list[T], add: Callable[[T], Callable[[T], T]], neutral: T) -> T:
-    match list:
-        case [head, *tail]:
-            return add(fold(neutral)(add)(tail))(head)
-        case _:
-            return neutral
+def fold[A, T](list: list[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
+    for value in list:
+        accumulator = function(value)(accumulator)
+    return accumulator
+
+
+@curry
+@curry
+def traverse[From, To, ATo, AListTo](
+    function: Callable[[From], ATo],
+    a_lift2: Callable[[Callable[[To], Callable[[list[To]], list[To]]]], Callable[[ATo], Callable[[AListTo], AListTo]]],
+    a_identity: Callable[[list[To]], AListTo],
+) -> Callable[[list[From]], AListTo]:
+    return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
 
 
 @curry
