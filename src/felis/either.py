@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Protocol
+from typing import TYPE_CHECKING
 
 import felis.identity
 from felis import monad
@@ -43,12 +43,12 @@ def inject[L, R, MEitherR](either_m_either_value: Either[L, MEitherR], m_identit
             return m_either_value
 
 
-# TODO: remove this
-class Join(Protocol):
-    def __call__[L, R](self, either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
+if TYPE_CHECKING:
 
+    def join[L, R](either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
 
-join: Join = inject(felis.identity.identity)
+else:
+    join = inject(felis.identity.identity)
 
 
 bind = monad.bind(map)(join)

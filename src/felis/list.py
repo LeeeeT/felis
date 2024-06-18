@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Protocol, cast
+from typing import TYPE_CHECKING, Any
 
 import felis.order
 from felis import monad
@@ -10,7 +10,7 @@ from felis.predicate import Predicate
 __all__ = ["neutral", "add", "identity", "fold", "map", "join", "bind", "compose", "then", "filter", "sort"]
 
 
-neutral = []
+neutral: list[Any] = []
 
 
 @curry
@@ -37,13 +37,12 @@ def map[From, To](list_value: list[From], function: Callable[[From], To]) -> lis
     return [function(value) for value in list_value]
 
 
-# TODO: remove this
-class Join(Protocol):
-    def __call__[T](self, list_list_value: list[list[T]], /) -> list[T]: ...
+if TYPE_CHECKING:
+
+    def join[T](list_list_value: list[list[T]], /) -> list[T]: ...
 
 
-# TODO: remove the cast
-join = cast(Join, fold(neutral)(add))  # type: ignore
+join = fold(neutral)(add)
 
 
 bind = monad.bind(map)(join)
