@@ -20,4 +20,4 @@ def lift2[A, AA, AB, AC, CallableBC, ACallableBC](
 @curry
 @curry
 def when[ANone](a_none: ANone, bool: bool, identity: Callable[[None], ANone]) -> ANone:
-    return identity(None) if bool else a_none
+    return a_none if bool else identity(None)
