@@ -1,10 +1,10 @@
 from collections.abc import Callable
 
 import felis.identity
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Function", "neutral", "neutral2", "add", "add2", "identity", "map", "map2", "apply", "join", "bind", "compose", "then"]
+__all__ = ["Function", "neutral", "neutral2", "add", "add2", "identity", "when", "map", "map2", "apply", "join", "bind", "compose", "then"]
 
 
 type Function[From, To] = Callable[[From], To]
@@ -31,6 +31,9 @@ add2 = felis.identity.compose(add)(add)
 @curry
 def identity[T](_: object, value: T) -> T:
     return value
+
+
+when = applicative.when(identity)
 
 
 @curry

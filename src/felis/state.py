@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 from felis.lazy import Lazy
 
@@ -8,6 +8,7 @@ __all__ = [
     "State",
     "ReversedState",
     "identity",
+    "when",
     "map",
     "join",
     "bind",
@@ -29,6 +30,9 @@ type ReversedState[S, T] = State[Lazy[S], T]
 @curry
 def identity[S, T](state: S, value: T) -> tuple[T, S]:
     return (value, state)
+
+
+when = applicative.when(identity)
 
 
 @curry

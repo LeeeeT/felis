@@ -1,13 +1,16 @@
 from collections.abc import Callable
 
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["identity", "map", "inject", "join", "bind", "compose", "then"]
+__all__ = ["identity", "when", "map", "inject", "join", "bind", "compose", "then"]
 
 
 def identity[T](value: T) -> T:
     return value
+
+
+when = applicative.when(identity)
 
 
 @curry

@@ -2,10 +2,10 @@ import collections.abc
 from collections.abc import Callable
 from typing import Any
 
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Coroutine", "identity", "map", "join", "bind", "compose", "then"]
+__all__ = ["Coroutine", "identity", "when", "map", "join", "bind", "compose", "then"]
 
 
 type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
@@ -13,6 +13,9 @@ type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
 
 async def identity[T](value: T) -> T:
     return value
+
+
+when = applicative.when(identity)
 
 
 @curry

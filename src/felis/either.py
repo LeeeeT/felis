@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Either", "Left", "Right", "identity", "map", "inject", "join", "bind", "compose", "then", "catch"]
+__all__ = ["Either", "Left", "Right", "identity", "when", "map", "inject", "join", "bind", "compose", "then", "catch"]
 
 
 type Either[L, R] = Left[L] | Right[R]
@@ -22,7 +22,15 @@ class Right[T]:
     value: T
 
 
-identity = Right
+if TYPE_CHECKING:
+
+    def identity[L, R](value: R) -> Either[L, R]: ...
+
+else:
+    identity = Right
+
+
+when = applicative.when(identity)
 
 
 @curry

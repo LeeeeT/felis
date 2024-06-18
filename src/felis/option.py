@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import felis.identity
 from felis import monad
@@ -16,7 +17,12 @@ class Some[T]:
     value: T
 
 
-identity = Some
+if TYPE_CHECKING:
+
+    def identity[T](value: T) -> Option[T]: ...
+
+else:
+    identity = Some
 
 
 @curry

@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING, Any
 
 import felis.identity
 import felis.order
-from felis import monad
+from felis import applicative, monad
 from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["neutral", "append", "add", "identity", "fold", "traverse", "map", "join", "bind", "compose", "then", "filter", "sort"]
+__all__ = ["neutral", "append", "add", "identity", "when", "fold", "traverse", "map", "join", "bind", "compose", "then", "filter", "sort"]
 
 
 neutral: list[Any] = []
@@ -26,6 +26,9 @@ def add[T](augend: list[T], addend: list[T]) -> list[T]:
 
 def identity[T](value: T) -> list[T]:
     return [value]
+
+
+when = applicative.when(identity)
 
 
 @curry
