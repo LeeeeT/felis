@@ -83,8 +83,8 @@ when = applicative.when(identity)
 
 @curry
 @curry
-def fold[A, L, R](either: Either[L, R], function: Callable[[R], Callable[[A], A]], accumulator: A) -> A:
-    match either:
+def fold[A, L, R](either_value: Either[L, R], function: Callable[[R], Callable[[A], A]], accumulator: A) -> A:
+    match either_value:
         case Left(value):
             return accumulator
         case Right(value):
