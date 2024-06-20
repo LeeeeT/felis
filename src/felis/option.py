@@ -93,12 +93,12 @@ def fold[A, T](option_value: Option[T], function: Callable[[T], Callable[[A], A]
 @curry
 @curry
 def traverse[From, To, ATo, AOptionTo](
-    option: Option[From],
+    option_value: Option[From],
     function: Callable[[From], ATo],
     a_identity: Callable[[Option[To]], AOptionTo],
     a_map: Callable[[Callable[[To], Option[To]]], Callable[[ATo], AOptionTo]],
 ) -> AOptionTo:
-    match option:
+    match option_value:
         case None:
             return a_identity(neutral)
         case Some(value):
