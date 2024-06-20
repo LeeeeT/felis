@@ -9,7 +9,26 @@ from felis.currying import curry, uncurry
 from felis.order import Order
 from felis.predicate import Predicate
 
-__all__ = ["neutral", "append", "add", "map", "identity", "when", "fold", "traverse", "join", "bind", "compose", "then", "guard", "filter", "sort", "range"]
+__all__ = [
+    "neutral",
+    "append",
+    "add",
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "when",
+    "fold",
+    "traverse",
+    "join",
+    "bind",
+    "compose",
+    "then",
+    "guard",
+    "filter",
+    "sort",
+    "range",
+]
 
 
 neutral: list[Any] = []
@@ -32,6 +51,14 @@ def map[From, To](list_value: list[From], function: Callable[[From], To]) -> lis
 
 def identity[T](value: T) -> list[T]:
     return [value]
+
+
+@curry
+def apply[From, To](list_value: list[From], list_function: list[Callable[[From], To]]) -> list[To]:
+    return [function(value) for function in list_function for value in list_value]
+
+
+lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)
