@@ -66,8 +66,8 @@ when = applicative.when(identity)
 
 @curry
 @curry
-def fold[A, T](list: list[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
-    for value in list:
+def fold[A, T](list_value: list[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
+    for value in list_value:
         accumulator = function(value)(accumulator)
     return accumulator
 
