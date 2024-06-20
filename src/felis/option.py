@@ -81,8 +81,8 @@ when = applicative.when(identity)
 
 @curry
 @curry
-def fold[A, T](option: Option[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
-    match option:
+def fold[A, T](option_value: Option[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
+    match option_value:
         case None:
             return accumulator
         case Some(value):
