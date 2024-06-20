@@ -1,12 +1,12 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "map", "identity", "apply", "lift2", "when", "inject", "join", "bind", "compose", "then"]
+__all__ = ["Option", "Some", "neutral", "add", "map", "identity", "apply", "lift2", "when", "fold", "traverse", "inject", "join", "bind", "compose", "then"]
 
 
 type Option[T] = None | Some[T]
@@ -15,6 +15,21 @@ type Option[T] = None | Some[T]
 @dataclass(frozen=True)
 class Some[T]:
     value: T
+
+
+if TYPE_CHECKING:
+    neutral: Option[Any]
+else:
+    neutral = None
+
+
+@curry
+def add[T](augend: Option[T], addend: Option[T]) -> Option[T]:
+    match augend:
+        case None:
+            return addend
+        case Some(value):
+            return Some(value)
 
 
 @curry
@@ -47,6 +62,32 @@ lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)
+
+
+@curry
+@curry
+def fold[A, T](option: Option[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
+    match option:
+        case None:
+            return accumulator
+        case Some(value):
+            return function(value)(accumulator)
+
+
+@curry
+@curry
+@curry
+def traverse[From, To, ATo, AOptionTo](
+    option: Option[From],
+    function: Callable[[From], ATo],
+    a_identity: Callable[[Option[To]], AOptionTo],
+    a_map: Callable[[Callable[[To], Option[To]]], Callable[[ATo], AOptionTo]],
+) -> AOptionTo:
+    match option:
+        case None:
+            return a_identity(neutral)
+        case Some(value):
+            return a_map(identity)(function(value))
 
 
 @curry
