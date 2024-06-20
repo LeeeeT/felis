@@ -95,12 +95,12 @@ def fold[A, L, R](either: Either[L, R], function: Callable[[R], Callable[[A], A]
 @curry
 @curry
 def traverse[L, From, To, ATo, AEitherTo](
-    either: Either[L, From],
+    either_value: Either[L, From],
     function: Callable[[From], ATo],
     a_identity: Callable[[Either[L, To]], AEitherTo],
     a_map: Callable[[Callable[[To], Either[L, To]]], Callable[[ATo], AEitherTo]],
 ) -> AEitherTo:
-    match either:
+    match either_value:
         case Left(value):
             return a_identity(Left(value))
         case Right(value):
