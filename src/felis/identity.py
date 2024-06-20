@@ -10,8 +10,8 @@ type Identity[T] = T
 
 
 @curry
-def map[From, To](value: Identity[From], function: Callable[[From], To]) -> Identity[To]:
-    return function(value)
+def map[From, To](identity_value: Identity[From], function: Callable[[From], To]) -> Identity[To]:
+    return function(identity_value)
 
 
 def identity[T](value: T) -> Identity[T]:
