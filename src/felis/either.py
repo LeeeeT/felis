@@ -1,12 +1,30 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Either", "Left", "Right", "map", "identity", "apply", "lift2", "when", "inject", "join", "bind", "compose", "then", "catch"]
+__all__ = [
+    "Either",
+    "Left",
+    "Right",
+    "add",
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "when",
+    "fold",
+    "traverse",
+    "inject",
+    "join",
+    "bind",
+    "compose",
+    "then",
+    "catch",
+]
 
 
 type Either[L, R] = Left[L] | Right[R]
@@ -23,6 +41,15 @@ class Right[T]:
 
 
 @curry
+def add[L, R](augend: Either[L, R], addend: Either[L, R]) -> Either[L, R]:
+    match augend:
+        case Left(value):
+            return addend
+        case Right(value):
+            return Right(value)
+
+
+@curry
 def map[L, From, To](either_value: Either[L, From], function: Callable[[From], To]) -> Either[L, To]:
     match either_value:
         case Left(value):
@@ -33,7 +60,7 @@ def map[L, From, To](either_value: Either[L, From], function: Callable[[From], T
 
 if TYPE_CHECKING:
 
-    def identity[L, R](value: R) -> Either[L, R]: ...
+    def identity[R](value: R) -> Either[Any, R]: ...
 
 else:
     identity = Right
@@ -52,6 +79,32 @@ lift2 = applicative.lift2(map)(apply)
 
 
 when = applicative.when(identity)
+
+
+@curry
+@curry
+def fold[A, L, R](either: Either[L, R], function: Callable[[R], Callable[[A], A]], accumulator: A) -> A:
+    match either:
+        case Left(value):
+            return accumulator
+        case Right(value):
+            return function(value)(accumulator)
+
+
+@curry
+@curry
+@curry
+def traverse[L, From, To, ATo, AEitherTo](
+    either: Either[L, From],
+    function: Callable[[From], ATo],
+    a_identity: Callable[[Either[L, To]], AEitherTo],
+    a_map: Callable[[Callable[[To], Either[L, To]]], Callable[[ATo], AEitherTo]],
+) -> AEitherTo:
+    match either:
+        case Left(value):
+            return a_identity(Left(value))
+        case Right(value):
+            return a_map(identity)(function(value))
 
 
 @curry
