@@ -6,7 +6,25 @@ import felis.identity
 from felis import applicative, monad
 from felis.currying import curry, uncurry
 
-__all__ = ["Option", "Some", "neutral", "add", "map", "identity", "apply", "lift2", "when", "fold", "traverse", "inject", "join", "bind", "compose", "then"]
+__all__ = [
+    "Option",
+    "Some",
+    "neutral",
+    "add",
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "when",
+    "fold",
+    "traverse",
+    "inject",
+    "join",
+    "bind",
+    "compose",
+    "then",
+    "guard",
+]
 
 
 type Option[T] = None | Some[T]
