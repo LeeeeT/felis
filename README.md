@@ -61,21 +61,21 @@ match safe_reciprocal_of_str(input("Enter a number: ")):
         print(f"Reciprocal: {reciprocal}")
 ```
 
-Managing IO with `felis.io`:
+Managing IO (or any other lazy computations) with `felis.lazy`:
 
 ```python
-from felis import io
+from felis import lazy
 from felis.currying import uncurry
 
 
 main = \
-    uncurry(io.then)(io.print("What's your name?"),
-    uncurry(io.bind)(io.input, lambda name:
-    io.print(f"Hi, {name}!")
+    uncurry(lazy.then)(lambda: print("What's your name?"),
+    uncurry(lazy.bind)(input, lambda name:
+    lambda: print(f"Hi, {name}!")
 ))
 
 
-io.run(main)
+lazy.run(main)
 ```
 
 Finding pythagorean triples (analogue to list comprehension):
