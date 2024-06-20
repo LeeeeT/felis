@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import felis.identity
 from felis import applicative, monad
-from felis.currying import curry
+from felis.currying import curry, uncurry
 
 __all__ = ["Option", "Some", "neutral", "add", "map", "identity", "apply", "lift2", "when", "fold", "traverse", "inject", "join", "bind", "compose", "then"]
 
@@ -17,10 +17,7 @@ class Some[T]:
     value: T
 
 
-if TYPE_CHECKING:
-    neutral: Option[Any]
-else:
-    neutral = None
+neutral = cast(Option[Any], None)
 
 
 @curry
@@ -109,3 +106,6 @@ compose = monad.compose(bind)
 
 
 then = monad.then(bind)
+
+
+guard = uncurry(monad.guard)(identity, neutral)
