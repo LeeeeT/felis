@@ -3,14 +3,10 @@ from collections.abc import Callable
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Lazy", "run", "map", "identity", "when", "join", "bind", "compose", "then"]
+__all__ = ["Lazy", "map", "identity", "when", "join", "bind", "compose", "then"]
 
 
 type Lazy[T] = Callable[[], T]
-
-
-def run[T](lazy_value: Lazy[T]) -> T:
-    return lazy_value()
 
 
 @curry

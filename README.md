@@ -75,7 +75,7 @@ main = \
 ))
 
 
-lazy.run(main)
+main()
 ```
 
 Finding pythagorean triples (analogue to list comprehension):
