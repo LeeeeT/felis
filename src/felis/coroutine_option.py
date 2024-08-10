@@ -42,7 +42,7 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, identity_none: Coroutine[Option[None]]) -> Coroutine[Option[None]]: ...
+    def when(bool: bool, coroutine_option_none: Coroutine[Option[None]]) -> Coroutine[Option[None]]: ...
 
 else:
     when = applicative.when(identity)
@@ -54,7 +54,7 @@ join = coroutine.bind(option.inject(coroutine.identity))
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](identity_value: Coroutine[Option[From]], function: Callable[[From], Coroutine[Option[To]]]) -> Coroutine[Option[To]]: ...
+    def bind[From, To](coroutine_option_value: Coroutine[Option[From]], function: Callable[[From], Coroutine[Option[To]]]) -> Coroutine[Option[To]]: ...
 
 else:
     bind = monad.bind(map)(join)
