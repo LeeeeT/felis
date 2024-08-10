@@ -1,9 +1,10 @@
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from felis import applicative, monad
 from felis.currying import curry
 
-__all__ = ["Lazy", "map", "identity", "when", "join", "bind", "compose", "then"]
+__all__ = ["Lazy", "map", "identity", "apply", "lift2", "when", "join", "bind", "compose", "then"]
 
 
 type Lazy[T] = Callable[[], T]
@@ -18,17 +19,57 @@ def identity[T](value: T) -> Lazy[T]:
     return lambda: value
 
 
-when = applicative.when(identity)
+@curry
+def apply[From, To](lazy_value: Lazy[From], lazy_function: Lazy[Callable[[From], To]]) -> Lazy[To]:
+    return lambda: lazy_function()(lazy_value())
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def lift2[First, Second, Result](second: Lazy[Second], first: Lazy[First], function: Callable[[First], Callable[[Second], Result]]) -> Lazy[Result]: ...
+
+else:
+    lift2 = applicative.lift2(map)(apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def when(bool: bool, lazy_none: Lazy[None]) -> Lazy[None]: ...
+
+else:
+    when = applicative.when(identity)
 
 
 def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]:
     return lambda: lazy_lazy_value()()
 
 
-bind = monad.bind(map)(join)
+if TYPE_CHECKING:
+
+    @curry
+    def bind[From, To](lazy_value: Lazy[From], function: Callable[[From], Lazy[To]]) -> Lazy[To]: ...
+
+else:
+    bind = monad.bind(map)(join)
 
 
-compose = monad.compose(bind)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose[From, Intermediate, To](value: From, first: Callable[[From], Lazy[Intermediate]], second: Callable[[Intermediate], Lazy[To]]) -> Lazy[To]: ...
+
+else:
+    compose = monad.compose(bind)
 
 
-then = monad.then(bind)
+if TYPE_CHECKING:
+
+    @curry
+    def then[First, Second](first: Lazy[First], second: Lazy[Second]) -> Lazy[Second]: ...
+
+else:
+    then = monad.then(bind)

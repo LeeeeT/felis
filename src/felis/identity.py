@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from felis import applicative, monad
 from felis.currying import curry
@@ -23,10 +24,27 @@ def apply[From, To](identity_value: Identity[From], identity_function: Identity[
     return identity_function(identity_value)
 
 
-lift2 = applicative.lift2(map)(apply)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def lift2[First, Second, Result](
+        second: Identity[Second],
+        first: Identity[First],
+        function: Callable[[First], Callable[[Second], Result]],
+    ) -> Identity[Result]: ...
+
+else:
+    lift2 = applicative.lift2(map)(apply)
 
 
-when = applicative.when(identity)
+if TYPE_CHECKING:
+
+    @curry
+    def when(bool: bool, identity_none: Identity[None]) -> Identity[None]: ...
+
+else:
+    when = applicative.when(identity)
 
 
 def inject[MT](m_value: MT) -> MT:
@@ -36,10 +54,33 @@ def inject[MT](m_value: MT) -> MT:
 join = inject
 
 
-bind = monad.bind(map)(join)
+if TYPE_CHECKING:
+
+    @curry
+    def bind[From, To](identity_value: Identity[From], function: Callable[[From], Identity[To]]) -> Identity[To]: ...
+
+else:
+    bind = monad.bind(map)(join)
 
 
-compose = monad.compose(bind)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose[From, Intermediate, To](
+        value: From,
+        first: Callable[[From], Identity[Intermediate]],
+        second: Callable[[Intermediate], Identity[To]],
+    ) -> Identity[To]: ...
+
+else:
+    compose = monad.compose(bind)
 
 
-then = monad.then(bind)
+if TYPE_CHECKING:
+
+    @curry
+    def then[First, Second](first: Identity[First], second: Identity[Second]) -> Identity[Second]: ...
+
+else:
+    then = monad.then(bind)

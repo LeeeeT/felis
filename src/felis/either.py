@@ -60,7 +60,7 @@ def map[L, From, To](either_value: Either[L, From], function: Callable[[From], T
 
 if TYPE_CHECKING:
 
-    def identity[R](value: R) -> Either[Any, R]: ...
+    def identity[L, R](value: R) -> Either[L, R]: ...
 
 else:
     identity = Right
@@ -75,10 +75,27 @@ def apply[L, From, To](either_value: Either[L, From], either_function: Either[L,
             return map(function)(either_value)
 
 
-lift2 = applicative.lift2(map)(apply)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def lift2[L, First, Second, Result](
+        second: Either[L, Second],
+        first: Either[L, First],
+        function: Callable[[First], Callable[[Second], Result]],
+    ) -> Either[L, Result]: ...
+
+else:
+    lift2 = applicative.lift2(map)(apply)
 
 
-when = applicative.when(identity)
+if TYPE_CHECKING:
+
+    @curry
+    def when[L](bool: bool, either_none: Either[L, None]) -> Either[L, None]: ...
+
+else:
+    when = applicative.when(identity)
 
 
 @curry
@@ -91,15 +108,19 @@ def fold[A, L, R](either_value: Either[L, R], function: Callable[[R], Callable[[
             return function(value)(accumulator)
 
 
+# [L : Type] -> [A : Type -> Type] ->
+# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
+# ([T : Type] -> T -> A T) ->
+# [From : Type] -> [To : Type] -> (From -> A To) -> Either L From -> A (Either L To)
 @curry
 @curry
 @curry
-def traverse[L, From, To, ATo, AEitherTo](
+def traverse[L, From](
     either_value: Either[L, From],
-    function: Callable[[From], ATo],
-    a_identity: Callable[[Either[L, To]], AEitherTo],
-    a_map: Callable[[Callable[[To], Either[L, To]]], Callable[[ATo], AEitherTo]],
-) -> AEitherTo:
+    function: Callable[[From], Any],
+    a_identity: Callable[[Any], Any],
+    a_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
+) -> Any:
     match either_value:
         case Left(value):
             return a_identity(Left(value))
@@ -107,8 +128,9 @@ def traverse[L, From, To, ATo, AEitherTo](
             return a_map(identity)(function(value))
 
 
+# [L : Type] -> [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [R : Type] -> Either L (M (Either L R)) -> M (Either L R)
 @curry
-def inject[L, R, MEitherR](either_m_either_value: Either[L, MEitherR], m_identity: Callable[[Either[L, R]], MEitherR]) -> MEitherR:
+def inject[L](either_m_either_value: Either[L, Any], m_identity: Callable[[Any], Any]) -> Any:
     match either_m_either_value:
         case Left(value):
             return m_identity(Left(value))
@@ -124,13 +146,36 @@ else:
     join = inject(felis.identity.identity)
 
 
-bind = monad.bind(map)(join)
+if TYPE_CHECKING:
+
+    @curry
+    def bind[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]]) -> Either[L, To]: ...
+
+else:
+    bind = monad.bind(map)(join)
 
 
-compose = monad.compose(bind)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose[L, From, Intermediate, To](
+        value: From,
+        first: Callable[[From], Either[L, Intermediate]],
+        second: Callable[[Intermediate], Either[L, To]],
+    ) -> Either[L, To]: ...
+
+else:
+    compose = monad.compose(bind)
 
 
-then = monad.then(bind)
+if TYPE_CHECKING:
+
+    @curry
+    def then[L, First, Second](first: Either[L, First], second: Either[L, Second]) -> Either[L, Second]: ...
+
+else:
+    then = monad.then(bind)
 
 
 @curry

@@ -1,23 +1,29 @@
 from collections.abc import Callable
+from typing import Any
 
 from felis.currying import curry
 
 __all__ = ["lift2", "when"]
 
 
+# [A : Type -> Type] ->
+# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
+# ([From : Type] -> [To : Type] -> A (From -> To) -> A From -> A To) ->
+# [First : Type] -> [Second : Type] -> [Result : Type] -> (First -> Second -> Result) -> A First -> A Second -> A Result
 @curry
 @curry
 @curry
-def lift2[A, AA, AB, AC, CallableBC, ACallableBC](
-    first: AA,
-    function: Callable[[A], CallableBC],
-    apply: Callable[[ACallableBC], Callable[[AB], AC]],
-    map: Callable[[Callable[[A], CallableBC]], Callable[[AA], ACallableBC]],
-) -> Callable[[AB], AC]:
+def lift2[A](
+    first: Any,
+    function: Callable[[A], Any],
+    apply: Callable[[Any], Callable[[Any], Any]],
+    map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
+) -> Callable[[Any], Any]:
     return apply(map(function)(first))
 
 
+# [A : Type -> Type] -> ([T : Type] -> T -> A T) -> bool -> A None -> A None
 @curry
 @curry
-def when[ANone](a_none: ANone, bool: bool, identity: Callable[[None], ANone]) -> ANone:
+def when(a_none: Any, bool: bool, identity: Callable[[Any], Any]) -> Any:
     return a_none if bool else identity(None)

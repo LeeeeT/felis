@@ -1,11 +1,11 @@
 import builtins
 from collections.abc import Callable, Iterable
-from typing import Never
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
 import felis.order
 from felis import applicative, monad
-from felis.currying import curry, uncurry
+from felis.currying import curry
 from felis.predicate import Predicate
 
 __all__ = [
@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 
-neutral: Iterable[Never] = ()
+neutral: Iterable[Any] = ()
 
 
 @curry
@@ -61,10 +61,27 @@ def apply[From, To](iterable_value: Iterable[From], iterable_function: Iterable[
             yield function(value)
 
 
-lift2 = applicative.lift2(map)(apply)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def lift2[First, Second, Result](
+        second: Iterable[Second],
+        first: Iterable[First],
+        function: Callable[[First], Callable[[Second], Result]],
+    ) -> Iterable[Result]: ...
+
+else:
+    lift2 = applicative.lift2(map)(apply)
 
 
-when = applicative.when(identity)
+if TYPE_CHECKING:
+
+    @curry
+    def when(bool: bool, iterable_none: Iterable[None]) -> Iterable[None]: ...
+
+else:
+    when = applicative.when(identity)
 
 
 @curry
@@ -75,29 +92,66 @@ def fold[A, T](iterable_value: Iterable[T], function: Callable[[T], Callable[[A]
     return accumulator
 
 
+# [A : Type -> Type] ->
+# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
+# ([T : Type] -> T -> A T) ->
+# [From : Type] -> [To : Type] -> (From -> A To) -> Iterable From -> A (Iterable To)
 @curry
 @curry
-def traverse[From, To, ATo, AIterableTo](
-    function: Callable[[From], ATo],
-    a_lift2: Callable[[Callable[[To], Callable[[Iterable[To]], Iterable[To]]]], Callable[[ATo], Callable[[AIterableTo], AIterableTo]]],
-    a_identity: Callable[[Iterable[To]], AIterableTo],
-) -> Callable[[Iterable[From]], AIterableTo]:
+def traverse[From](
+    function: Callable[[From], Any],
+    a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
+    a_identity: Callable[[Any], Any],
+) -> Callable[[Iterable[From]], Any]:
     return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
 
 
-join = uncurry(fold)(add, neutral)
+if TYPE_CHECKING:
+
+    def join[T](list_list_value: Iterable[Iterable[T]]) -> Iterable[T]: ...
+
+else:
+    join = fold(neutral)(add)
 
 
-bind = monad.bind(map)(join)
+if TYPE_CHECKING:
+
+    @curry
+    def bind[From, To](iterable_value: Iterable[From], function: Callable[[From], Iterable[To]]) -> Iterable[To]: ...
+
+else:
+    bind = monad.bind(map)(join)
 
 
-compose = monad.compose(bind)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose[From, Intermediate, To](
+        value: From,
+        first: Callable[[From], Iterable[Intermediate]],
+        second: Callable[[Intermediate], Iterable[To]],
+    ) -> Iterable[To]: ...
+
+else:
+    compose = monad.compose(bind)
 
 
-then = monad.then(bind)
+if TYPE_CHECKING:
+
+    @curry
+    def then[First, Second](first: Iterable[First], second: Iterable[Second]) -> Iterable[Second]: ...
+
+else:
+    then = monad.then(bind)
 
 
-guard = uncurry(monad.guard)(identity, neutral)
+if TYPE_CHECKING:
+
+    def guard(bool: bool) -> Iterable[None]: ...
+
+else:
+    guard = monad.guard(neutral)(identity)
 
 
 @curry

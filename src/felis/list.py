@@ -1,11 +1,11 @@
 import builtins
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
 import felis.order
 from felis import applicative, monad
-from felis.currying import curry, uncurry
+from felis.currying import curry
 from felis.order import Order
 from felis.predicate import Predicate
 
@@ -58,10 +58,23 @@ def apply[From, To](list_value: list[From], list_function: list[Callable[[From],
     return [function(value) for function in list_function for value in list_value]
 
 
-lift2 = applicative.lift2(map)(apply)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def lift2[First, Second, Result](second: list[Second], first: list[First], function: Callable[[First], Callable[[Second], Result]]) -> list[Result]: ...
+
+else:
+    lift2 = applicative.lift2(map)(apply)
 
 
-when = applicative.when(identity)
+if TYPE_CHECKING:
+
+    @curry
+    def when(bool: bool, list_none: list[None]) -> list[None]: ...
+
+else:
+    when = applicative.when(identity)
 
 
 @curry
@@ -72,29 +85,62 @@ def fold[A, T](list_value: list[T], function: Callable[[T], Callable[[A], A]], a
     return accumulator
 
 
+# [A : Type -> Type] ->
+# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
+# ([T : Type] -> T -> A T) ->
+# [From : Type] -> [To : Type] -> (From -> A To) -> list From -> A (list To)
 @curry
 @curry
-def traverse[From, To, ATo, AListTo](
-    function: Callable[[From], ATo],
-    a_lift2: Callable[[Callable[[To], Callable[[list[To]], list[To]]]], Callable[[ATo], Callable[[AListTo], AListTo]]],
-    a_identity: Callable[[list[To]], AListTo],
-) -> Callable[[list[From]], AListTo]:
+def traverse[From](
+    function: Callable[[From], Any],
+    a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
+    a_identity: Callable[[Any], Any],
+) -> Callable[[list[From]], Any]:
     return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
 
 
-join = uncurry(fold)(add, neutral)
+if TYPE_CHECKING:
+
+    def join[T](list_list_value: list[list[T]]) -> list[T]: ...
+
+else:
+    join = fold(neutral)(add)
 
 
-bind = monad.bind(map)(join)
+if TYPE_CHECKING:
+
+    @curry
+    def bind[From, To](list_value: list[From], function: Callable[[From], list[To]]) -> list[To]: ...
+
+else:
+    bind = monad.bind(map)(join)
 
 
-compose = monad.compose(bind)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose[From, Intermediate, To](value: From, first: Callable[[From], list[Intermediate]], second: Callable[[Intermediate], list[To]]) -> list[To]: ...
+
+else:
+    compose = monad.compose(bind)
 
 
-then = monad.then(bind)
+if TYPE_CHECKING:
+
+    @curry
+    def then[First, Second](first: list[First], second: list[Second]) -> list[Second]: ...
+
+else:
+    then = monad.then(bind)
 
 
-guard = uncurry(monad.guard)(identity, neutral)
+if TYPE_CHECKING:
+
+    def guard(bool: bool) -> list[None]: ...
+
+else:
+    guard = monad.guard(neutral)(identity)
 
 
 @curry
