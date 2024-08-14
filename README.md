@@ -96,6 +96,24 @@ print(pythags)
 # [(3, 4, 5), (6, 8, 10), (5, 12, 13), (9, 12, 15), (8, 15, 17)]
 ```
 
+Parsing a list of natural numbers from a string:
+
+```python
+from felis.parser import bracket, digit, map, run, separated, some, text
+
+natural = map(int)(map("".join)(some(digit)))
+
+naturals_without_brackets = separated(text(", "))(natural)
+
+naturals_with_brackets = bracket(text("["))(text("]"))(naturals_without_brackets)
+
+string = "[12, 345, 6789]"
+
+result = run(naturals_with_brackets)(string)
+
+print(result)  # Some(value=[12, 345, 6789])
+```
+
 That's all monads, btw. 🐈
 
 [docs]: https://felis.LeeeeT.dev
