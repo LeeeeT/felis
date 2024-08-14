@@ -107,7 +107,7 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[S](bool: bool, either_none: State[S, None]) -> State[S, None]: ...
+    def when[S](bool: bool, state_none: State[S, None]) -> State[S, None]: ...
 
 else:
     when = applicative.when(identity)
@@ -125,7 +125,7 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def bind[S, From, To](either_value: State[S, From], function: Callable[[From], State[S, To]]) -> State[S, To]: ...
+    def bind[S, From, To](state_value: State[S, From], function: Callable[[From], State[S, To]]) -> State[S, To]: ...
 
 else:
     bind = monad.bind(map)(join)
@@ -197,7 +197,7 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def reversed_bind[S, From, To](either_value: ReversedState[S, From], function: Callable[[From], ReversedState[S, To]]) -> ReversedState[S, To]: ...
+    def reversed_bind[S, From, To](state_value: ReversedState[S, From], function: Callable[[From], ReversedState[S, To]]) -> ReversedState[S, To]: ...
 
 else:
     reversed_bind = monad.bind(map)(reversed_join)

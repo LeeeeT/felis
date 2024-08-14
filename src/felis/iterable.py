@@ -123,7 +123,7 @@ def traverse[From](
 
 if TYPE_CHECKING:
 
-    def join[T](list_list_value: Iterable[Iterable[T]]) -> Iterable[T]: ...
+    def join[T](iterable_iterable_value: Iterable[Iterable[T]]) -> Iterable[T]: ...
 
 else:
     join = fold(neutral)(add)
