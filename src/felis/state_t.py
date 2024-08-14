@@ -22,7 +22,7 @@ __all__ = [
 @curry
 def run[S](state: S, state_value: Callable[[S], Any], m_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> Any:
     def value_binder(value_and_state: tuple[Any, S]) -> Any:
-        value, state = value_and_state
+        value, _ = value_and_state
         return value
 
     return m_map(value_binder)(state_value(state))
@@ -30,7 +30,7 @@ def run[S](state: S, state_value: Callable[[S], Any], m_map: Callable[[Callable[
 
 # [S : Type] -> [M : Type -> Type] -> ([T : Type] -> M T) -> [T : Type] -> StateT S M T
 @curry
-def neutral[S](state: S, m_neutral: Any) -> Any:
+def neutral(state: Any, m_neutral: Any) -> Any:
     return m_neutral
 
 
@@ -64,7 +64,7 @@ def map[S, From, To](
 # [S : Type] -> [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [T : Type] -> T -> StateT S M T
 @curry
 @curry
-def identity[S, T](state: S, value: T, m_identity: Callable[[Any], Any]) -> Any:
+def identity(state: Any, value: Any, m_identity: Callable[[Any], Any]) -> Any:
     return m_identity((value, state))
 
 

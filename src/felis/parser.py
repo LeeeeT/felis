@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from felis import applicative, function, monad, option, state_t
 from felis.currying import curry, uncurry
@@ -53,7 +53,7 @@ else:
 
 if TYPE_CHECKING:
 
-    def neutral[T](string: str, /) -> Option[tuple[T, str]]: ...
+    def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:
     neutral = state_t.neutral(option.neutral)
