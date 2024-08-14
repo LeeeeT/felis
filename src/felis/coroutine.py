@@ -2,10 +2,10 @@ import collections.abc
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from felis import applicative, monad
+from felis import applicative, function, monad
 from felis.currying import curry
 
-__all__ = ["Coroutine", "map", "identity", "apply", "lift2", "when", "join", "bind", "compose", "then"]
+__all__ = ["Coroutine", "map", "identity", "apply", "lift2", "take_after", "discard_after", "take_before", "discard_before", "when", "join", "bind", "compose"]
 
 
 type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
@@ -37,6 +37,18 @@ if TYPE_CHECKING:
 
 else:
     lift2 = applicative.lift2(map)(apply)
+
+
+take_after = lift2(function.flip(function.identity))
+
+
+discard_after = lift2(function.identity)
+
+
+take_before = function.flip(discard_after)
+
+
+discard_before = function.flip(take_after)
 
 
 if TYPE_CHECKING:
@@ -73,12 +85,3 @@ if TYPE_CHECKING:
 
 else:
     compose = monad.compose(bind)
-
-
-if TYPE_CHECKING:
-
-    @curry
-    def then[First, Second](first: Coroutine[First], second: Coroutine[Second]) -> Coroutine[Second]: ...
-
-else:
-    then = monad.then(bind)

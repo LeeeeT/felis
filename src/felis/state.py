@@ -1,28 +1,36 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from felis import applicative, monad
+import felis.identity
+from felis import applicative, function, monad, state_t
 from felis.currying import curry
 from felis.lazy import Lazy
 
 __all__ = [
     "State",
     "ReversedState",
+    "run",
     "map",
     "identity",
     "apply",
     "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
     "when",
     "join",
     "bind",
     "compose",
-    "then",
     "reversed_apply",
     "reversed_lift2",
+    "reversed_take_after",
+    "reversed_discard_after",
+    "reversed_take_before",
+    "reversed_discard_before",
     "reversed_join",
     "reversed_bind",
     "reversed_compose",
-    "reversed_then",
 ]
 
 
@@ -32,23 +40,42 @@ type State[S, T] = Callable[[S], tuple[T, S]]
 type ReversedState[S, T] = State[Lazy[S], T]
 
 
-@curry
-@curry
-def map[S, From, To](state: S, state_value: State[S, From], function: Callable[[From], To]) -> tuple[To, S]:
-    value, new_state = state_value(state)
-    return function(value), new_state
+if TYPE_CHECKING:
+
+    @curry
+    def run[S, T](state: S, state_value: State[S, T]) -> T: ...
+
+else:
+    run = state_t.run(felis.identity.map)
 
 
-@curry
-def identity[S, T](state: S, value: T) -> tuple[T, S]:
-    return (value, state)
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def map[S, From, To](state: S, state_value: State[S, From], function: Callable[[From], To]) -> tuple[To, S]: ...
+
+else:
+    map = state_t.map(felis.identity.map)
 
 
-@curry
-@curry
-def apply[S, From, To](state: S, state_value: State[S, From], state_function: State[S, Callable[[From], To]]) -> tuple[To, S]:
-    function, state = state_function(state)
-    return map(function)(state_value)(state)
+if TYPE_CHECKING:
+
+    @curry
+    def identity[S, T](state: S, value: T) -> tuple[T, S]: ...
+
+else:
+    identity = state_t.identity(felis.identity.identity)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def apply[S, From, To](state: S, state_value: State[S, From], state_function: State[S, Callable[[From], To]]) -> tuple[To, S]: ...
+
+else:
+    apply = state_t.apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -65,6 +92,18 @@ else:
     lift2 = applicative.lift2(map)(apply)
 
 
+take_after = lift2(function.flip(function.identity))
+
+
+discard_after = lift2(function.identity)
+
+
+take_before = function.flip(discard_after)
+
+
+discard_before = function.flip(take_after)
+
+
 if TYPE_CHECKING:
 
     @curry
@@ -74,11 +113,13 @@ else:
     when = applicative.when(identity)
 
 
-@curry
-def join[S, T](state: S, state_state_value: State[S, State[S, T]]) -> tuple[T, S]:
-    state_value, state = state_state_value(state)
-    value, new_state = state_value(state)
-    return value, new_state
+if TYPE_CHECKING:
+
+    @curry
+    def join[S, T](state: S, state_state_value: State[S, State[S, T]]) -> tuple[T, S]: ...
+
+else:
+    join = state_t.join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -107,22 +148,15 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def then[S, First, Second](first: State[S, First], second: State[S, Second]) -> State[S, Second]: ...
+    @curry
+    def reversed_apply[S, From, To](
+        state: Lazy[S],
+        state_value: ReversedState[S, From],
+        state_function: ReversedState[S, Callable[[From], To]],
+    ) -> tuple[To, Lazy[S]]: ...
 
 else:
-    then = monad.then(bind)
-
-
-@curry
-@curry
-def reversed_apply[S, From, To](
-    state: Lazy[S],
-    reversed_state_value: ReversedState[S, From],
-    reversed_state_function: ReversedState[S, Callable[[From], To]],
-) -> tuple[To, Lazy[S]]:
-    function, new_state = reversed_state_function(lambda: state())
-    value, state = map(function)(reversed_state_value)(new_state)
-    return value, new_state
+    reversed_apply = state_t.reversed_apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -139,11 +173,25 @@ else:
     reversed_lift2 = applicative.lift2(map)(reversed_apply)
 
 
-@curry
-def reversed_join[S, T](state: Lazy[S], reversed_state_reversed_state_value: ReversedState[S, ReversedState[S, T]]) -> tuple[T, Lazy[S]]:
-    reversed_state_value, new_state = reversed_state_reversed_state_value(lambda: state())
-    value, state = reversed_state_value(state)
-    return value, new_state
+reversed_take_after = reversed_lift2(function.flip(function.identity))
+
+
+reversed_discard_after = reversed_lift2(function.identity)
+
+
+reversed_take_before = function.flip(reversed_discard_after)
+
+
+reversed_discard_before = function.flip(reversed_take_after)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def reversed_join[S, T](state: Lazy[S], state_state_value: ReversedState[S, ReversedState[S, T]]) -> tuple[T, Lazy[S]]: ...
+
+else:
+    reversed_join = state_t.reversed_join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -167,12 +215,3 @@ if TYPE_CHECKING:
 
 else:
     reversed_compose = monad.compose(reversed_bind)
-
-
-if TYPE_CHECKING:
-
-    @curry
-    def reversed_then[S, First, Second](first: ReversedState[S, First], second: ReversedState[S, Second]) -> ReversedState[S, Second]: ...
-
-else:
-    reversed_then = monad.then(reversed_bind)

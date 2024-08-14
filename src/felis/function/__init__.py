@@ -4,8 +4,30 @@ from typing import TYPE_CHECKING
 import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
+from felis.function.flip_ import flip
+from felis.function.identity_ import identity
 
-__all__ = ["Function", "neutral", "neutral2", "add", "add2", "map", "map2", "identity", "apply", "lift2", "when", "join", "bind", "compose", "then"]
+__all__ = [
+    "Function",
+    "flip",
+    "neutral",
+    "neutral2",
+    "add",
+    "add2",
+    "map",
+    "map2",
+    "identity",
+    "apply",
+    "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
+    "when",
+    "join",
+    "bind",
+    "compose",
+]
 
 
 type Function[From, To] = Callable[[From], To]
@@ -39,11 +61,6 @@ map2 = felis.identity.compose(map)(map)
 
 
 @curry
-def identity[T](_: object, value: T) -> T:
-    return value
-
-
-@curry
 @curry
 def apply[T, From, To](value: T, function_value: Function[T, From], function: Function[T, Callable[[From], To]]) -> To:
     return function(value)(function_value(value))
@@ -61,6 +78,18 @@ if TYPE_CHECKING:
 
 else:
     lift2 = applicative.lift2(map)(apply)
+
+
+take_after = lift2(flip(identity))
+
+
+discard_after = lift2(identity)
+
+
+take_before = flip(discard_after)
+
+
+discard_before = flip(take_after)
 
 
 if TYPE_CHECKING:
@@ -98,12 +127,3 @@ if TYPE_CHECKING:
 
 else:
     compose = monad.compose(bind)
-
-
-if TYPE_CHECKING:
-
-    @curry
-    def then[T, First, Second](first: Function[T, First], second: Function[T, Second]) -> Function[T, Second]: ...
-
-else:
-    then = monad.then(bind)

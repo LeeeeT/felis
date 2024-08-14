@@ -3,8 +3,24 @@ from typing import TYPE_CHECKING
 
 from felis import applicative, monad
 from felis.currying import curry
+from felis.function import flip_, identity_
 
-__all__ = ["Identity", "map", "identity", "apply", "lift2", "when", "inject", "join", "bind", "compose", "then"]
+__all__ = [
+    "Identity",
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
+    "when",
+    "inject",
+    "join",
+    "bind",
+    "compose",
+]
 
 
 type Identity[T] = T
@@ -36,6 +52,18 @@ if TYPE_CHECKING:
 
 else:
     lift2 = applicative.lift2(map)(apply)
+
+
+take_after = lift2(flip_.flip(identity_.identity))
+
+
+discard_after = lift2(identity_.identity)
+
+
+take_before = flip_.flip(discard_after)
+
+
+discard_before = flip_.flip(take_after)
 
 
 if TYPE_CHECKING:
@@ -75,12 +103,3 @@ if TYPE_CHECKING:
 
 else:
     compose = monad.compose(bind)
-
-
-if TYPE_CHECKING:
-
-    @curry
-    def then[First, Second](first: Identity[First], second: Identity[Second]) -> Identity[Second]: ...
-
-else:
-    then = monad.then(bind)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import felis.identity
-from felis import applicative, monad
+from felis import applicative, function, monad
 from felis.currying import curry
 
 __all__ = [
@@ -15,6 +15,10 @@ __all__ = [
     "identity",
     "apply",
     "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
     "when",
     "fold",
     "traverse",
@@ -22,7 +26,6 @@ __all__ = [
     "join",
     "bind",
     "compose",
-    "then",
     "guard",
 ]
 
@@ -80,6 +83,18 @@ if TYPE_CHECKING:
 
 else:
     lift2 = applicative.lift2(map)(apply)
+
+
+take_after = lift2(function.flip(function.identity))
+
+
+discard_after = lift2(function.identity)
+
+
+take_before = function.flip(discard_after)
+
+
+discard_before = function.flip(take_after)
 
 
 if TYPE_CHECKING:
@@ -155,15 +170,6 @@ if TYPE_CHECKING:
 
 else:
     compose = monad.compose(bind)
-
-
-if TYPE_CHECKING:
-
-    @curry
-    def then[First, Second](first: Option[First], second: Option[Second]) -> Option[Second]: ...
-
-else:
-    then = monad.then(bind)
 
 
 if TYPE_CHECKING:
