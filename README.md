@@ -18,7 +18,7 @@ pip install git+https://github.com/LeeeeT/felis
 
 ## Examples
 
-Curry and uncurry functions:
+Currying and uncurrying functions:
 
 ```python
 from felis.currying import curry, uncurry
