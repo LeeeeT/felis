@@ -18,7 +18,7 @@ pip install git+https://github.com/LeeeeT/felis
 
 ## Examples
 
-Currying and uncurrying functions:
+Currying and uncurrying functions with `felis.currying`:
 
 ```python
 from felis.currying import curry, uncurry
@@ -78,7 +78,7 @@ main = \
 main()
 ```
 
-Finding pythagorean triples (analogue to list comprehension):
+Finding pythagorean triples (analogue to list comprehension) with `felis.list`:
 
 ```python
 from felis.currying import uncurry
@@ -96,7 +96,7 @@ print(pythags)
 # [(3, 4, 5), (6, 8, 10), (5, 12, 13), (9, 12, 15), (8, 15, 17)]
 ```
 
-Parsing a list of natural numbers from a string:
+Parsing a list of natural numbers from a string with `felis.parser`:
 
 ```python
 from felis.parser import bracket, digit, map, run, separated, some, text
