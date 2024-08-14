@@ -207,7 +207,7 @@ def separated[S, T](parser: Parser[T], separator: Parser[S]) -> Parser[list[T]]:
 @curry
 @curry
 def bracket[Left, Right, T](parser: Parser[T], right: Parser[Right], left: Parser[Left]) -> Parser[T]:
-    return take_after(left)(discard_after(parser)(right))
+    return take_after(left)(take_before(right)(parser))
 
 
 digit = satisfy(str.isdigit)
