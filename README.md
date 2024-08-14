@@ -67,13 +67,11 @@ Managing IO (or any other lazy computations) with `felis.lazy`:
 from felis import lazy
 from felis.currying import uncurry
 
-
 main = \
     uncurry(lazy.then)(lambda: print("What's your name?"),
     uncurry(lazy.bind)(input, lambda name:
     lambda: print(f"Hi, {name}!")
 ))
-
 
 main()
 ```
