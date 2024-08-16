@@ -38,6 +38,7 @@ class Some[T]:
     value: T
 
 
+# [T : Type] -> Option T
 neutral = None
 
 

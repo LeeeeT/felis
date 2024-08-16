@@ -52,7 +52,7 @@ else:
 
 
 if TYPE_CHECKING:
-
+    # [T : Type] -> Parser T
     def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:

@@ -34,6 +34,7 @@ __all__ = [
 ]
 
 
+# [T : Type] -> list T
 neutral: list[Any] = []
 
 

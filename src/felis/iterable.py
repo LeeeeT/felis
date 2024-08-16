@@ -32,6 +32,7 @@ __all__ = [
 ]
 
 
+# [T : Type] -> Iterable T
 neutral: Iterable[Any] = ()
 
 

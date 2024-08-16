@@ -62,8 +62,8 @@ def map[L, From, To](either_value: Either[L, From], function: Callable[[From], T
 
 
 if TYPE_CHECKING:
-
-    def identity[L, R](value: R) -> Either[L, R]: ...
+    # [L : Type] -> [R : Type] -> R -> Either L R
+    def identity[R](value: R) -> Either[Any, R]: ...
 
 else:
     identity = Right
