@@ -85,7 +85,7 @@ pythags = \
     bind(range(1)(z))(lambda x:
     bind(range(x)(z))(lambda y:
     take_after(guard(x**2 + y**2 == z**2))(
-    identity((x, y, z)),
+    identity((x, y, z))
 ))))
 
 print(pythags)
