@@ -64,12 +64,11 @@ match safe_reciprocal_of_str(input("Enter a number: ")):
 Managing IO (or any other lazy computations) with `felis.lazy`:
 
 ```python
-from felis import lazy
-from felis.currying import uncurry
+from felis.lazy import bind, take_after
 
 main = \
-    uncurry(lazy.then)(lambda: print("What's your name?"),
-    uncurry(lazy.bound)(input, lambda name:
+    take_after(lambda: print("What's your name?"))(
+    bind(input)(lambda name:
     lambda: print(f"Hi, {name}!")
 ))
 
@@ -79,14 +78,13 @@ main()
 Finding pythagorean triples (analogue to list comprehension) with `felis.list`:
 
 ```python
-from felis.currying import uncurry
-from felis.list import bound, guard, identity, range, then
+from felis.list import bind, guard, identity, range, take_after
 
 pythags = \
-    uncurry(bound)(range(1)(20), lambda z:
-    uncurry(bound)(range(1)(z), lambda x:
-    uncurry(bound)(range(x)(z), lambda y:
-    uncurry(then)(guard(x**2 + y**2 == z**2),
+    bind(range(1)(20))(lambda z:
+    bind(range(1)(z))(lambda x:
+    bind(range(x)(z))(lambda y:
+    take_after(guard(x**2 + y**2 == z**2))(
     identity((x, y, z)),
 ))))
 
