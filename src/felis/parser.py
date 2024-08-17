@@ -201,14 +201,16 @@ def some[T](parser: Parser[T]) -> Parser[list[T]]:
     return bind(parser)(lambda first: bind(many(parser))(lambda rest: identity([first, *rest])))
 
 
+# [S : Type] -> Parser S -> [T : Type] -> Parser T -> Parser (list T)
 @curry
-def separated[S, T](parser: Parser[T], separator: Parser[S]) -> Parser[list[T]]:
+def separated[T](parser: Parser[T], separator: Parser[Any]) -> Parser[list[T]]:
     return add(identity(felis.list.neutral))(bind(parser)(lambda first: bind(many(take_after(separator)(parser)))(lambda rest: identity([first, *rest]))))
 
 
+# [L : Type] -> Parser L -> [R : Type] -> Parser R -> [T : Type] -> Parser T -> Parser T
 @curry
 @curry
-def bracket[Left, Right, T](parser: Parser[T], right: Parser[Right], left: Parser[Left]) -> Parser[T]:
+def bracket[T](parser: Parser[T], right: Parser[Any], left: Parser[Any]) -> Parser[T]:
     return take_after(left)(take_before(right)(parser))
 
 
