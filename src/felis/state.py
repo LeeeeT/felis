@@ -20,6 +20,7 @@ __all__ = [
     "discard_before",
     "when",
     "join",
+    "bound",
     "bind",
     "compose",
     "reversed_apply",
@@ -29,6 +30,7 @@ __all__ = [
     "reversed_take_before",
     "reversed_discard_before",
     "reversed_join",
+    "reversed_bound",
     "reversed_bind",
     "reversed_compose",
 ]
@@ -75,7 +77,7 @@ if TYPE_CHECKING:
     def apply[S, From, To](state: S, state_value: State[S, From], state_function: State[S, Callable[[From], To]]) -> tuple[To, S]: ...
 
 else:
-    apply = state_t.apply(felis.identity.identity)(felis.identity.bind)
+    apply = state_t.apply(felis.identity.identity)(felis.identity.bound)
 
 
 if TYPE_CHECKING:
@@ -119,16 +121,19 @@ if TYPE_CHECKING:
     def join[S, T](state: S, state_state_value: State[S, State[S, T]]) -> tuple[T, S]: ...
 
 else:
-    join = state_t.join(felis.identity.identity)(felis.identity.bind)
+    join = state_t.join(felis.identity.identity)(felis.identity.bound)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bind[S, From, To](state_value: State[S, From], function: Callable[[From], State[S, To]]) -> State[S, To]: ...
+    def bound[S, From, To](state_value: State[S, From], function: Callable[[From], State[S, To]]) -> State[S, To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -142,7 +147,7 @@ if TYPE_CHECKING:
     ) -> State[S, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
 
 
 if TYPE_CHECKING:
@@ -156,7 +161,7 @@ if TYPE_CHECKING:
     ) -> tuple[To, Lazy[S]]: ...
 
 else:
-    reversed_apply = state_t.reversed_apply(felis.identity.identity)(felis.identity.bind)
+    reversed_apply = state_t.reversed_apply(felis.identity.identity)(felis.identity.bound)
 
 
 if TYPE_CHECKING:
@@ -191,16 +196,19 @@ if TYPE_CHECKING:
     def reversed_join[S, T](state: Lazy[S], state_state_value: ReversedState[S, ReversedState[S, T]]) -> tuple[T, Lazy[S]]: ...
 
 else:
-    reversed_join = state_t.reversed_join(felis.identity.identity)(felis.identity.bind)
+    reversed_join = state_t.reversed_join(felis.identity.identity)(felis.identity.bound)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def reversed_bind[S, From, To](state_value: ReversedState[S, From], function: Callable[[From], ReversedState[S, To]]) -> ReversedState[S, To]: ...
+    def reversed_bound[S, From, To](state_value: ReversedState[S, From], function: Callable[[From], ReversedState[S, To]]) -> ReversedState[S, To]: ...
 
 else:
-    reversed_bind = monad.bind(map)(reversed_join)
+    reversed_bound = monad.bound(map)(reversed_join)
+
+
+reversed_bind = function.flip(reversed_bound)
 
 
 if TYPE_CHECKING:
@@ -214,4 +222,4 @@ if TYPE_CHECKING:
     ) -> ReversedState[S, To]: ...
 
 else:
-    reversed_compose = monad.compose(reversed_bind)
+    reversed_compose = monad.compose(reversed_bound)

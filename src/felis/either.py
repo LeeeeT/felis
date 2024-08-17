@@ -24,6 +24,7 @@ __all__ = [
     "traverse",
     "inject",
     "join",
+    "bound",
     "bind",
     "compose",
     "catch",
@@ -113,9 +114,10 @@ else:
     when = applicative.when(identity)
 
 
+# [L : Type] -> [A : Type] -> A -> [R : Type] -> (R -> A -> A) -> Either L R -> A
 @curry
 @curry
-def fold[A, L, R](either_value: Either[L, R], function: Callable[[R], Callable[[A], A]], accumulator: A) -> A:
+def fold[A, R](either_value: Either[Any, R], function: Callable[[R], Callable[[A], A]], accumulator: A) -> A:
     match either_value:
         case Left(value):
             return accumulator
@@ -130,8 +132,8 @@ def fold[A, L, R](either_value: Either[L, R], function: Callable[[R], Callable[[
 @curry
 @curry
 @curry
-def traverse[L, From](
-    either_value: Either[L, From],
+def traverse[From](
+    either_value: Either[Any, From],
     function: Callable[[From], Any],
     a_identity: Callable[[Any], Any],
     a_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
@@ -145,7 +147,7 @@ def traverse[L, From](
 
 # [L : Type] -> [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [R : Type] -> Either L (M (Either L R)) -> M (Either L R)
 @curry
-def inject[L](either_m_either_value: Either[L, Any], m_identity: Callable[[Any], Any]) -> Any:
+def inject(either_m_either_value: Either[Any, Any], m_identity: Callable[[Any], Any]) -> Any:
     match either_m_either_value:
         case Left(value):
             return m_identity(Left(value))
@@ -164,10 +166,13 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def bind[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]]) -> Either[L, To]: ...
+    def bound[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]]) -> Either[L, To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -181,7 +186,7 @@ if TYPE_CHECKING:
     ) -> Either[L, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
 
 
 @curry

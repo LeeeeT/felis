@@ -3,7 +3,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["bind", "compose", "guard"]
+__all__ = ["bound", "compose", "guard"]
 
 
 # [M : Type -> Type] ->
@@ -13,9 +13,9 @@ __all__ = ["bind", "compose", "guard"]
 @curry
 @curry
 @curry
-def bind[From](
+def bound(
     m_value: Any,
-    function: Callable[[From], Any],
+    function: Callable[[Any], Any],
     join: Callable[[Any], Any],
     map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Any:
@@ -28,13 +28,13 @@ def bind[From](
 @curry
 @curry
 @curry
-def compose[From, Intermediate](
+def compose[From](
     value: From,
     first: Callable[[From], Any],
-    second: Callable[[Intermediate], Any],
-    bind: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
+    second: Callable[[Any], Any],
+    bound: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Any:
-    return bind(second)(first(value))
+    return bound(second)(first(value))
 
 
 # [A : Type -> Type] -> ([T : Type] -> A T) -> ([T : Type] -> T -> A T) -> bool -> A None

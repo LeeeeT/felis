@@ -69,7 +69,7 @@ from felis.currying import uncurry
 
 main = \
     uncurry(lazy.then)(lambda: print("What's your name?"),
-    uncurry(lazy.bind)(input, lambda name:
+    uncurry(lazy.bound)(input, lambda name:
     lambda: print(f"Hi, {name}!")
 ))
 
@@ -80,12 +80,12 @@ Finding pythagorean triples (analogue to list comprehension) with `felis.list`:
 
 ```python
 from felis.currying import uncurry
-from felis.list import bind, guard, identity, range, then
+from felis.list import bound, guard, identity, range, then
 
 pythags = \
-    uncurry(bind)(range(1)(20), lambda z:
-    uncurry(bind)(range(1)(z), lambda x:
-    uncurry(bind)(range(x)(z), lambda y:
+    uncurry(bound)(range(1)(20), lambda z:
+    uncurry(bound)(range(1)(z), lambda x:
+    uncurry(bound)(range(x)(z), lambda y:
     uncurry(then)(guard(x**2 + y**2 == z**2),
     identity((x, y, z)),
 ))))

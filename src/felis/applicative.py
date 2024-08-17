@@ -13,9 +13,9 @@ __all__ = ["lift2", "when"]
 @curry
 @curry
 @curry
-def lift2[First, Second, Result](
+def lift2(
     first: Any,
-    function: Callable[[First], Callable[[Second], Result]],
+    function: Callable[[Any], Callable[[Any], Any]],
     apply: Callable[[Any], Callable[[Any], Any]],
     map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Callable[[Any], Any]:

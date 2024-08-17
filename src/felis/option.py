@@ -24,6 +24,7 @@ __all__ = [
     "traverse",
     "inject",
     "join",
+    "bound",
     "bind",
     "compose",
     "guard",
@@ -153,10 +154,13 @@ join = inject(felis.identity.identity)
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](option_value: Option[From], function: Callable[[From], Option[To]]) -> Option[To]: ...
+    def bound[From, To](option_value: Option[From], function: Callable[[From], Option[To]]) -> Option[To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -170,7 +174,7 @@ if TYPE_CHECKING:
     ) -> Option[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
 
 
 if TYPE_CHECKING:

@@ -5,7 +5,22 @@ from typing import TYPE_CHECKING, Any
 from felis import applicative, function, monad
 from felis.currying import curry
 
-__all__ = ["Coroutine", "map", "identity", "apply", "lift2", "take_after", "discard_after", "take_before", "discard_before", "when", "join", "bind", "compose"]
+__all__ = [
+    "Coroutine",
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
+    "when",
+    "join",
+    "bound",
+    "bind",
+    "compose",
+]
 
 
 type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
@@ -67,10 +82,13 @@ async def join[T](coroutine_coroutine_value: Coroutine[Coroutine[T]]) -> T:
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](coroutine_value: Coroutine[From], function: Callable[[From], Coroutine[To]]) -> Coroutine[To]: ...
+    def bound[From, To](coroutine_value: Coroutine[From], function: Callable[[From], Coroutine[To]]) -> Coroutine[To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -84,4 +102,4 @@ if TYPE_CHECKING:
     ) -> Coroutine[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)

@@ -7,7 +7,7 @@ from felis.coroutine import Coroutine
 from felis.currying import curry
 from felis.option import Option
 
-__all__ = ["map", "identity", "apply", "lift2", "take_after", "discard_after", "take_before", "discard_before", "when", "join", "bind", "compose"]
+__all__ = ["map", "identity", "apply", "lift2", "take_after", "discard_after", "take_before", "discard_before", "when", "join", "bound", "bind", "compose", "guard"]
 
 
 if TYPE_CHECKING:
@@ -60,16 +60,19 @@ else:
     when = applicative.when(identity)
 
 
-join = coroutine.bind(option.inject(coroutine.identity))
+join = coroutine.bound(option.inject(coroutine.identity))
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](coroutine_option_value: Coroutine[Option[From]], function: Callable[[From], Coroutine[Option[To]]]) -> Coroutine[Option[To]]: ...
+    def bound[From, To](coroutine_option_value: Coroutine[Option[From]], function: Callable[[From], Coroutine[Option[To]]]) -> Coroutine[Option[To]]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -83,4 +86,7 @@ if TYPE_CHECKING:
     ) -> Coroutine[Option[To]]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
+
+
+guard = felis.identity.compose(coroutine.identity)(option.guard)

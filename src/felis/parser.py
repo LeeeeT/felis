@@ -21,6 +21,7 @@ __all__ = [
     "discard_before",
     "when",
     "join",
+    "bound",
     "bind",
     "compose",
     "guard",
@@ -91,7 +92,7 @@ if TYPE_CHECKING:
     def apply[From, To](parser_value: Parser[From], parser_function: Parser[Callable[[From], To]]) -> Parser[To]: ...
 
 else:
-    apply = state_t.apply(option.identity)(option.bind)
+    apply = state_t.apply(option.identity)(option.bound)
 
 
 if TYPE_CHECKING:
@@ -134,16 +135,19 @@ if TYPE_CHECKING:
     def join[T](parser_value: Parser[Parser[T]], /) -> Parser[T]: ...
 
 else:
-    join = state_t.join(option.identity)(option.bind)
+    join = state_t.join(option.identity)(option.bound)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](parser_value: Parser[From], function: Callable[[From], Parser[To]]) -> Parser[To]: ...
+    def bound[From, To](parser_value: Parser[From], function: Callable[[From], Parser[To]]) -> Parser[To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -157,7 +161,7 @@ if TYPE_CHECKING:
     ) -> Parser[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
 
 
 if TYPE_CHECKING:
@@ -177,7 +181,7 @@ def any(string: str) -> Option[tuple[str, str]]:
 
 
 def satisfy(predicate: Predicate[str]) -> Parser[str]:
-    return uncurry(bind)(any, lambda character: identity(character) if predicate(character) else neutral)
+    return uncurry(bound)(any, lambda character: identity(character) if predicate(character) else neutral)
 
 
 def character(character: str) -> Parser[str]:
@@ -189,17 +193,17 @@ def text(string: str) -> Parser[str]:
 
 
 def many[T](parser: Parser[T]) -> Parser[list[T]]:
-    return uncurry(add)(uncurry(bind)(parser, lambda first: uncurry(bind)(many(parser), lambda rest: identity([first, *rest]))), identity([]))
+    return uncurry(add)(uncurry(bound)(parser, lambda first: uncurry(bound)(many(parser), lambda rest: identity([first, *rest]))), identity([]))
 
 
 def some[T](parser: Parser[T]) -> Parser[list[T]]:
-    return uncurry(bind)(parser, lambda first: uncurry(bind)(many(parser), lambda rest: identity([first, *rest])))
+    return uncurry(bound)(parser, lambda first: uncurry(bound)(many(parser), lambda rest: identity([first, *rest])))
 
 
 @curry
 def separated[S, T](parser: Parser[T], separator: Parser[S]) -> Parser[list[T]]:
     return uncurry(add)(
-        uncurry(bind)(parser, lambda first: uncurry(bind)(many(take_after(separator)(parser)), lambda rest: identity([first, *rest]))),
+        uncurry(bound)(parser, lambda first: uncurry(bound)(many(take_after(separator)(parser)), lambda rest: identity([first, *rest]))),
         identity([]),
     )
 

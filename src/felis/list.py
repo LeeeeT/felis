@@ -25,6 +25,7 @@ __all__ = [
     "fold",
     "traverse",
     "join",
+    "bound",
     "bind",
     "compose",
     "guard",
@@ -126,10 +127,13 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](list_value: list[From], function: Callable[[From], list[To]]) -> list[To]: ...
+    def bound[From, To](list_value: list[From], function: Callable[[From], list[To]]) -> list[To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = function.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -139,7 +143,7 @@ if TYPE_CHECKING:
     def compose[From, Intermediate, To](value: From, first: Callable[[From], list[Intermediate]], second: Callable[[Intermediate], list[To]]) -> list[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
 
 
 if TYPE_CHECKING:

@@ -25,6 +25,7 @@ __all__ = [
     "discard_before",
     "when",
     "join",
+    "bound",
     "bind",
     "compose",
 ]
@@ -109,10 +110,13 @@ def join[From, To](value: From, function_function_value: Function[From, Function
 if TYPE_CHECKING:
 
     @curry
-    def bind[T, From, To](either_value: Function[T, From], function: Callable[[From], Function[T, To]]) -> Function[T, To]: ...
+    def bound[T, From, To](either_value: Function[T, From], function: Callable[[From], Function[T, To]]) -> Function[T, To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = flip(bound)
 
 
 if TYPE_CHECKING:
@@ -126,4 +130,4 @@ if TYPE_CHECKING:
     ) -> Function[T, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)

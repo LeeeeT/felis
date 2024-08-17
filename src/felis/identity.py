@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from felis import applicative, monad
 from felis.currying import curry
@@ -18,6 +18,7 @@ __all__ = [
     "when",
     "inject",
     "join",
+    "bound",
     "bind",
     "compose",
 ]
@@ -75,8 +76,9 @@ else:
     when = applicative.when(identity)
 
 
-def inject[MT](m_value: MT) -> MT:
-    return m_value
+# [M : Type -> Type] -> [T : Type] -> Identity (M T) -> M T
+def inject(identity_m_identity_value: Identity[Any]) -> Any:
+    return identity_m_identity_value
 
 
 join = inject
@@ -85,10 +87,13 @@ join = inject
 if TYPE_CHECKING:
 
     @curry
-    def bind[From, To](identity_value: Identity[From], function: Callable[[From], Identity[To]]) -> Identity[To]: ...
+    def bound[From, To](identity_value: Identity[From], function: Callable[[From], Identity[To]]) -> Identity[To]: ...
 
 else:
-    bind = monad.bind(map)(join)
+    bound = monad.bound(map)(join)
+
+
+bind = flip_.flip(bound)
 
 
 if TYPE_CHECKING:
@@ -102,4 +107,4 @@ if TYPE_CHECKING:
     ) -> Identity[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose = monad.compose(bound)
