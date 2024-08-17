@@ -143,7 +143,7 @@ if TYPE_CHECKING:
     def compose[From, Intermediate, To](value: From, first: Callable[[From], list[Intermediate]], second: Callable[[Intermediate], list[To]]) -> list[To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)
 
 
 if TYPE_CHECKING:

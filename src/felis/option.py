@@ -174,7 +174,7 @@ if TYPE_CHECKING:
     ) -> Option[To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)
 
 
 if TYPE_CHECKING:

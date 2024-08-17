@@ -102,4 +102,4 @@ if TYPE_CHECKING:
     ) -> Coroutine[To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)

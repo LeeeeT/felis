@@ -7,7 +7,22 @@ from felis.currying import curry
 from felis.function import Function
 from felis.option import Option
 
-__all__ = ["map", "identity", "apply", "lift2", "take_after", "discard_after", "take_before", "discard_before", "when", "join", "bound", "bind", "compose", "guard"]
+__all__ = [
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
+    "when",
+    "join",
+    "bound",
+    "bind",
+    "compose",
+    "guard",
+]
 
 
 if TYPE_CHECKING:
@@ -67,7 +82,8 @@ if TYPE_CHECKING:
 
     @curry
     def bound[T, From, To](
-        function_option_value: Function[T, Option[From]], function: Callable[[From], Function[T, Option[To]]]
+        function_option_value: Function[T, Option[From]],
+        function: Callable[[From], Function[T, Option[To]]],
     ) -> Function[T, Option[To]]: ...
 
 else:
@@ -88,7 +104,7 @@ if TYPE_CHECKING:
     ) -> Function[T, Option[To]]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)
 
 
 guard = felis.identity.compose(function.identity)(option.guard)

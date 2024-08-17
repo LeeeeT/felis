@@ -1,8 +1,9 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+import felis.list
 from felis import applicative, function, monad, option, state_t
-from felis.currying import curry, uncurry
+from felis.currying import curry
 from felis.option import Option
 from felis.predicate import Predicate
 
@@ -161,7 +162,7 @@ if TYPE_CHECKING:
     ) -> Parser[To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)
 
 
 if TYPE_CHECKING:
@@ -181,7 +182,7 @@ def any(string: str) -> Option[tuple[str, str]]:
 
 
 def satisfy(predicate: Predicate[str]) -> Parser[str]:
-    return uncurry(bound)(any, lambda character: identity(character) if predicate(character) else neutral)
+    return bind(any)(lambda character: identity(character) if predicate(character) else neutral)
 
 
 def character(character: str) -> Parser[str]:
@@ -193,19 +194,16 @@ def text(string: str) -> Parser[str]:
 
 
 def many[T](parser: Parser[T]) -> Parser[list[T]]:
-    return uncurry(add)(uncurry(bound)(parser, lambda first: uncurry(bound)(many(parser), lambda rest: identity([first, *rest]))), identity([]))
+    return add(identity(felis.list.neutral))(bind(parser)(lambda first: bind(many(parser))(lambda rest: identity([first, *rest]))))
 
 
 def some[T](parser: Parser[T]) -> Parser[list[T]]:
-    return uncurry(bound)(parser, lambda first: uncurry(bound)(many(parser), lambda rest: identity([first, *rest])))
+    return bind(parser)(lambda first: bind(many(parser))(lambda rest: identity([first, *rest])))
 
 
 @curry
 def separated[S, T](parser: Parser[T], separator: Parser[S]) -> Parser[list[T]]:
-    return uncurry(add)(
-        uncurry(bound)(parser, lambda first: uncurry(bound)(many(take_after(separator)(parser)), lambda rest: identity([first, *rest]))),
-        identity([]),
-    )
+    return add(identity(felis.list.neutral))(bind(parser)(lambda first: bind(many(take_after(separator)(parser)))(lambda rest: identity([first, *rest]))))
 
 
 @curry

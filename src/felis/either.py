@@ -186,7 +186,7 @@ if TYPE_CHECKING:
     ) -> Either[L, To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)
 
 
 @curry

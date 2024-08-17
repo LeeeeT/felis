@@ -107,4 +107,4 @@ if TYPE_CHECKING:
     ) -> Identity[To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)

@@ -4,7 +4,22 @@ from typing import TYPE_CHECKING
 from felis import applicative, function, monad
 from felis.currying import curry
 
-__all__ = ["Lazy", "map", "identity", "apply", "lift2", "take_after", "discard_after", "take_before", "discard_before", "when", "join", "bound", "bind", "compose"]
+__all__ = [
+    "Lazy",
+    "map",
+    "identity",
+    "apply",
+    "lift2",
+    "take_after",
+    "discard_after",
+    "take_before",
+    "discard_before",
+    "when",
+    "join",
+    "bound",
+    "bind",
+    "compose",
+]
 
 
 type Lazy[T] = Callable[[], T]
@@ -78,4 +93,4 @@ if TYPE_CHECKING:
     def compose[From, Intermediate, To](value: From, first: Callable[[From], Lazy[Intermediate]], second: Callable[[Intermediate], Lazy[To]]) -> Lazy[To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)

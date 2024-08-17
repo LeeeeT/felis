@@ -23,7 +23,7 @@ def bound(
 
 
 # [M : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> M To) -> M From -> M To) ->
+# ([From : Type] -> [To : Type] -> M From -> (From -> M To) -> M To) ->
 # [Intermediate : Type] -> [To : Type] -> (Intermediate -> M To) -> [From : Type] -> (From -> M Intermediate) -> From -> M To
 @curry
 @curry
@@ -32,9 +32,9 @@ def compose[From](
     value: From,
     first: Callable[[From], Any],
     second: Callable[[Any], Any],
-    bound: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
+    bind: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Any:
-    return bound(second)(first(value))
+    return bind(first(value))(second)
 
 
 # [A : Type -> Type] -> ([T : Type] -> A T) -> ([T : Type] -> T -> A T) -> bool -> A None

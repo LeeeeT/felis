@@ -147,7 +147,7 @@ if TYPE_CHECKING:
     ) -> State[S, To]: ...
 
 else:
-    compose = monad.compose(bound)
+    compose = monad.compose(bind)
 
 
 if TYPE_CHECKING:
@@ -222,4 +222,4 @@ if TYPE_CHECKING:
     ) -> ReversedState[S, To]: ...
 
 else:
-    reversed_compose = monad.compose(reversed_bound)
+    reversed_compose = monad.compose(reversed_bind)
