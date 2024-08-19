@@ -16,7 +16,7 @@ class Pure[T]:
 # [F : Type -> Type] -> [T : Type] -> F (Free F T) -> Free F T
 @dataclass(frozen=True)
 class Bind:
-    value: Any
+    f_free_value: Any
 
 
 type Free[T] = Pure[T] | Bind
@@ -31,8 +31,8 @@ def map[From, To](free_value: Free[From], function: Callable[[From], To], f_map:
     match free_value:
         case Pure(value):
             return Pure(function(value))
-        case Bind(value):
-            return Bind(f_map(map(f_map)(function))(value))
+        case Bind(f_free_value):
+            return Bind(f_map(map(f_map)(function))(f_free_value))
 
 
 identity = Pure
@@ -47,8 +47,8 @@ def apply[From, To](free_value: Free[From], free_function: Free[Callable[[From],
     match free_function:
         case Pure(function):
             return map(f_map)(function)(free_value)
-        case Bind(value):
-            return Bind(f_map(felis.function.flip(apply(f_map))(free_value))(value))
+        case Bind(f_free_function):
+            return Bind(f_map(felis.function.flip(apply(f_map))(free_value))(f_free_function))
 
 
 # [F : Type -> Type] -> ([From : Type] -> [To : Type] -> (From -> To) -> F From -> F To) -> [T : Type] -> Free F (Free F T) -> Free F T
@@ -57,5 +57,5 @@ def join[T](free_free_value: Free[Free[T]], f_map: Callable[[Any], Callable[[Any
     match free_free_value:
         case Pure(free_value):
             return free_value
-        case Bind(value):
-            return Bind(f_map(join(f_map))(value))
+        case Bind(f_free_free_value):
+            return Bind(f_map(join(f_map))(f_free_free_value))

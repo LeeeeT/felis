@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
     @dataclass(frozen=True)
     class Bind[K, T]:
-        value: dict.Dict[K, FreeDict[K, T]]
+        f_free_dict_value: dict.Dict[K, FreeDict[K, T]]
 
 else:
     from felis.free_t import Bind

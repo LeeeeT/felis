@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     @dataclass(frozen=True)
     class Bind[T]:
-        value: felis.identity.Identity[Free[T]]
+        f_free_value: felis.identity.Identity[Free[T]]
 
 else:
     from felis.free_t import Bind
