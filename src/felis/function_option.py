@@ -8,6 +8,7 @@ from felis.function import Function
 from felis.option import Option
 
 __all__ = [
+    "FunctionOption",
     "map",
     "identity",
     "apply",
@@ -25,10 +26,13 @@ __all__ = [
 ]
 
 
+type FunctionOption[From, To] = Function[From, Option[To]]
+
+
 if TYPE_CHECKING:
 
     @curry
-    def map[T, From, To](function_option_value: Function[T, Option[From]], function: Callable[[From], To]) -> Function[T, Option[To]]: ...
+    def map[T, From, To](function_option_value: FunctionOption[T, From], function: Callable[[From], To]) -> FunctionOption[T, To]: ...
 
 else:
     map = felis.identity.compose(function.map)(option.map)
@@ -45,10 +49,10 @@ if TYPE_CHECKING:
     @curry
     @curry
     def lift2[T, First, Second, Result](
-        second: Function[T, Option[Second]],
-        first: Function[T, Option[First]],
+        second: FunctionOption[T, Second],
+        first: FunctionOption[T, First],
         function: Callable[[First], Callable[[Second], Result]],
-    ) -> Function[T, Option[Result]]: ...
+    ) -> FunctionOption[T, Result]: ...
 
 else:
     lift2 = applicative.lift2(map)(apply)
@@ -69,7 +73,7 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[T](bool: bool, function_option_none: Function[T, Option[None]]) -> Function[T, Option[None]]: ...
+    def when[T](bool: bool, function_option_none: FunctionOption[T, None]) -> FunctionOption[T, None]: ...
 
 else:
     when = applicative.when(identity)
@@ -82,9 +86,9 @@ if TYPE_CHECKING:
 
     @curry
     def bound[T, From, To](
-        function_option_value: Function[T, Option[From]],
-        function: Callable[[From], Function[T, Option[To]]],
-    ) -> Function[T, Option[To]]: ...
+        function_option_value: FunctionOption[T, From],
+        function: Callable[[From], FunctionOption[T, To]],
+    ) -> FunctionOption[T, To]: ...
 
 else:
     bound = monad.bound(map)(join)
@@ -99,9 +103,9 @@ if TYPE_CHECKING:
     @curry
     def compose[T, From, Intermediate, To](
         value: From,
-        first: Callable[[From], Function[T, Option[Intermediate]]],
-        second: Callable[[Intermediate], Function[T, Option[To]]],
-    ) -> Function[T, Option[To]]: ...
+        first: Callable[[From], FunctionOption[T, Intermediate]],
+        second: Callable[[Intermediate], FunctionOption[T, To]],
+    ) -> FunctionOption[T, To]: ...
 
 else:
     compose = monad.compose(bind)

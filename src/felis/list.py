@@ -10,6 +10,7 @@ from felis.order import Order
 from felis.predicate import Predicate
 
 __all__ = [
+    "List",
     "neutral",
     "append",
     "add",
@@ -35,31 +36,34 @@ __all__ = [
 ]
 
 
-# [T : Type] -> list T
+List = list
+
+
+# [T : Type] -> List T
 neutral: list[Any] = []
 
 
 @curry
-def append[T](list: list[T], value: T) -> list[T]:
+def append[T](list: List[T], value: T) -> List[T]:
     return [*list, value]
 
 
 @curry
-def add[T](augend: list[T], addend: list[T]) -> list[T]:
+def add[T](augend: List[T], addend: List[T]) -> List[T]:
     return augend + addend
 
 
 @curry
-def map[From, To](list_value: list[From], function: Callable[[From], To]) -> list[To]:
+def map[From, To](list_value: List[From], function: Callable[[From], To]) -> List[To]:
     return [function(value) for value in list_value]
 
 
-def identity[T](value: T) -> list[T]:
+def identity[T](value: T) -> List[T]:
     return [value]
 
 
 @curry
-def apply[From, To](list_value: list[From], list_function: list[Callable[[From], To]]) -> list[To]:
+def apply[From, To](list_value: List[From], list_function: List[Callable[[From], To]]) -> List[To]:
     return [function(value) for function in list_function for value in list_value]
 
 
@@ -67,7 +71,7 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](second: list[Second], first: list[First], function: Callable[[First], Callable[[Second], Result]]) -> list[Result]: ...
+    def lift2[First, Second, Result](second: List[Second], first: List[First], function: Callable[[First], Callable[[Second], Result]]) -> List[Result]: ...
 
 else:
     lift2 = applicative.lift2(map)(apply)
@@ -88,7 +92,7 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, list_none: list[None]) -> list[None]: ...
+    def when(bool: bool, list_none: List[None]) -> List[None]: ...
 
 else:
     when = applicative.when(identity)
@@ -96,7 +100,7 @@ else:
 
 @curry
 @curry
-def fold[A, T](list_value: list[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
+def fold[A, T](list_value: List[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
     for value in list_value:
         accumulator = function(value)(accumulator)
     return accumulator
@@ -105,20 +109,20 @@ def fold[A, T](list_value: list[T], function: Callable[[T], Callable[[A], A]], a
 # [A : Type -> Type] ->
 # ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
 # ([T : Type] -> T -> A T) ->
-# [From : Type] -> [To : Type] -> (From -> A To) -> list From -> A (list To)
+# [From : Type] -> [To : Type] -> (From -> A To) -> List From -> A (List To)
 @curry
 @curry
 def traverse[From](
     function: Callable[[From], Any],
     a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
     a_identity: Callable[[Any], Any],
-) -> Callable[[list[From]], Any]:
+) -> Callable[[List[From]], Any]:
     return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
 
 
 if TYPE_CHECKING:
 
-    def join[T](list_list_value: list[list[T]]) -> list[T]: ...
+    def join[T](list_list_value: List[List[T]]) -> List[T]: ...
 
 else:
     join = fold(neutral)(add)
@@ -127,7 +131,7 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](list_value: list[From], function: Callable[[From], list[To]]) -> list[To]: ...
+    def bound[From, To](list_value: List[From], function: Callable[[From], List[To]]) -> List[To]: ...
 
 else:
     bound = monad.bound(map)(join)
@@ -140,7 +144,7 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[From, Intermediate, To](value: From, first: Callable[[From], list[Intermediate]], second: Callable[[Intermediate], list[To]]) -> list[To]: ...
+    def compose[From, Intermediate, To](value: From, first: Callable[[From], List[Intermediate]], second: Callable[[Intermediate], List[To]]) -> List[To]: ...
 
 else:
     compose = monad.compose(bind)
@@ -148,22 +152,22 @@ else:
 
 if TYPE_CHECKING:
 
-    def guard(bool: bool) -> list[None]: ...
+    def guard(bool: bool) -> List[None]: ...
 
 else:
     guard = monad.guard(neutral)(identity)
 
 
 @curry
-def filter[T](list: list[T], predicate: Predicate[T]) -> list[T]:
+def filter[T](list: List[T], predicate: Predicate[T]) -> List[T]:
     return [value for value in list if predicate(value)]
 
 
 @curry
-def sort[T](list: list[T], order: Order[T]) -> list[T]:
+def sort[T](list: List[T], order: Order[T]) -> List[T]:
     return sorted(list, key=felis.order.rich_comparison(order))
 
 
 @curry
-def range(stop: int, start: int) -> list[int]:
+def range(stop: int, start: int) -> List[int]:
     return list(builtins.range(start, stop))

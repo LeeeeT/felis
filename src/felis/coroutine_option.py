@@ -8,6 +8,7 @@ from felis.currying import curry
 from felis.option import Option
 
 __all__ = [
+    "CoroutineOption",
     "map",
     "identity",
     "apply",
@@ -25,10 +26,13 @@ __all__ = [
 ]
 
 
+type CoroutineOption[T] = Coroutine[Option[T]]
+
+
 if TYPE_CHECKING:
 
     @curry
-    def map[From, To](coroutine_option_value: Coroutine[Option[From]], function: Callable[[From], To]) -> Coroutine[Option[To]]: ...
+    def map[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], To]) -> CoroutineOption[To]: ...
 
 else:
     map = felis.identity.compose(coroutine.map)(option.map)
@@ -45,10 +49,10 @@ if TYPE_CHECKING:
     @curry
     @curry
     def lift2[First, Second, Result](
-        second: Coroutine[Option[Second]],
-        first: Coroutine[Option[First]],
+        second: CoroutineOption[Second],
+        first: CoroutineOption[First],
         function: Callable[[First], Callable[[Second], Result]],
-    ) -> Coroutine[Option[Result]]: ...
+    ) -> CoroutineOption[Result]: ...
 
 else:
     lift2 = applicative.lift2(map)(apply)
@@ -69,7 +73,7 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, coroutine_option_none: Coroutine[Option[None]]) -> Coroutine[Option[None]]: ...
+    def when(bool: bool, coroutine_option_none: CoroutineOption[None]) -> CoroutineOption[None]: ...
 
 else:
     when = applicative.when(identity)
@@ -81,7 +85,7 @@ join = coroutine.bound(option.inject(coroutine.identity))
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](coroutine_option_value: Coroutine[Option[From]], function: Callable[[From], Coroutine[Option[To]]]) -> Coroutine[Option[To]]: ...
+    def bound[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], CoroutineOption[To]]) -> CoroutineOption[To]: ...
 
 else:
     bound = monad.bound(map)(join)
@@ -96,9 +100,9 @@ if TYPE_CHECKING:
     @curry
     def compose[From, Intermediate, To](
         value: From,
-        first: Callable[[From], Coroutine[Option[Intermediate]]],
-        second: Callable[[Intermediate], Coroutine[Option[To]]],
-    ) -> Coroutine[Option[To]]: ...
+        first: Callable[[From], CoroutineOption[Intermediate]],
+        second: Callable[[Intermediate], CoroutineOption[To]],
+    ) -> CoroutineOption[To]: ...
 
 else:
     compose = monad.compose(bind)

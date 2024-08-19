@@ -9,6 +9,7 @@ from felis.currying import curry
 from felis.predicate import Predicate
 
 __all__ = [
+    "Iterable",
     "neutral",
     "append",
     "add",
