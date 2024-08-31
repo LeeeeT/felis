@@ -162,7 +162,7 @@ def reversed_join[S](
     m_bound: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
     m_identity: Callable[[Any], Any],
 ) -> Any:
-    def state_value_binder(reversed_state_value_and_state: tuple[Any, S]) -> Any:
+    def reversed_state_value_binder(reversed_state_value_and_state: tuple[Any, S]) -> Any:
         nonlocal state
         reversed_state_value, new_state = reversed_state_value_and_state
 
@@ -173,4 +173,4 @@ def reversed_join[S](
 
         return m_bound(value_binder)(reversed_state_value(state))
 
-    return m_bound(state_value_binder)(reversed_state_reversed_state_value(lambda: state()))
+    return m_bound(reversed_state_value_binder)(reversed_state_reversed_state_value(lambda: state()))
