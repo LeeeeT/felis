@@ -21,11 +21,11 @@ __all__ = [
 @curry
 @curry
 def run[S](state: S, state_value: Callable[[S], Any], m_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> Any:
-    def value_binder(value_and_state: tuple[Any, S]) -> Any:
+    def value_mapper(value_and_state: tuple[Any, S]) -> Any:
         value, _ = value_and_state
         return value
 
-    return m_map(value_binder)(state_value(state))
+    return m_map(value_mapper)(state_value(state))
 
 
 # [S : Type] -> [M : Type -> Type] -> ([T : Type] -> M T) -> [T : Type] -> StateT S M T
@@ -54,11 +54,11 @@ def map[S](
     function: Callable[[Any], Any],
     m_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Any:
-    def value_binder(value_and_state: tuple[Any, S]) -> tuple[Any, S]:
+    def value_mapper(value_and_state: tuple[Any, S]) -> tuple[Any, S]:
         value, state = value_and_state
         return function(value), state
 
-    return m_map(value_binder)(state_value(state))
+    return m_map(value_mapper)(state_value(state))
 
 
 # [S : Type] -> [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [T : Type] -> T -> StateT S M T
