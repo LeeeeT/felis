@@ -2,7 +2,8 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 import felis.list
-from felis import applicative, function, monad, option, state_t
+import felis.option
+from felis import applicative, function, monad, state_t
 from felis.currying import curry
 from felis.option import Option
 from felis.predicate import Predicate
@@ -33,6 +34,7 @@ __all__ = [
     "text",
     "many",
     "some",
+    "option",
     "separated",
     "bracket",
     "digit",
@@ -50,7 +52,7 @@ if TYPE_CHECKING:
     def run[T](string: str, parser_value: Parser[T]) -> T: ...
 
 else:
-    run = state_t.run(option.map)
+    run = state_t.run(felis.option.map)
 
 
 if TYPE_CHECKING:
@@ -58,7 +60,7 @@ if TYPE_CHECKING:
     def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:
-    neutral = state_t.neutral(option.neutral)
+    neutral = state_t.neutral(felis.option.neutral)
 
 
 if TYPE_CHECKING:
@@ -67,7 +69,7 @@ if TYPE_CHECKING:
     def add[T](first: Parser[T], second: Parser[T]) -> Parser[T]: ...
 
 else:
-    add = state_t.add(option.add)
+    add = state_t.add(felis.option.add)
 
 
 if TYPE_CHECKING:
@@ -76,7 +78,7 @@ if TYPE_CHECKING:
     def map[From, To](parser_value: Parser[From], function: Callable[[From], To]) -> Parser[To]: ...
 
 else:
-    map = state_t.map(option.map)
+    map = state_t.map(felis.option.map)
 
 
 if TYPE_CHECKING:
@@ -84,7 +86,7 @@ if TYPE_CHECKING:
     def identity[T](value: T, /) -> Parser[T]: ...
 
 else:
-    identity = state_t.identity(option.identity)
+    identity = state_t.identity(felis.option.identity)
 
 
 if TYPE_CHECKING:
@@ -93,7 +95,7 @@ if TYPE_CHECKING:
     def apply[From, To](parser_value: Parser[From], parser_function: Parser[Callable[[From], To]]) -> Parser[To]: ...
 
 else:
-    apply = state_t.apply(option.identity)(option.bound)
+    apply = state_t.apply(felis.option.identity)(felis.option.bound)
 
 
 if TYPE_CHECKING:
@@ -136,7 +138,7 @@ if TYPE_CHECKING:
     def join[T](parser_value: Parser[Parser[T]], /) -> Parser[T]: ...
 
 else:
-    join = state_t.join(option.identity)(option.bound)
+    join = state_t.join(felis.option.identity)(felis.option.bound)
 
 
 if TYPE_CHECKING:
@@ -174,11 +176,11 @@ else:
 
 
 def end(string: str) -> Option[tuple[None, str]]:
-    return None if string else option.Some((None, ""))
+    return None if string else felis.option.Some((None, ""))
 
 
 def any(string: str) -> Option[tuple[str, str]]:
-    return option.Some((string[0], string[1:])) if string else None
+    return felis.option.Some((string[0], string[1:])) if string else None
 
 
 def satisfy(predicate: Predicate[str]) -> Parser[str]:
@@ -199,6 +201,10 @@ def many[T](parser: Parser[T]) -> Parser[list[T]]:
 
 def some[T](parser: Parser[T]) -> Parser[list[T]]:
     return bind(parser)(lambda first: bind(many(parser))(lambda rest: identity([first, *rest])))
+
+
+def option[T](parser: Parser[T]) -> Parser[Option[T]]:
+    return add(identity(felis.option.neutral))(map(felis.option.identity)(parser))
 
 
 # [S : Type] -> Parser S -> [T : Type] -> Parser T -> Parser (list T)
