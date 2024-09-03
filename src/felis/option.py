@@ -39,8 +39,11 @@ class Some[T]:
     value: T
 
 
-# [T : Type] -> Option T
-neutral = None
+if TYPE_CHECKING:
+    # [T : Type] -> Option T
+    neutral: Option[Any]
+else:
+    neutral = None
 
 
 @curry
@@ -61,7 +64,12 @@ def map[From, To](option_value: Option[From], function: Callable[[From], To]) ->
             return Some(function(value))
 
 
-identity = Some
+if TYPE_CHECKING:
+
+    def identity[T](value: T, /) -> Option[T]: ...
+
+else:
+    identity = Some
 
 
 @curry
