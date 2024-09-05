@@ -6,6 +6,7 @@ from felis.currying import curry
 
 __all__ = [
     "Lazy",
+    "add",
     "map",
     "identity",
     "apply",
@@ -23,6 +24,10 @@ __all__ = [
 
 
 type Lazy[T] = Callable[[], T]
+
+
+def add[M](first: Lazy[M], second: Lazy[M], m_add: Callable[[M], Callable[[M], M]]) -> Lazy[M]:
+    return lambda: m_add(second())(first())
 
 
 @curry
