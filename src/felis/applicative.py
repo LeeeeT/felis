@@ -16,7 +16,7 @@ __all__ = ["lift2", "when"]
 def lift2(
     first: Any,
     function: Callable[[Any], Callable[[Any], Any]],
-    apply: Callable[[Any], Callable[[Any], Any]],
+    apply: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
     map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Callable[[Any], Any]:
     return apply(map(function)(first))
