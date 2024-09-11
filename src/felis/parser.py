@@ -95,7 +95,7 @@ if TYPE_CHECKING:
     def apply[From, To](parser_value: Parser[From], parser_function: Parser[Callable[[From], To]]) -> Parser[To]: ...
 
 else:
-    apply = state_t.apply(felis.option.identity)(felis.option.bound)
+    apply = state_t.apply(felis.option.identity)(felis.option.bind)
 
 
 if TYPE_CHECKING:
@@ -138,7 +138,7 @@ if TYPE_CHECKING:
     def join[T](parser_value: Parser[Parser[T]], /) -> Parser[T]: ...
 
 else:
-    join = state_t.join(felis.option.identity)(felis.option.bound)
+    join = state_t.join(felis.option.identity)(felis.option.bind)
 
 
 if TYPE_CHECKING:

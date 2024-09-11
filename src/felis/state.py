@@ -77,7 +77,7 @@ if TYPE_CHECKING:
     def apply[S, From, To](state: S, state_value: State[S, From], state_function: State[S, Callable[[From], To]]) -> tuple[To, S]: ...
 
 else:
-    apply = state_t.apply(felis.identity.identity)(felis.identity.bound)
+    apply = state_t.apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -121,7 +121,7 @@ if TYPE_CHECKING:
     def join[S, T](state: S, state_state_value: State[S, State[S, T]]) -> tuple[T, S]: ...
 
 else:
-    join = state_t.join(felis.identity.identity)(felis.identity.bound)
+    join = state_t.join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -161,7 +161,7 @@ if TYPE_CHECKING:
     ) -> tuple[To, Lazy[S]]: ...
 
 else:
-    reversed_apply = state_t.reversed_apply(felis.identity.identity)(felis.identity.bound)
+    reversed_apply = state_t.reversed_apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -196,7 +196,7 @@ if TYPE_CHECKING:
     def reversed_join[S, T](state: Lazy[S], state_state_value: ReversedState[S, ReversedState[S, T]]) -> tuple[T, Lazy[S]]: ...
 
 else:
-    reversed_join = state_t.reversed_join(felis.identity.identity)(felis.identity.bound)
+    reversed_join = state_t.reversed_join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
