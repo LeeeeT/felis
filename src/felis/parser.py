@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 import felis.list
 import felis.option
-from felis import applicative, function, monad, state_t
+from felis import applicative, function, monad, option_t, state_t
 from felis.currying import curry
 from felis.option import Option
 from felis.predicate import Predicate
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:
-    neutral = state_t.neutral(felis.option.neutral)
+    neutral = option_t.neutral(function.identity)
 
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     def add[T](first: Parser[T], second: Parser[T]) -> Parser[T]: ...
 
 else:
-    add = state_t.add(felis.option.add)
+    add = option_t.add(function.bind)
 
 
 if TYPE_CHECKING:

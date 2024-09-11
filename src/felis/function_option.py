@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, function, monad, option
+from felis import applicative, function, monad, option, option_t
 from felis.currying import curry
 from felis.function import Function
 from felis.option import Option
@@ -79,7 +79,7 @@ else:
     when = applicative.when(identity)
 
 
-join = function.bound(option.inject(function.identity))
+join = function.bound(option_t.inject(function.identity))
 
 
 if TYPE_CHECKING:

@@ -1,10 +1,10 @@
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import felis.identity
-from felis import applicative, function, monad
+from felis import applicative, function, monad, option_t
 from felis.currying import curry
+from felis.option_t import Option, Some
 
 __all__ = [
     "Option",
@@ -22,7 +22,6 @@ __all__ = [
     "when",
     "fold",
     "traverse",
-    "inject",
     "join",
     "bound",
     "bind",
@@ -31,28 +30,19 @@ __all__ = [
 ]
 
 
-type Option[T] = None | Some[T]
-
-
-@dataclass(frozen=True)
-class Some[T]:
-    value: T
+if TYPE_CHECKING:
+    neutral: Option[Any]
+else:
+    neutral = option_t.neutral(felis.identity.identity)
 
 
 if TYPE_CHECKING:
-    # [T : Type] -> Option T
-    neutral: Option[Any]
+
+    @curry
+    def add[T](augend: Option[T], addend: Option[T]) -> Option[T]: ...
+
 else:
-    neutral = None
-
-
-@curry
-def add[T](augend: Option[T], addend: Option[T]) -> Option[T]:
-    match augend:
-        case None:
-            return addend
-        case Some(value):
-            return Some(value)
+    add = option_t.add(felis.identity.bind)
 
 
 @curry
@@ -146,17 +136,7 @@ def traverse[From](
             return a_map(identity)(function(value))
 
 
-# [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [T : Type] -> Option (M (Option T)) -> M (Option T)
-@curry
-def inject(option_m_option_value: Option[Any], m_identity: Callable[[Any], Any]) -> Any:
-    match option_m_option_value:
-        case None:
-            return m_identity(None)
-        case Some(m_option_value):
-            return m_option_value
-
-
-join = inject(felis.identity.identity)
+join = felis.identity.bound(option_t.inject(felis.identity.identity))
 
 
 if TYPE_CHECKING:
