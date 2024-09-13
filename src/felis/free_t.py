@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import felis.function
 from felis.currying import curry
@@ -35,7 +35,11 @@ def map[From, To](free_value: Free[From], function: Callable[[From], To], f_map:
             return Bind(f_map(map(f_map)(function))(f_free_value))
 
 
-identity = Pure
+if TYPE_CHECKING:
+    # [F : Type -> Type] -> [T : Type] -> T -> Free F T
+    identity: Free[Any]
+else:
+    identity = Pure
 
 
 # [F : Type -> Type] ->

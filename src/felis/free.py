@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
-from felis import applicative, free_t, function, identity, monad
+from felis import applicative, free_t, function, monad
 from felis.currying import curry
 from felis.free_t import Pure
 
@@ -52,6 +52,13 @@ if TYPE_CHECKING:
 
 else:
     map = free_t.map(felis.identity.map)
+
+
+if TYPE_CHECKING:
+    # [T : Type] -> T -> Free T
+    identity: Free[Any]
+else:
+    from felis.free_t import identity
 
 
 if TYPE_CHECKING:
