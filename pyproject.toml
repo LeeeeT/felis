@@ -1,6 +1,6 @@
 [project]
 name = "felis-catus"
-version = "0.dev3"
+version = "0.dev4"
 description = "🐈 Felis Catus – functional bits for Python"
 readme = "README.md"
 requires-python = ">=3.12"
