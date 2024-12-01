@@ -3,7 +3,7 @@ from collections.abc import Callable
 import felis.bool
 from felis import function, identity
 
-__all__ = ["Predicate", "true", "false", "both", "either", "negate", "same", "different"]
+__all__ = ["Predicate", "both", "different", "either", "false", "negate", "same", "true"]
 
 
 type Predicate[T] = Callable[[T], bool]

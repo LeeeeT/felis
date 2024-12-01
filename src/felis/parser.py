@@ -10,40 +10,40 @@ from felis.predicate import Predicate
 
 __all__ = [
     "Parser",
-    "run",
-    "neutral",
     "add",
-    "map",
-    "identity",
-    "apply",
-    "lift2",
-    "take_after",
-    "discard_after",
-    "take_before",
-    "discard_before",
-    "when",
-    "join",
-    "bound",
-    "bind",
-    "compose",
-    "guard",
-    "end",
+    "alnum",
+    "alpha",
     "any",
-    "satisfy",
-    "character",
-    "text",
-    "many",
-    "some",
-    "option",
-    "separated",
+    "apply",
+    "bind",
+    "bound",
     "bracket",
-    "chain_right",
-    "chain_right_1",
     "chain_left",
     "chain_left_1",
+    "chain_right",
+    "chain_right_1",
+    "character",
+    "compose",
     "digit",
-    "alpha",
-    "alnum",
+    "discard_after",
+    "discard_before",
+    "end",
+    "guard",
+    "identity",
+    "join",
+    "lift2",
+    "many",
+    "map",
+    "neutral",
+    "option",
+    "run",
+    "satisfy",
+    "separated",
+    "some",
+    "take_after",
+    "take_before",
+    "text",
+    "when",
 ]
 
 
@@ -227,13 +227,21 @@ def bracket[T](parser: Parser[T], right: Parser[Any], left: Parser[Any]) -> Pars
 @curry
 @curry
 def chain_right[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[R], R]]], accumulator: R) -> Parser[R]:
-    return add(identity(accumulator))(bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(chain_right(accumulator)(parser_function)(parser_value))(lambda accumulator: identity(function(value)(accumulator))))))
+    return add(identity(accumulator))(
+        bind(parser_function)(
+            lambda function: bind(parser_value)(
+                lambda value: bind(chain_right(accumulator)(parser_function)(parser_value))(lambda accumulator: identity(function(value)(accumulator))),
+            ),
+        ),
+    )
 
 
 @curry
 def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[T], T]]]) -> Parser[T]:
     def rest(accumulator: T) -> Parser[T]:
-        return add(identity(accumulator))(bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: identity(function(accumulator)(value))))))
+        return add(identity(accumulator))(
+            bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: identity(function(accumulator)(value))))),
+        )
 
     return bind(parser_value)(rest)
 
@@ -241,7 +249,9 @@ def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[
 @curry
 @curry
 def chain_left[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[R], Callable[[T], R]]], accumulator: R) -> Parser[R]:
-    return add(identity(accumulator))(bind(parser_function)(lambda function: bind(parser_value)(lambda value: chain_left(function(accumulator)(value))(parser_function)(parser_value))))
+    return add(identity(accumulator))(
+        bind(parser_function)(lambda function: bind(parser_value)(lambda value: chain_left(function(accumulator)(value))(parser_function)(parser_value))),
+    )
 
 
 @curry

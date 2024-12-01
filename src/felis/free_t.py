@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import felis.function
 from felis.currying import curry
 
-__all__ = ["Pure", "Bind", "Free", "map", "identity", "apply", "join"]
+__all__ = ["Bind", "Free", "Pure", "apply", "identity", "join", "map"]
 
 
 @dataclass(frozen=True)

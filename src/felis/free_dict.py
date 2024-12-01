@@ -9,22 +9,22 @@ from felis.currying import curry
 from felis.free_t import Pure
 
 __all__ = [
-    "Pure",
     "Bind",
     "FreeDict",
-    "map",
-    "identity",
+    "Pure",
     "apply",
-    "lift2",
-    "take_after",
-    "discard_after",
-    "take_before",
-    "discard_before",
-    "when",
-    "join",
-    "bound",
     "bind",
+    "bound",
     "compose",
+    "discard_after",
+    "discard_before",
+    "identity",
+    "join",
+    "lift2",
+    "map",
+    "take_after",
+    "take_before",
+    "when",
 ]
 
 

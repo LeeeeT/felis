@@ -5,20 +5,20 @@ import felis.predicate.float
 from felis.constrained import smart_constructor
 
 __all__ = [
-    "Negative",
-    "negative",
-    "NonPositive",
-    "non_positive",
-    "NonZero",
-    "non_zero",
-    "NonNegative",
-    "non_negative",
-    "Positive",
-    "positive",
-    "Portion",
-    "portion",
     "Finite",
+    "Negative",
+    "NonNegative",
+    "NonPositive",
+    "NonZero",
+    "Portion",
+    "Positive",
     "finite",
+    "negative",
+    "non_negative",
+    "non_positive",
+    "non_zero",
+    "portion",
+    "positive",
 ]
 
 

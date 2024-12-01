@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "neutral", "add", "inject"]
+__all__ = ["Option", "Some", "add", "inject", "neutral"]
 
 
 type Option[T] = None | Some[T]

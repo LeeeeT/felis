@@ -1,7 +1,7 @@
 from felis.currying import curry
 from felis.typing import SupportsRichComparison
 
-__all__ = ["less", "less_or_equal", "equal", "not_equal", "greater_or_equal", "greater"]
+__all__ = ["equal", "greater", "greater_or_equal", "less", "less_or_equal", "not_equal"]
 
 
 @curry

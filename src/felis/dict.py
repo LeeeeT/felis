@@ -5,7 +5,7 @@ from felis import option
 from felis.currying import curry
 from felis.option import Option
 
-__all__ = ["Dict", "neutral", "set", "get", "add", "map"]
+__all__ = ["Dict", "add", "get", "map", "neutral", "set"]
 
 
 Dict = dict

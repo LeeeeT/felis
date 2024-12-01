@@ -1,6 +1,6 @@
 from felis.predicate import comparison, interval
 
-__all__ = ["negative", "non_positive", "non_zero", "non_negative", "positive", "portion"]
+__all__ = ["negative", "non_negative", "non_positive", "non_zero", "portion", "positive"]
 
 
 negative = comparison.less(0.0)

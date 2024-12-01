@@ -2,7 +2,7 @@ from felis.currying import curry
 from felis.predicate import Predicate, both, comparison
 from felis.typing import SupportsRichComparison
 
-__all__ = ["inclusive", "inclusive_exclusive", "exclusive_inclusive", "exclusive"]
+__all__ = ["exclusive", "exclusive_inclusive", "inclusive", "inclusive_exclusive"]
 
 
 @curry

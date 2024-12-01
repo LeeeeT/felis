@@ -9,20 +9,20 @@ from felis.typing import SupportsRichComparison
 
 __all__ = [
     "Order",
-    "worse",
-    "same_or_better",
-    "not_worse",
-    "same",
-    "different",
-    "better",
-    "same_or_worse",
-    "not_better",
-    "reverse",
-    "neutral",
     "add",
-    "map",
+    "better",
+    "different",
     "dunder",
+    "map",
+    "neutral",
+    "not_better",
+    "not_worse",
+    "reverse",
     "rich_comparison",
+    "same",
+    "same_or_better",
+    "same_or_worse",
+    "worse",
 ]
 
 

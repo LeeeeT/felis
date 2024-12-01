@@ -7,20 +7,20 @@ from felis.function import flip_, identity_
 
 __all__ = [
     "Identity",
-    "map",
-    "identity",
     "apply",
-    "lift2",
-    "take_after",
+    "bind",
+    "bound",
+    "compose",
     "discard_after",
-    "take_before",
     "discard_before",
-    "when",
+    "identity",
     "inject",
     "join",
-    "bound",
-    "bind",
-    "compose",
+    "lift2",
+    "map",
+    "take_after",
+    "take_before",
+    "when",
 ]
 
 

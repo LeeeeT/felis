@@ -1,7 +1,7 @@
 from felis import function
 from felis.currying import curry
 
-__all__ = ["Bool", "both", "either", "negate", "same", "different"]
+__all__ = ["Bool", "both", "different", "either", "negate", "same"]
 
 
 Bool = bool

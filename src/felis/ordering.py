@@ -4,21 +4,21 @@ from felis import predicate
 from felis.currying import curry
 
 __all__ = [
-    "Ordering",
-    "Worse",
-    "Same",
     "Better",
-    "worse",
-    "same_or_better",
-    "not_worse",
-    "same",
-    "different",
-    "better",
-    "same_or_worse",
-    "not_better",
-    "reverse",
-    "neutral",
+    "Ordering",
+    "Same",
+    "Worse",
     "add",
+    "better",
+    "different",
+    "neutral",
+    "not_better",
+    "not_worse",
+    "reverse",
+    "same",
+    "same_or_better",
+    "same_or_worse",
+    "worse",
 ]
 
 

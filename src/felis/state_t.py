@@ -5,15 +5,15 @@ from felis.currying import curry
 from felis.lazy import Lazy
 
 __all__ = [
-    "run",
-    "neutral",
     "add",
-    "map",
-    "identity",
     "apply",
+    "identity",
     "join",
+    "map",
+    "neutral",
     "reversed_apply",
     "reversed_join",
+    "run",
 ]
 
 
