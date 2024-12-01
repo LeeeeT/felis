@@ -92,22 +92,30 @@ print(pythags)
 # [(3, 4, 5), (6, 8, 10), (5, 12, 13), (9, 12, 15), (8, 15, 17)]
 ```
 
-Parsing a list of natural numbers from a string with `felis.parser`:
+Parsing (and evaluating) an arithmetic expression with `felis.parser`:
 
 ```python
-from felis.parser import bracket, digit, map, run, separated, some, text
+from felis.option import Some
+from felis.parser import *
 
-natural = map(int)(map("".join)(some(digit)))
+literal = map(int)(map("".join)(some(digit)))
 
-naturals_without_brackets = separated(text(", "))(natural)
+multiplication = take_after(character("*"))(identity(lambda multiplicand: lambda multiplier: multiplicand * multiplier))
+division = take_after(character("/"))(identity(lambda dividend: lambda divisor: dividend / divisor))
+term_priority_1 = chain_left_1(add(division)(multiplication))(literal)
 
-naturals_with_brackets = bracket(text("["))(text("]"))(naturals_without_brackets)
+addition = take_after(character("+"))(identity(lambda augend: lambda addend: augend + addend))
+subtraction = take_after(character("-"))(identity(lambda minuend: lambda subtrahend: minuend - subtrahend))
+term_priority_2 = chain_left_1(add(subtraction)(addition))(term_priority_1)
 
-string = "[12, 345, 6789]"
+expression = term_priority_2
 
-result = run(naturals_with_brackets)(string)
-
-print(result)  # Some(value=[12, 345, 6789])
+while string := input("> "):
+    match run(expression)(string):
+        case None:
+            print("Syntax error")
+        case Some(result):
+            print("Result:", result)
 ```
 
 That's all monads, btw. 🐈

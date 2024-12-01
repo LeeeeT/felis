@@ -37,6 +37,10 @@ __all__ = [
     "option",
     "separated",
     "bracket",
+    "chain_right",
+    "chain_right_1",
+    "chain_left",
+    "chain_left_1",
     "digit",
     "alpha",
     "alnum",
@@ -218,6 +222,31 @@ def separated[T](parser: Parser[T], separator: Parser[Any]) -> Parser[list[T]]:
 @curry
 def bracket[T](parser: Parser[T], right: Parser[Any], left: Parser[Any]) -> Parser[T]:
     return take_after(left)(take_before(right)(parser))
+
+
+@curry
+@curry
+def chain_right[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[R], R]]], accumulator: R) -> Parser[R]:
+    return add(identity(accumulator))(bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(chain_right(accumulator)(parser_function)(parser_value))(lambda accumulator: identity(function(value)(accumulator))))))
+
+
+@curry
+def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[T], T]]]) -> Parser[T]:
+    def rest(accumulator: T) -> Parser[T]:
+        return add(identity(accumulator))(bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: identity(function(accumulator)(value))))))
+
+    return bind(parser_value)(rest)
+
+
+@curry
+@curry
+def chain_left[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[R], Callable[[T], R]]], accumulator: R) -> Parser[R]:
+    return add(identity(accumulator))(bind(parser_function)(lambda function: bind(parser_value)(lambda value: chain_left(function(accumulator)(value))(parser_function)(parser_value))))
+
+
+@curry
+def chain_left_1[T](parser: Parser[T], function: Parser[Callable[[T], Callable[[T], T]]]) -> Parser[T]:
+    return bind(parser)(lambda first: chain_left(first)(function)(parser))
 
 
 digit = satisfy(str.isdigit)
