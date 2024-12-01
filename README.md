@@ -95,26 +95,28 @@ print(pythags)
 Parsing (and evaluating) an arithmetic expression with `felis.parser`:
 
 ```python
-from felis import option
+from felis.option import Some
 from felis.parser import *
 
 literal = map(int)(map("".join)(some(digit)))
+factor = lambda string: bracket(text("("))(text(")"))(expression)(string)
+term_priority_1 = add(literal)(factor)
 
 multiplication = take_after(character("*"))(identity(lambda a: lambda b: a * b))
 division = take_after(character("/"))(identity(lambda a: lambda b: a / b))
-term_priority_1 = chain_left_1(add(division)(multiplication))(literal)
+term_priority_2 = chain_left_1(add(division)(multiplication))(term_priority_1)
 
 addition = take_after(character("+"))(identity(lambda a: lambda b: a + b))
 subtraction = take_after(character("-"))(identity(lambda a: lambda b: a - b))
-term_priority_2 = chain_left_1(add(subtraction)(addition))(term_priority_1)
+term_priority_3 = chain_left_1(add(subtraction)(addition))(term_priority_2)
 
-expression = term_priority_2
+expression = term_priority_3
 
 while string := input("> "):
     match run(expression)(string):
         case None:
             print("Syntax error")
-        case option.Some(result):
+        case Some(result):
             print("Result:", result)
 ```
 
