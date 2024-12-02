@@ -99,7 +99,7 @@ from felis.option import Some
 from felis.parser import *
 
 literal = map(int)(map("".join)(some(digit)))
-factor = lambda string: bracket(text("("))(text(")"))(expression)(string)
+factor = lambda string: bracket(character("("))(character(")"))(expression)(string)
 term_priority_1 = add(literal)(factor)
 
 multiplication = take_after(character("*"))(identity(lambda a: lambda b: a * b))
