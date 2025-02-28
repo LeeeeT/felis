@@ -53,7 +53,7 @@ type Parser[T] = Callable[[str], Option[tuple[T, str]]]
 if TYPE_CHECKING:
 
     @curry
-    def run[T](string: str, parser_value: Parser[T]) -> T: ...
+    def run[T](string: str, parser_value: Parser[T]) -> Option[T]: ...
 
 else:
     run = state_t.run(felis.option.map)
