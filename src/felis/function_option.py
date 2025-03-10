@@ -79,7 +79,12 @@ else:
     when = applicative.when(identity)
 
 
-join = function.bound(option_t.inject(function.identity))
+if TYPE_CHECKING:
+
+    def join[T, From, To](function_option_function_option_value: FunctionOption[T, FunctionOption[T, From]]) -> FunctionOption[T, To]: ...
+
+else:
+    join = option_t.join(function.identity)(function.bind)
 
 
 if TYPE_CHECKING:

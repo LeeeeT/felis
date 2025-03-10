@@ -89,7 +89,12 @@ else:
     when = applicative.when(identity)
 
 
-join = coroutine.bound(option_t.inject(coroutine.identity))
+if TYPE_CHECKING:
+
+    def join[T](coroutine_option_coroutine_option_value: CoroutineOption[CoroutineOption[T]]) -> CoroutineOption[T]: ...
+
+else:
+    join = option_t.join(coroutine.identity)(coroutine.bind)
 
 
 if TYPE_CHECKING:

@@ -137,7 +137,12 @@ def traverse[From](
             return a_map(identity)(function(value))
 
 
-join = felis.identity.bound(option_t.inject(felis.identity.identity))
+if TYPE_CHECKING:
+
+    def join[From, To](option_option_value: Option[Option[From]]) -> Option[To]: ...
+
+else:
+    join = option_t.join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:

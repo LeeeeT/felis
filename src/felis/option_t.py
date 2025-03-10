@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "add", "default", "inject", "neutral"]
+__all__ = ["Option", "Some", "add", "default", "join", "neutral"]
 
 
 type Option[T] = None | Some[T]
@@ -38,14 +38,21 @@ def add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable
     return m_bind(m_augend)(augend_binder)
 
 
-# [M : * -> *] -> ([T : *] -> T -> M T) -> [T : *] -> Option (M (Option T)) -> M (Option T)
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [T : *] -> M (Option (M (Option T))) -> M (Option T)
 @curry
-def inject(option_m_option_value: Option[Any], m_identity: Callable[[Any], Any]) -> Any:
-    match option_m_option_value:
-        case None:
-            return m_identity(None)
-        case Some(m_option_value):
-            return m_option_value
+@curry
+def join(m_option_m_option_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Any:
+    def binder(option_m_option_value: Option[Any]) -> Any:
+        match option_m_option_value:
+            case None:
+                return m_identity(None)
+            case Some(m_option_value):
+                return m_option_value
+
+    return m_bind(m_option_m_option_value)(binder)
 
 
 # [M : * -> *] ->
@@ -56,7 +63,10 @@ def inject(option_m_option_value: Option[Any], m_identity: Callable[[Any], Any])
 @curry
 @curry
 def default[T](
-    m_option_value: Any, default_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any],
+    m_option_value: Any,
+    default_value: Any,
+    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
+    m_identity: Callable[[Any], Any],
 ) -> Any:
     def binder(option_value: Option[T]) -> Any:
         match option_value:
