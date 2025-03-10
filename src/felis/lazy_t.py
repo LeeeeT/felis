@@ -15,5 +15,5 @@ type Lazy[T] = Callable[[], T]
 # [T : *] -> Lazy (M (Lazy (M T))) -> Lazy (M T)
 @curry
 @curry
-def join(lazy_m_lazy_m_value: Lazy[Any], m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Lazy[Any]:
+def join(lazy_m_lazy_m_value: Lazy[Any], m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Lazy[Any]:
     return lambda: m_bind(lazy_m_lazy_m_value())(lambda m_lazy_value: m_lazy_value())
