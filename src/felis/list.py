@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING, Any
 
 import felis.identity
 import felis.order
-from felis import applicative, function, monad
+from felis import applicative, function, list_t, monad
 from felis.currying import curry
+from felis.list_t import List
 from felis.order import Order
 from felis.predicate import Predicate
 
@@ -36,9 +37,6 @@ __all__ = [
 ]
 
 
-List = list
-
-
 # [T : *] -> List T
 neutral: list[Any] = []
 
@@ -62,9 +60,13 @@ def identity[T](value: T) -> List[T]:
     return [value]
 
 
-@curry
-def apply[From, To](list_value: List[From], list_function: List[Callable[[From], To]]) -> List[To]:
-    return [function(value) for function in list_function for value in list_value]
+if TYPE_CHECKING:
+
+    @curry
+    def apply[From, To](list_value: List[From], list_function: List[Callable[[From], To]]) -> List[To]: ...
+
+else:
+    apply = list_t.apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -141,7 +143,7 @@ if TYPE_CHECKING:
     def join[T](list_list_value: List[List[T]]) -> List[T]: ...
 
 else:
-    join = fold(neutral)(add)
+    join = list_t.join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
