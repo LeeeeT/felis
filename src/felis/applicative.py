@@ -6,10 +6,10 @@ from felis.currying import curry
 __all__ = ["lift2", "when"]
 
 
-# [A : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
-# ([From : Type] -> [To : Type] -> A (From -> To) -> A From -> A To) ->
-# [First : Type] -> [Second : Type] -> [Result : Type] -> (First -> Second -> Result) -> A First -> A Second -> A Result
+# [A : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> A From -> A To) ->
+# ([From : *] -> [To : *] -> A (From -> To) -> A From -> A To) ->
+# [First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result
 @curry
 @curry
 @curry
@@ -22,7 +22,7 @@ def lift2(
     return apply(map(function)(first))
 
 
-# [A : Type -> Type] -> ([T : Type] -> T -> A T) -> bool -> A None -> A None
+# [A : * -> *] -> ([T : *] -> T -> A T) -> bool -> A None -> A None
 @curry
 @curry
 def when(a_none: Any, bool: bool, identity: Callable[[Any], Any]) -> Any:

@@ -1,8 +1,10 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from felis import applicative, function, monad
+import felis.identity
+from felis import applicative, function, lazy_t, monad
 from felis.currying import curry
+from felis.lazy_t import Lazy
 
 __all__ = [
     "Lazy",
@@ -17,15 +19,19 @@ __all__ = [
     "join",
     "lift2",
     "map",
+    "run",
     "take_after",
     "take_before",
     "when",
 ]
 
 
-type Lazy[T] = Callable[[], T]
+def run[T](lazy_value: Lazy[T]) -> T:
+    return lazy_value()
 
 
+@curry
+@curry
 def add[M](first: Lazy[M], second: Lazy[M], m_add: Callable[[M], Callable[[M], M]]) -> Lazy[M]:
     return lambda: m_add(second())(first())
 
@@ -75,8 +81,13 @@ else:
     when = applicative.when(identity)
 
 
-def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]:
-    return lambda: lazy_lazy_value()()
+if TYPE_CHECKING:
+
+    def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]:
+        return lambda: lazy_lazy_value()()
+
+else:
+    join = lazy_t.join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:

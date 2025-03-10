@@ -55,7 +55,7 @@ else:
 
 
 if TYPE_CHECKING:
-    # [T : Type] -> T -> Free T
+    # [T : *] -> T -> Free T
     identity: Free[Any]
 else:
     from felis.free_t import identity

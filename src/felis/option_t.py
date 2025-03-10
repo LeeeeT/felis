@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "add", "inject", "neutral"]
+__all__ = ["Option", "Some", "add", "default", "inject", "neutral"]
 
 
 type Option[T] = None | Some[T]
@@ -15,28 +15,30 @@ class Some[T]:
     value: T
 
 
-# [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [T : Type] -> M (Option T)
+# [M : * -> *] -> ([T : *] -> T -> M T) -> [T : *] -> M (Option T)
 def neutral(m_identity: Callable[[Any], Any]) -> Any:
     return m_identity(None)
 
 
-# [M : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> M To) -> M From -> M To) ->
-# [T : Type] -> M (Option T) -> M (Option T) -> M (Option T)
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [T : *] -> M (Option T) -> M (Option T) -> M (Option T)
 @curry
 @curry
-def add(m_augend: Any, m_addend: Any, m_bind: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> Any:
+@curry
+def add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Any:
     def augend_binder(augend: Option[Any]) -> Any:
         match augend:
             case None:
                 return m_addend
-            case Some(_):
-                return m_augend
+            case Some(value):
+                return m_identity(Some(value))
 
     return m_bind(m_augend)(augend_binder)
 
 
-# [M : Type -> Type] -> ([T : Type] -> T -> M T) -> [T : Type] -> Option (M (Option T)) -> M (Option T)
+# [M : * -> *] -> ([T : *] -> T -> M T) -> [T : *] -> Option (M (Option T)) -> M (Option T)
 @curry
 def inject(option_m_option_value: Option[Any], m_identity: Callable[[Any], Any]) -> Any:
     match option_m_option_value:
@@ -44,3 +46,23 @@ def inject(option_m_option_value: Option[Any], m_identity: Callable[[Any], Any])
             return m_identity(None)
         case Some(m_option_value):
             return m_option_value
+
+
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [T : *] -> M T -> M (Option T) -> M T
+@curry
+@curry
+@curry
+def default[T](
+    m_option_value: Any, default_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any],
+) -> Any:
+    def binder(option_value: Option[T]) -> Any:
+        match option_value:
+            case None:
+                return default_value
+            case Some(value):
+                return m_identity(value)
+
+    return m_bind(m_option_value)(binder)

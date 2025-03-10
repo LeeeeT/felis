@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-# [T : Type] -> Iterable T
+# [T : *] -> Iterable T
 neutral: Iterable[Any] = ()
 
 
@@ -110,10 +110,10 @@ def fold[A, T](iterable_value: Iterable[T], function: Callable[[T], Callable[[A]
     return accumulator
 
 
-# [A : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
-# ([T : Type] -> T -> A T) ->
-# [From : Type] -> [To : Type] -> (From -> A To) -> Iterable From -> A (Iterable To)
+# [A : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> A From -> A To) ->
+# ([T : *] -> T -> A T) ->
+# [From : *] -> [To : *] -> (From -> A To) -> Iterable From -> A (Iterable To)
 @curry
 @curry
 def traverse[From](

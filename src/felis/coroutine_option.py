@@ -9,10 +9,12 @@ from felis.option import Option
 
 __all__ = [
     "CoroutineOption",
+    "add",
     "apply",
     "bind",
     "bound",
     "compose",
+    "default",
     "discard_after",
     "discard_before",
     "guard",
@@ -27,6 +29,14 @@ __all__ = [
 
 
 type CoroutineOption[T] = Coroutine[Option[T]]
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def add[T](coroutine_option_augend: CoroutineOption[T], coroutine_option_addend: CoroutineOption[T]) -> CoroutineOption[T]: ...
+else:
+    add = option_t.add(coroutine.identity)(coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -109,3 +119,12 @@ else:
 
 
 guard = felis.identity.compose(coroutine.identity)(option.guard)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def default[T](coroutine_option_value: CoroutineOption[T], default_value: Coroutine[T]) -> Coroutine[T]: ...
+
+else:
+    default = option_t.default(coroutine.identity)(coroutine.bind)

@@ -76,7 +76,7 @@ else:
     when = applicative.when(identity)
 
 
-# [M : Type -> Type] -> [T : Type] -> Identity (M T) -> M T
+# [M : * -> *] -> [T : *] -> Identity (M T) -> M T
 def inject(identity_m_identity_value: Identity[Any]) -> Any:
     return identity_m_identity_value
 

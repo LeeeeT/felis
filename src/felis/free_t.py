@@ -13,7 +13,7 @@ class Pure[T]:
     value: T
 
 
-# [F : Type -> Type] -> [T : Type] -> F (Free F T) -> Free F T
+# [F : * -> *] -> [T : *] -> F (Free F T) -> Free F T
 @dataclass(frozen=True)
 class Bind:
     f_free_value: Any
@@ -22,9 +22,9 @@ class Bind:
 type Free[T] = Pure[T] | Bind
 
 
-# [F : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> F From -> F To) ->
-# [From : Type] -> [To : Type] -> (From -> To) -> Free F From -> Free F To
+# [F : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) ->
+# [From : *] -> [To : *] -> (From -> To) -> Free F From -> Free F To
 @curry
 @curry
 def map[From, To](free_value: Free[From], function: Callable[[From], To], f_map: Callable[[Any], Callable[[Any], Any]]) -> Free[To]:
@@ -36,15 +36,15 @@ def map[From, To](free_value: Free[From], function: Callable[[From], To], f_map:
 
 
 if TYPE_CHECKING:
-    # [F : Type -> Type] -> [T : Type] -> T -> Free F T
+    # [F : * -> *] -> [T : *] -> T -> Free F T
     identity: Free[Any]
 else:
     identity = Pure
 
 
-# [F : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> F From -> F To) ->
-# [From : Type] -> [To : Type] -> Free F (From -> To) -> Free F From -> Free F To
+# [F : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) ->
+# [From : *] -> [To : *] -> Free F (From -> To) -> Free F From -> Free F To
 @curry
 @curry
 def apply[From, To](free_value: Free[From], free_function: Free[Callable[[From], To]], f_map: Callable[[Any], Callable[[Any], Any]]) -> Free[To]:
@@ -55,7 +55,7 @@ def apply[From, To](free_value: Free[From], free_function: Free[Callable[[From],
             return Bind(f_map(felis.function.flip(apply(f_map))(free_value))(f_free_function))
 
 
-# [F : Type -> Type] -> ([From : Type] -> [To : Type] -> (From -> To) -> F From -> F To) -> [T : Type] -> Free F (Free F T) -> Free F T
+# [F : * -> *] -> ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) -> [T : *] -> Free F (Free F T) -> Free F T
 @curry
 def join[T](free_free_value: Free[Free[T]], f_map: Callable[[Any], Callable[[Any], Any]]) -> Free[T]:
     match free_free_value:

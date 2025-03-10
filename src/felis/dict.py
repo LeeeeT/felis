@@ -11,7 +11,7 @@ __all__ = ["Dict", "add", "get", "map", "neutral", "set"]
 Dict = dict
 
 
-# [K : Type] -> [V : Type] -> dict K V
+# [K : *] -> [V : *] -> dict K V
 neutral: dict[Any, Any] = {}
 
 

@@ -60,7 +60,7 @@ else:
 
 
 if TYPE_CHECKING:
-    # [T : Type] -> Parser T
+    # [T : *] -> Parser T
     def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:
@@ -211,13 +211,13 @@ def option[T](parser: Parser[T]) -> Parser[Option[T]]:
     return add(identity(felis.option.neutral))(map(felis.option.identity)(parser))
 
 
-# [S : Type] -> Parser S -> [T : Type] -> Parser T -> Parser (list T)
+# [S : *] -> Parser S -> [T : *] -> Parser T -> Parser (list T)
 @curry
 def separated[T](parser: Parser[T], separator: Parser[Any]) -> Parser[list[T]]:
     return add(identity(felis.list.neutral))(bind(parser)(lambda first: bind(many(take_after(separator)(parser)))(lambda rest: identity([first, *rest]))))
 
 
-# [L : Type] -> Parser L -> [R : Type] -> Parser R -> [T : Type] -> Parser T -> Parser T
+# [L : *] -> Parser L -> [R : *] -> Parser R -> [T : *] -> Parser T -> Parser T
 @curry
 @curry
 def bracket[T](parser: Parser[T], right: Parser[Any], left: Parser[Any]) -> Parser[T]:

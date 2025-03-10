@@ -54,7 +54,7 @@ else:
 
 
 if TYPE_CHECKING:
-    # [K : Type] -> [T : Type] -> T -> FreeDict K T
+    # [K : *] -> [T : *] -> T -> FreeDict K T
     identity: FreeDict[Any, Any]
 else:
     from felis.free_t import identity

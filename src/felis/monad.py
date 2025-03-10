@@ -6,10 +6,10 @@ from felis.currying import curry
 __all__ = ["bound", "compose", "guard"]
 
 
-# [M : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> M From -> M To) ->
-# ([T : Type] -> M (M T) -> M T) ->
-# [From : Type] -> [To : Type] -> (From -> M To) -> M From -> M To
+# [M : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> M From -> M To) ->
+# ([T : *] -> M (M T) -> M T) ->
+# [From : *] -> [To : *] -> (From -> M To) -> M From -> M To
 @curry
 @curry
 @curry
@@ -22,9 +22,9 @@ def bound(
     return join(map(function)(m_value))
 
 
-# [M : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> M From -> (From -> M To) -> M To) ->
-# [Intermediate : Type] -> [To : Type] -> (Intermediate -> M To) -> [From : Type] -> (From -> M Intermediate) -> From -> M To
+# [M : * -> *] ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [Intermediate : *] -> [To : *] -> (Intermediate -> M To) -> [From : *] -> (From -> M Intermediate) -> From -> M To
 @curry
 @curry
 @curry
@@ -37,7 +37,7 @@ def compose[From](
     return bind(first(value))(second)
 
 
-# [A : Type -> Type] -> ([T : Type] -> A T) -> ([T : Type] -> T -> A T) -> bool -> A None
+# [A : * -> *] -> ([T : *] -> A T) -> ([T : *] -> T -> A T) -> bool -> A None
 @curry
 @curry
 def guard(bool: bool, identity: Callable[[Any], Any], neutral: Any) -> Any:

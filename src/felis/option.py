@@ -14,6 +14,7 @@ __all__ = [
     "bind",
     "bound",
     "compose",
+    "default",
     "discard_after",
     "discard_before",
     "fold",
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
     def add[T](augend: Option[T], addend: Option[T]) -> Option[T]: ...
 
 else:
-    add = option_t.add(felis.identity.bind)
+    add = option_t.add(felis.identity.identity)(felis.identity.bind)
 
 
 @curry
@@ -116,10 +117,10 @@ def fold[A, T](option_value: Option[T], function: Callable[[T], Callable[[A], A]
             return function(value)(accumulator)
 
 
-# [A : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
-# ([T : Type] -> T -> A T) ->
-# [From : Type] -> [To : Type] -> (From -> A To) -> Option From -> A (Option To)
+# [A : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> A From -> A To) ->
+# ([T : *] -> T -> A T) ->
+# [From : *] -> [To : *] -> (From -> A To) -> Option From -> A (Option To)
 @curry
 @curry
 @curry
@@ -171,3 +172,12 @@ if TYPE_CHECKING:
 
 else:
     guard = monad.guard(neutral)(identity)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def default[T](option_value: Option[T], default_value: T) -> T: ...
+
+else:
+    default = option_t.default(felis.identity.identity)(felis.identity.bind)

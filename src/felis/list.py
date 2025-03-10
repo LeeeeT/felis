@@ -39,7 +39,7 @@ __all__ = [
 List = list
 
 
-# [T : Type] -> List T
+# [T : *] -> List T
 neutral: list[Any] = []
 
 
@@ -106,10 +106,26 @@ def fold[A, T](list_value: List[T], function: Callable[[T], Callable[[A], A]], a
     return accumulator
 
 
-# [A : Type -> Type] ->
-# ([From : Type] -> [To : Type] -> (From -> To) -> A From -> A To) ->
-# ([T : Type] -> T -> A T) ->
-# [From : Type] -> [To : Type] -> (From -> A To) -> List From -> A (List To)
+@curry
+@curry
+def fold_right[A, T](list_value: List[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
+    if list_value:
+        return function(list_value[0])(fold_right(accumulator)(function)(list_value[1:]))
+    return accumulator
+
+
+@curry
+@curry
+def fold_left[A, T](list_value: List[T], function: Callable[[A], Callable[[T], A]], accumulator: A) -> A:
+    if list_value:
+        return fold_left(function(accumulator)(list_value[0]))(function)(list_value[1:])
+    return accumulator
+
+
+# [A : * -> *] ->
+# ([From : *] -> [To : *] -> (From -> To) -> A From -> A To) ->
+# ([T : *] -> T -> A T) ->
+# [From : *] -> [To : *] -> (From -> A To) -> List From -> A (List To)
 @curry
 @curry
 def traverse[From](
