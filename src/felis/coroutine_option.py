@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
     @curry
     def add[T](coroutine_option_augend: CoroutineOption[T], coroutine_option_addend: CoroutineOption[T]) -> CoroutineOption[T]: ...
+
 else:
     add = option_t.add(coroutine.identity)(coroutine.bind)
 
