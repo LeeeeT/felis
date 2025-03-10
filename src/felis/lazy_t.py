@@ -3,10 +3,27 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Lazy", "join"]
+__all__ = ["Lazy", "apply", "join"]
 
 
 type Lazy[T] = Callable[[], T]
+
+
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [From : *] -> [To : *] -> Lazy (M (From -> To)) -> Lazy (M From) -> Lazy (M To)
+@curry
+@curry
+@curry
+@curry
+def apply(
+    lazy_m_value: Lazy[Any],
+    lazy_m_function: Lazy[Any],
+    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
+    m_identity: Callable[[Any], Any],
+) -> Any:
+    return lambda: m_bind(lazy_m_function())(lambda function: m_bind(lazy_m_value())(lambda value: m_identity(function(value))))
 
 
 # [M : * -> *] ->
