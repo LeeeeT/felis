@@ -1,10 +1,10 @@
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import felis.identity
-from felis import applicative, function, monad
+from felis import applicative, either_t, function, monad
 from felis.currying import curry
+from felis.either_t import Either, Left, Right
 
 __all__ = [
     "Either",
@@ -20,7 +20,6 @@ __all__ = [
     "discard_before",
     "fold",
     "identity",
-    "inject",
     "join",
     "lift2",
     "map",
@@ -31,26 +30,13 @@ __all__ = [
 ]
 
 
-type Either[L, R] = Left[L] | Right[R]
+if TYPE_CHECKING:
 
+    @curry
+    def add[L, R](augend: Either[L, R], addend: Either[L, R]) -> Either[L, R]: ...
 
-@dataclass(frozen=True)
-class Left[T]:
-    value: T
-
-
-@dataclass(frozen=True)
-class Right[T]:
-    value: T
-
-
-@curry
-def add[L, R](augend: Either[L, R], addend: Either[L, R]) -> Either[L, R]:
-    match augend:
-        case Left(value):
-            return addend
-        case Right(value):
-            return Right(value)
+else:
+    add = either_t.add(felis.identity.identity)(felis.identity.bind)
 
 
 @curry
@@ -70,13 +56,13 @@ else:
     identity = Right
 
 
-@curry
-def apply[L, From, To](either_value: Either[L, From], either_function: Either[L, Callable[[From], To]]) -> Either[L, To]:
-    match either_function:
-        case Left(value):
-            return Left(value)
-        case Right(function):
-            return map(function)(either_value)
+if TYPE_CHECKING:
+
+    @curry
+    def apply[L, From, To](either_value: Either[L, From], either_function: Either[L, Callable[[From], To]]) -> Either[L, To]: ...
+
+else:
+    apply = either_t.apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -145,22 +131,12 @@ def traverse[From](
             return a_map(identity)(function(value))
 
 
-# [L : *] -> [M : * -> *] -> ([T : *] -> T -> M T) -> [R : *] -> Either L (M (Either L R)) -> M (Either L R)
-@curry
-def inject(either_m_either_value: Either[Any, Any], m_identity: Callable[[Any], Any]) -> Any:
-    match either_m_either_value:
-        case Left(value):
-            return m_identity(Left(value))
-        case Right(m_either_value):
-            return m_either_value
-
-
 if TYPE_CHECKING:
 
     def join[L, R](either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
 
 else:
-    join = inject(felis.identity.identity)
+    join = either_t.join(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
