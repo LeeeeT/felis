@@ -22,7 +22,7 @@ def apply(
     lazy_m_function: Lazy[Any],
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
     m_identity: Callable[[Any], Any],
-) -> Any:
+) -> Lazy[Any]:
     return lambda: m_bind(lazy_m_function())(lambda function: m_bind(lazy_m_value())(lambda value: m_identity(function(value))))
 
 
