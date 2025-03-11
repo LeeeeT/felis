@@ -45,9 +45,13 @@ def identity[T](value: T) -> Lazy[T]:
     return lambda: value
 
 
-@curry
-def apply[From, To](lazy_value: Lazy[From], lazy_function: Lazy[Callable[[From], To]]) -> Lazy[To]:
-    return lambda: lazy_function()(lazy_value())
+if TYPE_CHECKING:
+
+    @curry
+    def apply[From, To](lazy_value: Lazy[From], lazy_function: Lazy[Callable[[From], To]]) -> Lazy[To]: ...
+
+else:
+    apply = lazy_t.apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -83,8 +87,7 @@ else:
 
 if TYPE_CHECKING:
 
-    def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]:
-        return lambda: lazy_lazy_value()()
+    def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]: ...
 
 else:
     join = lazy_t.join(felis.identity.identity)(felis.identity.bind)
