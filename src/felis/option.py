@@ -63,13 +63,13 @@ else:
     identity = Some
 
 
-@curry
-def apply[From, To](option_value: Option[From], option_function: Option[Callable[[From], To]]) -> Option[To]:
-    match option_function:
-        case None:
-            return None
-        case Some(function):
-            return map(function)(option_value)
+if TYPE_CHECKING:
+
+    @curry
+    def apply[From, To](option_value: Option[From], option_function: Option[Callable[[From], To]]) -> Option[To]: ...
+
+else:
+    apply = option_t.apply(felis.identity.identity)(felis.identity.bind)
 
 
 if TYPE_CHECKING:

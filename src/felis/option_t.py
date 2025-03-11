@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "add", "default", "join", "neutral"]
+__all__ = ["Option", "Some", "add", "apply", "default", "join", "neutral"]
 
 
 type Option[T] = None | Some[T]
@@ -41,6 +41,37 @@ def add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable
 # [M : * -> *] ->
 # ([T : *] -> T -> M T) ->
 # ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [From : *] -> [To : *] -> M (Option (From -> To)) -> M (Option From) -> M (Option To)
+@curry
+@curry
+@curry
+def apply(
+    m_either_value: Any,
+    m_either_function: Any,
+    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
+    m_identity: Callable[[Any], Any],
+) -> Any:
+    def option_function_binder(option_function: Option[Callable[[Any], Any]]) -> Any:
+        match option_function:
+            case None:
+                return m_identity(None)
+            case Some(function):
+
+                def option_value_binder(option_value: Option[Any]) -> Any:
+                    match option_value:
+                        case None:
+                            return m_identity(None)
+                        case Some(value):
+                            return m_identity(Some(function(value)))
+
+                return m_bind(m_either_value)(option_value_binder)
+
+    return m_bind(m_either_function)(option_function_binder)
+
+
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
 # [T : *] -> M (Option (M (Option T))) -> M (Option T)
 @curry
 @curry
@@ -62,13 +93,13 @@ def join(m_option_m_option_value: Any, m_bind: Callable[[Any], Callable[[Callabl
 @curry
 @curry
 @curry
-def default[T](
+def default(
     m_option_value: Any,
     default_value: Any,
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
     m_identity: Callable[[Any], Any],
 ) -> Any:
-    def binder(option_value: Option[T]) -> Any:
+    def binder(option_value: Option[Any]) -> Any:
         match option_value:
             case None:
                 return default_value
