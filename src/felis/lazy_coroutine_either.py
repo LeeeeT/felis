@@ -34,7 +34,8 @@ if TYPE_CHECKING:
 
     @curry
     def add[L, R](
-        lazy_coroutine_either_augend: LazyCoroutineEither[L, R], lazy_coroutine_either_addend: LazyCoroutineEither[L, R],
+        lazy_coroutine_either_augend: LazyCoroutineEither[L, R],
+        lazy_coroutine_either_addend: LazyCoroutineEither[L, R],
     ) -> LazyCoroutineEither[L, R]: ...
 
 else:
@@ -47,7 +48,7 @@ if TYPE_CHECKING:
     def map[L, From, To](lazy_coroutine_either_value: LazyCoroutineEither[L, From], function: Callable[[From], To]) -> LazyCoroutineEither[L, To]: ...
 
 else:
-    map = felis.identity.compose(lazy_coroutine.map)(either_t.map)
+    map = felis.identity.compose(lazy_coroutine.map)(either.map)
 
 
 identity = felis.identity.compose(lazy_coroutine.identity)(either.identity)
