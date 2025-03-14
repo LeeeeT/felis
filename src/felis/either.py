@@ -16,6 +16,7 @@ __all__ = [
     "bound",
     "catch",
     "compose",
+    "default",
     "discard_after",
     "discard_before",
     "fold",
@@ -163,6 +164,15 @@ if TYPE_CHECKING:
 
 else:
     compose = monad.compose(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def default[L, R](either_value: Either[L, R], default_value: R) -> R: ...
+
+else:
+    default = either_t.default(felis.identity.identity)(felis.identity.bind)
 
 
 @curry
