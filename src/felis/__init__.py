@@ -10,6 +10,10 @@ from felis.function_option import FunctionOption
 from felis.identity import Identity
 from felis.iterable import Iterable
 from felis.lazy import Lazy
+from felis.lazy_coroutine import LazyCoroutine
+from felis.lazy_coroutine_either import LazyCoroutineEither
+from felis.lazy_coroutine_either_list import LazyCoroutineEitherList
+from felis.lazy_coroutine_option import LazyCoroutineOption
 from felis.list import List
 from felis.option import Option
 from felis.order import Order
@@ -32,6 +36,10 @@ __all__ = [
     "Identity",
     "Iterable",
     "Lazy",
+    "LazyCoroutine",
+    "LazyCoroutineEither",
+    "LazyCoroutineEitherList",
+    "LazyCoroutineOption",
     "List",
     "Option",
     "Order",

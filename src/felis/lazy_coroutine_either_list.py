@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 
     @curry
     def map[L, From, To](
-        lazy_coroutine_either_list_value: LazyCoroutineEitherList[L, From], function: Callable[[From], To],
+        lazy_coroutine_either_list_value: LazyCoroutineEitherList[L, From],
+        function: Callable[[From], To],
     ) -> LazyCoroutineEitherList[L, To]: ...
 
 else:
