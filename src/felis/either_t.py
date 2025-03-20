@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Either", "Left", "Right", "add", "apply", "default", "join"]
+__all__ = ["Either", "Left", "Right", "apply", "default_to", "join", "to_add"]
 
 
 type Either[L, R] = Left[L] | Right[R]
@@ -27,13 +27,13 @@ class Right[T]:
 @curry
 @curry
 @curry
-def add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Any:
+def to_add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
     def augend_binder(augend: Either[Any, Any]) -> Any:
         match augend:
             case Left(_):
                 return m_addend
             case Right(right):
-                return m_identity(Right(right))
+                return m_pure(Right(right))
 
     return m_bind(m_augend)(augend_binder)
 
@@ -49,20 +49,20 @@ def apply(
     m_either_value: Any,
     m_either_function: Any,
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def either_function_binder(either_function: Either[Any, Any]) -> Any:
         match either_function:
             case Left(left):
-                return m_identity(Left(left))
+                return m_pure(Left(left))
             case Right(function):
 
                 def either_value_binder(either_value: Either[Any, Any]) -> Any:
                     match either_value:
                         case Left(left):
-                            return m_identity(Left(left))
+                            return m_pure(Left(left))
                         case Right(value):
-                            return m_identity(Right(function(value)))
+                            return m_pure(Right(function(value)))
 
                 return m_bind(m_either_value)(either_value_binder)
 
@@ -75,11 +75,11 @@ def apply(
 # [L : *] -> [R : *] -> M (Either L (M (Either L R))) -> M (Either L R)
 @curry
 @curry
-def join(m_either_m_either_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Any:
+def join(m_either_m_either_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
     def either_m_either_binder(either_m_either_value: Either[Any, Any]) -> Any:
         match either_m_either_value:
             case Left(left):
-                return m_identity(Left(left))
+                return m_pure(Left(left))
             case Right(m_either_value):
                 return m_either_value
 
@@ -93,17 +93,17 @@ def join(m_either_m_either_value: Any, m_bind: Callable[[Any], Callable[[Callabl
 @curry
 @curry
 @curry
-def default(
+def default_to(
     m_either_value: Any,
     default_value: Any,
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def either_binder(either_value: Either[Any, Any]) -> Any:
         match either_value:
             case Left(_):
                 return default_value
             case Right(value):
-                return m_identity(value)
+                return m_pure(value)
 
     return m_bind(m_either_value)(either_binder)

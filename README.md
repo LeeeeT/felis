@@ -64,7 +64,7 @@ match safe_reciprocal_of_str(input("Enter a number: ")):
 Managing IO (or any other lazy computations) with `felis.lazy`:
 
 ```python
-from felis.lazy import bind, take_after
+from felis.lazy import *
 
 main = \
     take_after(lambda: print("What's your name?"))(
@@ -78,14 +78,14 @@ main()
 Finding pythagorean triples (analogue to list comprehension) with `felis.list`:
 
 ```python
-from felis.list import bind, guard, identity, range, take_after
+from felis.list import *
 
 pythags = \
-    bind(range(1)(20))(lambda z:
-    bind(range(1)(z))(lambda x:
-    bind(range(x)(z))(lambda y:
+    bind(range_to_from(1)(20))(lambda z:
+    bind(range_to_from(1)(z))(lambda x:
+    bind(range_to_from(x)(z))(lambda y:
     take_after(guard(x**2 + y**2 == z**2))(
-    identity((x, y, z))
+    pure((x, y, z))
 ))))
 
 print(pythags)
@@ -98,22 +98,22 @@ Parsing (and evaluating) an arithmetic expression with `felis.parser`:
 from felis.option import Some
 from felis.parser import *
 
-literal = map(int)(map("".join)(some(digit)))
+literal = map_by(int)(map_by("".join)(some(digit)))
 factor = lambda string: bracket(character("("))(character(")"))(expression)(string)
-term_priority_1 = add(literal)(factor)
+term_priority_1 = to_add(literal)(factor)
 
-multiplication = take_after(character("*"))(identity(lambda a: lambda b: a * b))
-division = take_after(character("/"))(identity(lambda a: lambda b: a / b))
-term_priority_2 = chain_left_1(add(division)(multiplication))(term_priority_1)
+multiplication = take_after(character("*"))(pure(lambda a: lambda b: a * b))
+division = take_after(character("/"))(pure(lambda a: lambda b: a / b))
+term_priority_2 = chain_left_1(to_add(division)(multiplication))(term_priority_1)
 
-addition = take_after(character("+"))(identity(lambda a: lambda b: a + b))
-subtraction = take_after(character("-"))(identity(lambda a: lambda b: a - b))
-term_priority_3 = chain_left_1(add(subtraction)(addition))(term_priority_2)
+addition = take_after(character("+"))(pure(lambda a: lambda b: a + b))
+subtraction = take_after(character("-"))(pure(lambda a: lambda b: a - b))
+term_priority_3 = chain_left_1(to_add(subtraction)(addition))(term_priority_2)
 
 expression = term_priority_3
 
 while string := input("> "):
-    match run(expression)(string):
+    match parse_as(expression)(string):
         case None:
             print("Syntax error")
         case Some(result):

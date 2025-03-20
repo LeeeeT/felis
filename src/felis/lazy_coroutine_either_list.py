@@ -11,14 +11,14 @@ __all__ = [
     "LazyCoroutineEitherList",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -31,16 +31,16 @@ type LazyCoroutineEitherList[L, R] = LazyCoroutineEither[L, List[R]]
 if TYPE_CHECKING:
 
     @curry
-    def map[L, From, To](
+    def map_by[L, From, To](
         lazy_coroutine_either_list_value: LazyCoroutineEitherList[L, From],
         function: Callable[[From], To],
     ) -> LazyCoroutineEitherList[L, To]: ...
 
 else:
-    map = felis.identity.compose(lazy_coroutine_either.map)(list.map)
+    map_by = felis.identity.compose(lazy_coroutine_either.map_by)(list.map_by)
 
 
-identity = felis.identity.compose(lazy_coroutine_either.identity)(list.identity)
+pure = felis.identity.compose(lazy_coroutine_either.pure)(list.pure)
 
 
 apply = lazy_coroutine_either.lift2(list.apply)
@@ -57,13 +57,13 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineEitherList[L, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -75,10 +75,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[L](bool: bool, lazy_coroutine_either_list_none: LazyCoroutineEitherList[L, None]) -> LazyCoroutineEitherList[L, None]: ...
+    def when[L](lazy_coroutine_either_list_none: LazyCoroutineEitherList[L, None], bool: bool) -> LazyCoroutineEitherList[L, None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -88,22 +88,22 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineEitherList[L, R]: ...
 
 else:
-    join = list_t.join(lazy_coroutine_either.identity)(lazy_coroutine_either.bind)
+    join = list_t.join(lazy_coroutine_either.pure)(lazy_coroutine_either.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[L, From, To](
+    def bind_to[L, From, To](
         lazy_coroutine_either_list_value: LazyCoroutineEitherList[L, From],
         function: Callable[[From], LazyCoroutineEitherList[L, To]],
     ) -> LazyCoroutineEitherList[L, To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:

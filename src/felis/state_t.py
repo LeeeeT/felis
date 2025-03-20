@@ -5,27 +5,27 @@ from felis.currying import curry
 from felis.lazy import Lazy
 
 __all__ = [
-    "add",
     "apply",
-    "identity",
     "join",
-    "map",
+    "map_by",
     "neutral",
+    "pure",
     "reversed_apply",
     "reversed_join",
-    "run",
+    "starting_with_run",
+    "to_add",
 ]
 
 
 # [S : *] -> [M : * -> *] -> ([From : *] -> [To : *] -> (From -> To) -> M From -> M To) -> [T : *] -> StateT S M T -> S -> M T
 @curry
 @curry
-def run[S](state: S, state_value: Callable[[S], Any], m_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> Any:
+def starting_with_run[S](state: S, state_value: Callable[[S], Any], m_map_by: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> Any:
     def value_mapper(value_and_state: tuple[Any, S]) -> Any:
         value, _ = value_and_state
         return value
 
-    return m_map(value_mapper)(state_value(state))
+    return m_map_by(value_mapper)(state_value(state))
 
 
 # [S : *] -> [M : * -> *] -> ([T : *] -> M T) -> [T : *] -> StateT S M T
@@ -38,8 +38,8 @@ def neutral(state: Any, m_neutral: Any) -> Any:
 @curry
 @curry
 @curry
-def add[S](state: S, first: Callable[[S], Any], second: Callable[[S], Any], m_add: Callable[[Any], Any]) -> Any:
-    return m_add(second(state))(first(state))
+def to_add[S](state: S, first: Callable[[S], Any], second: Callable[[S], Any], m_to_add: Callable[[Any], Any]) -> Any:
+    return m_to_add(second(state))(first(state))
 
 
 # [S : *] -> [M : * -> *] ->
@@ -48,24 +48,24 @@ def add[S](state: S, first: Callable[[S], Any], second: Callable[[S], Any], m_ad
 @curry
 @curry
 @curry
-def map[S](
+def map_by[S](
     state: S,
     state_value: Callable[[S], Any],
     function: Callable[[Any], Any],
-    m_map: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
+    m_map_by: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Any:
     def value_mapper(value_and_new_state: tuple[Any, S]) -> tuple[Any, S]:
         value, new_state = value_and_new_state
         return function(value), new_state
 
-    return m_map(value_mapper)(state_value(state))
+    return m_map_by(value_mapper)(state_value(state))
 
 
 # [S : *] -> [M : * -> *] -> ([T : *] -> T -> M T) -> [T : *] -> T -> StateT S M T
 @curry
 @curry
-def identity(state: Any, value: Any, m_identity: Callable[[Any], Any]) -> Any:
-    return m_identity((value, state))
+def pure(state: Any, value: Any, m_pure: Callable[[Any], Any]) -> Any:
+    return m_pure((value, state))
 
 
 # [S : *] -> [M : * -> *] ->
@@ -81,14 +81,14 @@ def apply[S](
     state_value: Callable[[S], Any],
     state_function: Callable[[S], Any],
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def function_binder(function_and_intermediate_state: tuple[Callable[[Any], Any], S]) -> Any:
         function, intermediate_state = function_and_intermediate_state
 
         def value_binder(value_and_new_state: tuple[Any, S]) -> Any:
             value, new_state = value_and_new_state
-            return m_identity((function(value), new_state))
+            return m_pure((function(value), new_state))
 
         return m_bind(state_value(intermediate_state))(value_binder)
 
@@ -106,14 +106,14 @@ def join[S](
     state: S,
     state_state_value: Callable[[S], Any],
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def state_value_binder(state_value_and_intermediate_state: tuple[Any, S]) -> Any:
         state_value, intermediate_state = state_value_and_intermediate_state
 
         def value_binder(value_and_new_state: tuple[Any, S]) -> Any:
             value, new_state = value_and_new_state
-            return m_identity((value, new_state))
+            return m_pure((value, new_state))
 
         return m_bind(state_value(intermediate_state))(value_binder)
 
@@ -133,7 +133,7 @@ def reversed_apply[S](
     reversed_state_value: Callable[[Lazy[S]], Any],
     reversed_state_function: Callable[[Lazy[S]], Any],
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def function_binder(function_and_new_state: tuple[Callable[[Any], Any], Lazy[S]], /) -> Any:
         nonlocal state
@@ -142,7 +142,7 @@ def reversed_apply[S](
         def value_binder(value_and_state: tuple[Any, Lazy[S]], /) -> Any:
             nonlocal state
             value, state = value_and_state
-            return m_identity((function(value), new_state))
+            return m_pure((function(value), new_state))
 
         return m_bind(reversed_state_value(new_state))(value_binder)
 
@@ -160,7 +160,7 @@ def reversed_join[S](
     state: Lazy[S],
     reversed_state_reversed_state_value: Callable[[Lazy[S]], Any],
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def reversed_state_value_binder(reversed_state_value_and_new_state: tuple[Any, S]) -> Any:
         nonlocal state
@@ -169,7 +169,7 @@ def reversed_join[S](
         def value_binder(value_and_state: tuple[Any, Lazy[S]]) -> Any:
             nonlocal state
             value, state = value_and_state
-            return m_identity((value, new_state))
+            return m_pure((value, new_state))
 
         return m_bind(reversed_state_value(state))(value_binder)
 

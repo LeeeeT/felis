@@ -9,22 +9,22 @@ __all__ = ["Predicate", "both", "different", "either", "false", "negate", "same"
 type Predicate[T] = Callable[[T], bool]
 
 
-true = function.identity(True)
+true = function.pure(True)
 
 
-false = function.identity(False)
+false = function.pure(False)
 
 
-both = function.add(felis.bool.both)
+both = function.to_add(felis.bool.both_and)
 
 
-either = function.add(felis.bool.either)
+either = function.to_add(felis.bool.either_or)
 
 
 negate = identity.compose(felis.bool.negate)
 
 
-same = function.add(felis.bool.same)
+same = function.to_add(felis.bool.same_as)
 
 
-different = function.add(felis.bool.different)
+different = function.to_add(felis.bool.different_from)

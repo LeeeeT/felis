@@ -15,14 +15,14 @@ __all__ = [
     "Pure",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -48,17 +48,17 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def map[From, To](free_value: Free[From], function: Callable[[From], To]) -> Free[To]: ...
+    def map_by[From, To](free_value: Free[From], function: Callable[[From], To]) -> Free[To]: ...
 
 else:
-    map = free_t.map(felis.identity.map)
+    map_by = free_t.map_by(felis.identity.map_by)
 
 
 if TYPE_CHECKING:
     # [T : *] -> T -> Free T
-    identity: Free[Any]
+    pure: Free[Any]
 else:
-    from felis.free_t import identity
+    from felis.free_t import pure
 
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     def apply[From, To](free_value: Free[From], free_function: Free[Callable[[From], To]]) -> Free[To]: ...
 
 else:
-    apply = free_t.apply(felis.identity.map)
+    apply = free_t.apply(felis.identity.map_by)
 
 
 if TYPE_CHECKING:
@@ -81,13 +81,13 @@ if TYPE_CHECKING:
     ) -> Free[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -99,10 +99,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, free_none: Free[None]) -> Free[None]: ...
+    def when(free_none: Free[None], bool: bool) -> Free[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -110,19 +110,19 @@ if TYPE_CHECKING:
     def join[T](free_free_value: Free[Free[T]], /) -> Free[T]: ...
 
 else:
-    join = free_t.join(felis.identity.map)
+    join = free_t.join(felis.identity.map_by)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](free_value: Free[From], function: Callable[[From], Free[To]]) -> Free[To]: ...
+    def bind_to[From, To](free_value: Free[From], function: Callable[[From], Free[To]]) -> Free[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:

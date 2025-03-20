@@ -12,26 +12,26 @@ from felis.predicate import Predicate
 
 __all__ = [
     "List",
-    "add",
-    "append",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "filter",
+    "filter_by",
     "fold",
     "guard",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
     "neutral",
-    "range",
-    "sort",
+    "pure",
+    "range_to_from",
+    "sort_by",
     "take_after",
     "take_before",
+    "to_add",
+    "to_append",
     "traverse",
     "when",
 ]
@@ -42,21 +42,21 @@ neutral: list[Any] = []
 
 
 @curry
-def append[T](list: List[T], value: T) -> List[T]:
+def to_append[T](list: List[T], value: T) -> List[T]:
     return [*list, value]
 
 
 @curry
-def add[T](augend: List[T], addend: List[T]) -> List[T]:
+def to_add[T](augend: List[T], addend: List[T]) -> List[T]:
     return augend + addend
 
 
 @curry
-def map[From, To](list_value: List[From], function: Callable[[From], To]) -> List[To]:
+def map_by[From, To](list_value: List[From], function: Callable[[From], To]) -> List[To]:
     return [function(value) for value in list_value]
 
 
-def identity[T](value: T) -> List[T]:
+def pure[T](value: T) -> List[T]:
     return [value]
 
 
@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     def apply[From, To](list_value: List[From], list_function: List[Callable[[From], To]]) -> List[To]: ...
 
 else:
-    apply = list_t.apply(felis.identity.identity)(felis.identity.bind)
+    apply = list_t.apply(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -76,13 +76,13 @@ if TYPE_CHECKING:
     def lift2[First, Second, Result](second: List[Second], first: List[First], function: Callable[[First], Callable[[Second], Result]]) -> List[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -94,10 +94,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, list_none: List[None]) -> List[None]: ...
+    def when(list_none: List[None], bool: bool) -> List[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 @curry
@@ -135,7 +135,7 @@ def traverse[From](
     a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
     a_identity: Callable[[Any], Any],
 ) -> Callable[[List[From]], Any]:
-    return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
+    return fold(a_identity(neutral))(felis.identity.compose(a_lift2(to_append))(function))
 
 
 if TYPE_CHECKING:
@@ -143,19 +143,19 @@ if TYPE_CHECKING:
     def join[T](list_list_value: List[List[T]]) -> List[T]: ...
 
 else:
-    join = list_t.join(felis.identity.identity)(felis.identity.bind)
+    join = list_t.join(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](list_value: List[From], function: Callable[[From], List[To]]) -> List[To]: ...
+    def bind_to[From, To](list_value: List[From], function: Callable[[From], List[To]]) -> List[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -173,19 +173,19 @@ if TYPE_CHECKING:
     def guard(bool: bool) -> List[None]: ...
 
 else:
-    guard = monad.guard(neutral)(identity)
+    guard = monad.guard(neutral)(pure)
 
 
 @curry
-def filter[T](list: List[T], predicate: Predicate[T]) -> List[T]:
+def filter_by[T](list: List[T], predicate: Predicate[T]) -> List[T]:
     return [value for value in list if predicate(value)]
 
 
 @curry
-def sort[T](list: List[T], order: Order[T]) -> List[T]:
+def sort_by[T](list: List[T], order: Order[T]) -> List[T]:
     return sorted(list, key=felis.order.rich_comparison(order))
 
 
 @curry
-def range(stop: int, start: int) -> List[int]:
+def range_to_from(stop: int, start: int) -> List[int]:
     return list(builtins.range(start, stop))

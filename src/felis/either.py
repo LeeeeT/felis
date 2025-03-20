@@ -10,22 +10,22 @@ __all__ = [
     "Either",
     "Left",
     "Right",
-    "add",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "catch",
     "compose",
-    "default",
+    "default_to",
     "discard_after",
     "discard_before",
     "fold",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
+    "to_add",
     "traverse",
     "when",
 ]
@@ -34,14 +34,14 @@ __all__ = [
 if TYPE_CHECKING:
 
     @curry
-    def add[L, R](augend: Either[L, R], addend: Either[L, R]) -> Either[L, R]: ...
+    def to_add[L, R](augend: Either[L, R], addend: Either[L, R]) -> Either[L, R]: ...
 
 else:
-    add = either_t.add(felis.identity.identity)(felis.identity.bind)
+    to_add = either_t.to_add(felis.identity.pure)(felis.identity.bind)
 
 
 @curry
-def map[L, From, To](either_value: Either[L, From], function: Callable[[From], To]) -> Either[L, To]:
+def map_by[L, From, To](either_value: Either[L, From], function: Callable[[From], To]) -> Either[L, To]:
     match either_value:
         case Left(value):
             return Left(value)
@@ -51,10 +51,10 @@ def map[L, From, To](either_value: Either[L, From], function: Callable[[From], T
 
 if TYPE_CHECKING:
     # [L : *] -> [R : *] -> R -> Either L R
-    def identity[R](value: R) -> Either[Any, R]: ...
+    def pure[R](value: R) -> Either[Any, R]: ...
 
 else:
-    identity = Right
+    pure = Right
 
 
 if TYPE_CHECKING:
@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     def apply[L, From, To](either_value: Either[L, From], either_function: Either[L, Callable[[From], To]]) -> Either[L, To]: ...
 
 else:
-    apply = either_t.apply(felis.identity.identity)(felis.identity.bind)
+    apply = either_t.apply(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -77,13 +77,13 @@ if TYPE_CHECKING:
     ) -> Either[L, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -95,10 +95,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[L](bool: bool, either_none: Either[L, None]) -> Either[L, None]: ...
+    def when[L](either_none: Either[L, None], bool: bool) -> Either[L, None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 # [L : *] -> [A : *] -> A -> [R : *] -> (R -> A -> A) -> Either L R -> A
@@ -129,7 +129,7 @@ def traverse[From](
         case Left(value):
             return a_identity(Left(value))
         case Right(value):
-            return a_map(identity)(function(value))
+            return a_map(pure)(function(value))
 
 
 if TYPE_CHECKING:
@@ -137,19 +137,19 @@ if TYPE_CHECKING:
     def join[L, R](either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
 
 else:
-    join = either_t.join(felis.identity.identity)(felis.identity.bind)
+    join = either_t.join(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]]) -> Either[L, To]: ...
+    def bind_to[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]]) -> Either[L, To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -169,10 +169,10 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def default[L, R](either_value: Either[L, R], default_value: R) -> R: ...
+    def default_to[L, R](either_value: Either[L, R], default_value: R) -> R: ...
 
 else:
-    default = either_t.default(felis.identity.identity)(felis.identity.bind)
+    default_to = either_t.default_to(felis.identity.pure)(felis.identity.bind)
 
 
 @curry

@@ -10,13 +10,12 @@ from felis.predicate import Predicate
 
 __all__ = [
     "Parser",
-    "add",
     "alnum",
     "alpha",
     "any",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "bracket",
     "chain_left",
     "chain_left_1",
@@ -29,20 +28,21 @@ __all__ = [
     "discard_before",
     "end",
     "guard",
-    "identity",
     "join",
     "lift2",
     "many",
-    "map",
+    "map_by",
     "neutral",
     "option",
-    "run",
-    "satisfy",
-    "separated",
+    "parse_as",
+    "pure",
+    "satisfies",
+    "separated_by",
     "some",
     "take_after",
     "take_before",
     "text",
+    "to_add",
     "when",
 ]
 
@@ -53,10 +53,10 @@ type Parser[T] = Callable[[str], Option[tuple[T, str]]]
 if TYPE_CHECKING:
 
     @curry
-    def run[T](string: str, parser_value: Parser[T]) -> Option[T]: ...
+    def parse_as[T](string: str, parser_value: Parser[T]) -> Option[T]: ...
 
 else:
-    run = state_t.run(felis.option.map)
+    parse_as = state_t.starting_with_run(felis.option.map_by)
 
 
 if TYPE_CHECKING:
@@ -64,33 +64,33 @@ if TYPE_CHECKING:
     def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:
-    neutral = option_t.neutral(function.identity)
+    neutral = option_t.neutral(function.pure)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def add[T](first: Parser[T], second: Parser[T]) -> Parser[T]: ...
+    def to_add[T](first: Parser[T], second: Parser[T]) -> Parser[T]: ...
 
 else:
-    add = option_t.add(function.bind)
+    to_add = option_t.to_add(function.pure)(function.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def map[From, To](parser_value: Parser[From], function: Callable[[From], To]) -> Parser[To]: ...
+    def map_by[From, To](parser_value: Parser[From], function: Callable[[From], To]) -> Parser[To]: ...
 
 else:
-    map = state_t.map(felis.option.map)
+    map_by = state_t.map_by(felis.option.map_by)
 
 
 if TYPE_CHECKING:
 
-    def identity[T](value: T, /) -> Parser[T]: ...
+    def pure[T](value: T, /) -> Parser[T]: ...
 
 else:
-    identity = state_t.identity(felis.option.identity)
+    pure = state_t.pure(felis.option.pure)
 
 
 if TYPE_CHECKING:
@@ -99,7 +99,7 @@ if TYPE_CHECKING:
     def apply[From, To](parser_value: Parser[From], parser_function: Parser[Callable[[From], To]]) -> Parser[To]: ...
 
 else:
-    apply = state_t.apply(felis.option.identity)(felis.option.bind)
+    apply = state_t.apply(felis.option.pure)(felis.option.bind)
 
 
 if TYPE_CHECKING:
@@ -113,13 +113,13 @@ if TYPE_CHECKING:
     ) -> Parser[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -131,10 +131,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, parser_none: Parser[None]) -> Parser[None]: ...
+    def when(parser_none: Parser[None], bool: bool) -> Parser[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -142,19 +142,19 @@ if TYPE_CHECKING:
     def join[T](parser_value: Parser[Parser[T]], /) -> Parser[T]: ...
 
 else:
-    join = state_t.join(felis.option.identity)(felis.option.bind)
+    join = state_t.join(felis.option.pure)(felis.option.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](parser_value: Parser[From], function: Callable[[From], Parser[To]]) -> Parser[To]: ...
+    def bind_to[From, To](parser_value: Parser[From], function: Callable[[From], Parser[To]]) -> Parser[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -176,7 +176,7 @@ if TYPE_CHECKING:
     def guard(bool: bool) -> Parser[None]: ...
 
 else:
-    guard = monad.guard(neutral)(identity)
+    guard = monad.guard(neutral)(pure)
 
 
 def end(string: str) -> Option[tuple[None, str]]:
@@ -187,34 +187,34 @@ def any(string: str) -> Option[tuple[str, str]]:
     return felis.option.Some((string[0], string[1:])) if string else None
 
 
-def satisfy(predicate: Predicate[str]) -> Parser[str]:
-    return bind(any)(lambda character: identity(character) if predicate(character) else neutral)
+def satisfies(predicate: Predicate[str]) -> Parser[str]:
+    return bind(any)(lambda character: pure(character) if predicate(character) else neutral)
 
 
 def character(character: str) -> Parser[str]:
-    return satisfy(lambda current: current == character)
+    return satisfies(lambda current: current == character)
 
 
 def text(string: str) -> Parser[str]:
-    return take_after(character(string[0]))(take_after(text(string[1:]))(identity(string))) if string else identity("")
+    return take_after(character(string[0]))(take_after(text(string[1:]))(pure(string))) if string else pure("")
 
 
 def many[T](parser: Parser[T]) -> Parser[list[T]]:
-    return add(identity(felis.list.neutral))(bind(parser)(lambda first: bind(many(parser))(lambda rest: identity([first, *rest]))))
+    return to_add(pure(felis.list.neutral))(bind(parser)(lambda first: bind(many(parser))(lambda rest: pure([first, *rest]))))
 
 
 def some[T](parser: Parser[T]) -> Parser[list[T]]:
-    return bind(parser)(lambda first: bind(many(parser))(lambda rest: identity([first, *rest])))
+    return bind(parser)(lambda first: bind(many(parser))(lambda rest: pure([first, *rest])))
 
 
 def option[T](parser: Parser[T]) -> Parser[Option[T]]:
-    return add(identity(felis.option.neutral))(map(felis.option.identity)(parser))
+    return to_add(pure(felis.option.neutral))(map_by(felis.option.pure)(parser))
 
 
 # [S : *] -> Parser S -> [T : *] -> Parser T -> Parser (list T)
 @curry
-def separated[T](parser: Parser[T], separator: Parser[Any]) -> Parser[list[T]]:
-    return add(identity(felis.list.neutral))(bind(parser)(lambda first: bind(many(take_after(separator)(parser)))(lambda rest: identity([first, *rest]))))
+def separated_by[T](parser: Parser[T], separator: Parser[Any]) -> Parser[list[T]]:
+    return to_add(pure(felis.list.neutral))(bind(parser)(lambda first: bind(many(take_after(separator)(parser)))(lambda rest: pure([first, *rest]))))
 
 
 # [L : *] -> Parser L -> [R : *] -> Parser R -> [T : *] -> Parser T -> Parser T
@@ -227,10 +227,10 @@ def bracket[T](parser: Parser[T], right: Parser[Any], left: Parser[Any]) -> Pars
 @curry
 @curry
 def chain_right[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[R], R]]], accumulator: R) -> Parser[R]:
-    return add(identity(accumulator))(
+    return to_add(pure(accumulator))(
         bind(parser_function)(
             lambda function: bind(parser_value)(
-                lambda value: bind(chain_right(accumulator)(parser_function)(parser_value))(lambda accumulator: identity(function(value)(accumulator))),
+                lambda value: bind(chain_right(accumulator)(parser_function)(parser_value))(lambda accumulator: pure(function(value)(accumulator))),
             ),
         ),
     )
@@ -239,8 +239,8 @@ def chain_right[R, T](parser_value: Parser[T], parser_function: Parser[Callable[
 @curry
 def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[T], T]]]) -> Parser[T]:
     def rest(accumulator: T) -> Parser[T]:
-        return add(identity(accumulator))(
-            bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: identity(function(accumulator)(value))))),
+        return to_add(pure(accumulator))(
+            bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: pure(function(accumulator)(value))))),
         )
 
     return bind(parser_value)(rest)
@@ -249,7 +249,7 @@ def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[
 @curry
 @curry
 def chain_left[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[R], Callable[[T], R]]], accumulator: R) -> Parser[R]:
-    return add(identity(accumulator))(
+    return to_add(pure(accumulator))(
         bind(parser_function)(lambda function: bind(parser_value)(lambda value: chain_left(function(accumulator)(value))(parser_function)(parser_value))),
     )
 
@@ -259,10 +259,10 @@ def chain_left_1[T](parser: Parser[T], function: Parser[Callable[[T], Callable[[
     return bind(parser)(lambda first: chain_left(first)(function)(parser))
 
 
-digit = satisfy(str.isdigit)
+digit = satisfies(str.isdigit)
 
 
-alpha = satisfy(str.isalpha)
+alpha = satisfies(str.isalpha)
 
 
-alnum = satisfy(str.isalnum)
+alnum = satisfies(str.isalnum)

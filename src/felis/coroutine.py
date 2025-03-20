@@ -9,14 +9,14 @@ __all__ = [
     "Coroutine",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -27,17 +27,17 @@ type Coroutine[T] = collections.abc.Coroutine[Any, Any, T]
 
 
 @curry
-async def map[From, To](coroutine_value: Coroutine[From], function: Callable[[From], To]) -> To:
+async def map_by[From, To](coroutine_value: Coroutine[From], function: Callable[[From], To]) -> To:
     return function(await coroutine_value)
 
 
-async def identity[T](value: T) -> T:
+async def pure[T](value: T) -> T:
     return value
 
 
 @curry
 async def apply[From, To](coroutine_value: Coroutine[From], coroutine_function: Coroutine[Callable[[From], To]]) -> To:
-    return await map(await coroutine_function)(coroutine_value)
+    return await map_by(await coroutine_function)(coroutine_value)
 
 
 if TYPE_CHECKING:
@@ -51,13 +51,13 @@ if TYPE_CHECKING:
     ) -> Coroutine[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -69,10 +69,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, coroutine_none: Coroutine[None]) -> Coroutine[None]: ...
+    def when(coroutine_none: Coroutine[None], bool: bool) -> Coroutine[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 async def join[T](coroutine_coroutine_value: Coroutine[Coroutine[T]]) -> T:
@@ -82,13 +82,13 @@ async def join[T](coroutine_coroutine_value: Coroutine[Coroutine[T]]) -> T:
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](coroutine_value: Coroutine[From], function: Callable[[From], Coroutine[To]]) -> Coroutine[To]: ...
+    def bind_to[From, To](coroutine_value: Coroutine[From], function: Callable[[From], Coroutine[To]]) -> Coroutine[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:

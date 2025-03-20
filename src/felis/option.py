@@ -9,23 +9,23 @@ from felis.option_t import Option, Some
 __all__ = [
     "Option",
     "Some",
-    "add",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
-    "default",
+    "default_to",
     "discard_after",
     "discard_before",
     "fold",
     "guard",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
     "neutral",
+    "pure",
     "take_after",
     "take_before",
+    "to_add",
     "traverse",
     "when",
 ]
@@ -34,20 +34,20 @@ __all__ = [
 if TYPE_CHECKING:
     neutral: Option[Any]
 else:
-    neutral = option_t.neutral(felis.identity.identity)
+    neutral = option_t.neutral(felis.identity.pure)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def add[T](augend: Option[T], addend: Option[T]) -> Option[T]: ...
+    def to_add[T](augend: Option[T], addend: Option[T]) -> Option[T]: ...
 
 else:
-    add = option_t.add(felis.identity.identity)(felis.identity.bind)
+    to_add = option_t.to_add(felis.identity.pure)(felis.identity.bind)
 
 
 @curry
-def map[From, To](option_value: Option[From], function: Callable[[From], To]) -> Option[To]:
+def map_by[From, To](option_value: Option[From], function: Callable[[From], To]) -> Option[To]:
     match option_value:
         case None:
             return None
@@ -57,10 +57,10 @@ def map[From, To](option_value: Option[From], function: Callable[[From], To]) ->
 
 if TYPE_CHECKING:
 
-    def identity[T](value: T, /) -> Option[T]: ...
+    def pure[T](value: T, /) -> Option[T]: ...
 
 else:
-    identity = Some
+    pure = Some
 
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     def apply[From, To](option_value: Option[From], option_function: Option[Callable[[From], To]]) -> Option[To]: ...
 
 else:
-    apply = option_t.apply(felis.identity.identity)(felis.identity.bind)
+    apply = option_t.apply(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -83,13 +83,13 @@ if TYPE_CHECKING:
     ) -> Option[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -101,10 +101,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, option_none: Option[None]) -> Option[None]: ...
+    def when(option_none: Option[None], bool: bool) -> Option[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 @curry
@@ -134,7 +134,7 @@ def traverse[From](
         case None:
             return a_identity(neutral)
         case Some(value):
-            return a_map(identity)(function(value))
+            return a_map(pure)(function(value))
 
 
 if TYPE_CHECKING:
@@ -142,19 +142,19 @@ if TYPE_CHECKING:
     def join[From, To](option_option_value: Option[Option[From]]) -> Option[To]: ...
 
 else:
-    join = option_t.join(felis.identity.identity)(felis.identity.bind)
+    join = option_t.join(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](option_value: Option[From], function: Callable[[From], Option[To]]) -> Option[To]: ...
+    def bind_to[From, To](option_value: Option[From], function: Callable[[From], Option[To]]) -> Option[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -176,13 +176,13 @@ if TYPE_CHECKING:
     def guard(bool: bool) -> Option[None]: ...
 
 else:
-    guard = monad.guard(neutral)(identity)
+    guard = monad.guard(neutral)(pure)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def default[T](option_value: Option[T], default_value: T) -> T: ...
+    def default_to[T](option_value: Option[T], default_value: T) -> T: ...
 
 else:
-    default = option_t.default(felis.identity.identity)(felis.identity.bind)
+    default_to = option_t.default_to(felis.identity.pure)(felis.identity.bind)

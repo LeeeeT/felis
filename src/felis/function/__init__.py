@@ -5,28 +5,28 @@ import felis.identity
 from felis import applicative, monad
 from felis.currying import curry
 from felis.function.flip_ import flip
-from felis.function.identity_ import identity
+from felis.function.pure_ import pure
 
 __all__ = [
     "Function",
-    "add",
-    "add2",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
     "flip",
-    "identity",
     "join",
     "lift2",
-    "map",
-    "map2",
+    "map_by",
+    "map_by2",
     "neutral",
     "neutral2",
+    "pure",
     "take_after",
     "take_before",
+    "to_add",
+    "to_add2",
     "when",
 ]
 
@@ -45,20 +45,20 @@ neutral2 = felis.identity.compose(neutral)(neutral)
 @curry
 @curry
 @curry
-def add[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
+def to_add[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
     return m_add(addend(value))(augend(value))
 
 
-add2 = felis.identity.compose(add)(add)
+to_add2 = felis.identity.compose(to_add)(to_add)
 
 
 @curry
 @curry
-def map[T, From, To](value: T, function_value: Function[T, From], function: Callable[[From], To]) -> To:
+def map_by[T, From, To](value: T, function_value: Function[T, From], function: Callable[[From], To]) -> To:
     return function(function_value(value))
 
 
-map2 = felis.identity.compose(map)(map)
+map_by2 = felis.identity.compose(map_by)(map_by)
 
 
 @curry
@@ -78,13 +78,13 @@ if TYPE_CHECKING:
     ) -> Function[T, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(flip(identity))
+take_after = lift2(flip(pure))
 
 
-discard_after = lift2(identity)
+discard_after = lift2(pure)
 
 
 take_before = flip(discard_after)
@@ -96,10 +96,10 @@ discard_before = flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[T](bool: bool, function_none: Function[T, None]) -> Function[T, None]: ...
+    def when[T](function_none: Function[T, None], bool: bool) -> Function[T, None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 @curry
@@ -110,13 +110,13 @@ def join[From, To](value: From, function_function_value: Function[From, Function
 if TYPE_CHECKING:
 
     @curry
-    def bound[T, From, To](either_value: Function[T, From], function: Callable[[From], Function[T, To]]) -> Function[T, To]: ...
+    def bind_to[T, From, To](either_value: Function[T, From], function: Callable[[From], Function[T, To]]) -> Function[T, To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = flip(bound)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

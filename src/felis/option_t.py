@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "add", "apply", "default", "join", "neutral"]
+__all__ = ["Option", "Some", "apply", "default_to", "join", "neutral", "to_add"]
 
 
 type Option[T] = None | Some[T]
@@ -27,13 +27,13 @@ def neutral(m_identity: Callable[[Any], Any]) -> Any:
 @curry
 @curry
 @curry
-def add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Any:
+def to_add(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
     def augend_binder(augend: Option[Any]) -> Any:
         match augend:
             case None:
                 return m_addend
             case Some(value):
-                return m_identity(Some(value))
+                return m_pure(Some(value))
 
     return m_bind(m_augend)(augend_binder)
 
@@ -49,20 +49,20 @@ def apply(
     m_either_value: Any,
     m_either_function: Any,
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def option_function_binder(option_function: Option[Callable[[Any], Any]]) -> Any:
         match option_function:
             case None:
-                return m_identity(None)
+                return m_pure(None)
             case Some(function):
 
                 def option_value_binder(option_value: Option[Any]) -> Any:
                     match option_value:
                         case None:
-                            return m_identity(None)
+                            return m_pure(None)
                         case Some(value):
-                            return m_identity(Some(function(value)))
+                            return m_pure(Some(function(value)))
 
                 return m_bind(m_either_value)(option_value_binder)
 
@@ -75,11 +75,11 @@ def apply(
 # [T : *] -> M (Option (M (Option T))) -> M (Option T)
 @curry
 @curry
-def join(m_option_m_option_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_identity: Callable[[Any], Any]) -> Any:
+def join(m_option_m_option_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
     def binder(option_m_option_value: Option[Any]) -> Any:
         match option_m_option_value:
             case None:
-                return m_identity(None)
+                return m_pure(None)
             case Some(m_option_value):
                 return m_option_value
 
@@ -93,17 +93,17 @@ def join(m_option_m_option_value: Any, m_bind: Callable[[Any], Callable[[Callabl
 @curry
 @curry
 @curry
-def default(
+def default_to(
     m_option_value: Any,
     default_value: Any,
     m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_identity: Callable[[Any], Any],
+    m_pure: Callable[[Any], Any],
 ) -> Any:
     def binder(option_value: Option[Any]) -> Any:
         match option_value:
             case None:
                 return default_value
             case Some(value):
-                return m_identity(value)
+                return m_pure(value)
 
     return m_bind(m_option_value)(binder)

@@ -8,7 +8,6 @@ __all__ = [
     "Ordering",
     "Same",
     "Worse",
-    "add",
     "better",
     "different",
     "neutral",
@@ -18,6 +17,7 @@ __all__ = [
     "same",
     "same_or_better",
     "same_or_worse",
+    "to_add",
     "worse",
 ]
 
@@ -72,7 +72,7 @@ neutral = Same()
 
 
 @curry
-def add(augend: Ordering, addend: Ordering) -> Ordering:
+def to_add(augend: Ordering, addend: Ordering) -> Ordering:
     match augend:
         case Same():
             return addend

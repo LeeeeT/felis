@@ -9,54 +9,54 @@ from felis.typing import SupportsRichComparison
 
 __all__ = [
     "Order",
-    "add",
-    "better",
-    "different",
+    "better_than",
+    "different_from",
     "dunder",
-    "map",
+    "map_by",
     "neutral",
-    "not_better",
-    "not_worse",
+    "not_better_than",
+    "not_worse_than",
     "reverse",
     "rich_comparison",
-    "same",
-    "same_or_better",
-    "same_or_worse",
-    "worse",
+    "same_as",
+    "same_as_or_better_than",
+    "same_as_or_worse_than",
+    "to_add",
+    "worse_than",
 ]
 
 
 type Order[T] = Callable[[T], Callable[[T], Ordering]]
 
 
-worse = function.map2(ordering.worse)
+worse_than = function.map_by2(ordering.worse)
 
 
-same_or_better = not_worse = function.map2(ordering.not_worse)
+same_as_or_better_than = not_worse_than = function.map_by2(ordering.not_worse)
 
 
-same = function.map2(ordering.same)
+same_as = function.map_by2(ordering.same)
 
 
-different = function.map2(ordering.different)
+different_from = function.map_by2(ordering.different)
 
 
-better = function.map2(ordering.better)
+better_than = function.map_by2(ordering.better)
 
 
-same_or_worse = not_better = function.map2(ordering.not_better)
+same_as_or_worse_than = not_better_than = function.map_by2(ordering.not_better)
 
 
-reverse = function.map2(ordering.reverse)
+reverse = function.map_by2(ordering.reverse)
 
 
 neutral = function.neutral2(ordering.neutral)
 
 
-add = function.add2(ordering.add)
+to_add = function.to_add2(ordering.to_add)
 
 
-def map[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> Ordering:
+def map_by[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> Ordering:
     return order(function(second))(function(first))
 
 
@@ -76,32 +76,32 @@ def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]
 
         def __eq__(self, other: object, /) -> bool:
             if isinstance(other, RichComparison):
-                return same(order)(other.value)(self.value)
+                return same_as(order)(other.value)(self.value)
             return NotImplemented
 
         def __ne__(self, other: object, /) -> bool:
             if isinstance(other, RichComparison):
-                return different(order)(other.value)(self.value)
+                return different_from(order)(other.value)(self.value)
             return NotImplemented
 
         def __lt__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return worse(order)(other.value)(self.value)
+                return worse_than(order)(other.value)(self.value)
             return NotImplemented
 
         def __gt__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return better(order)(other.value)(self.value)
+                return better_than(order)(other.value)(self.value)
             return NotImplemented
 
         def __le__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return same_or_worse(order)(other.value)(self.value)
+                return same_as_or_worse_than(order)(other.value)(self.value)
             return NotImplemented
 
         def __ge__(self, other: Self, /) -> bool:
             if isinstance(other, RichComparison):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return same_or_better(order)(other.value)(self.value)
+                return same_as_or_better_than(order)(other.value)(self.value)
             return NotImplemented
 
     return RichComparison

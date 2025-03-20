@@ -10,25 +10,25 @@ from felis.predicate import Predicate
 
 __all__ = [
     "Iterable",
-    "add",
-    "append",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "filter",
+    "filter_by",
     "fold",
     "guard",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
     "neutral",
-    "range",
+    "pure",
+    "range_to_from",
     "take_after",
     "take_before",
+    "to_add",
+    "to_append",
     "traverse",
     "when",
 ]
@@ -39,24 +39,24 @@ neutral: Iterable[Any] = ()
 
 
 @curry
-def append[T](iterable: Iterable[T], value: T) -> Iterable[T]:
+def to_append[T](iterable: Iterable[T], value: T) -> Iterable[T]:
     yield from iterable
     yield value
 
 
 @curry
-def add[T](augend: Iterable[T], addend: Iterable[T]) -> Iterable[T]:
+def to_add[T](augend: Iterable[T], addend: Iterable[T]) -> Iterable[T]:
     yield from augend
     yield from addend
 
 
 @curry
-def map[From, To](iterable_value: Iterable[From], function: Callable[[From], To]) -> Iterable[To]:
+def map_by[From, To](iterable_value: Iterable[From], function: Callable[[From], To]) -> Iterable[To]:
     for value in iterable_value:
         yield function(value)
 
 
-def identity[T](value: T) -> Iterable[T]:
+def pure[T](value: T) -> Iterable[T]:
     yield value
 
 
@@ -78,13 +78,13 @@ if TYPE_CHECKING:
     ) -> Iterable[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -96,10 +96,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, iterable_none: Iterable[None]) -> Iterable[None]: ...
+    def when(iterable_none: Iterable[None], bool: bool) -> Iterable[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 @curry
@@ -121,7 +121,7 @@ def traverse[From](
     a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
     a_identity: Callable[[Any], Any],
 ) -> Callable[[Iterable[From]], Any]:
-    return fold(a_identity(neutral))(felis.identity.compose(a_lift2(append))(function))
+    return fold(a_identity(neutral))(felis.identity.compose(a_lift2(to_append))(function))
 
 
 if TYPE_CHECKING:
@@ -129,19 +129,19 @@ if TYPE_CHECKING:
     def join[T](iterable_iterable_value: Iterable[Iterable[T]]) -> Iterable[T]: ...
 
 else:
-    join = fold(neutral)(add)
+    join = fold(neutral)(to_add)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](iterable_value: Iterable[From], function: Callable[[From], Iterable[To]]) -> Iterable[To]: ...
+    def bind_to[From, To](iterable_value: Iterable[From], function: Callable[[From], Iterable[To]]) -> Iterable[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -163,16 +163,16 @@ if TYPE_CHECKING:
     def guard(bool: bool) -> Iterable[None]: ...
 
 else:
-    guard = monad.guard(neutral)(identity)
+    guard = monad.guard(neutral)(pure)
 
 
 @curry
-def filter[T](iterable: Iterable[T], predicate: Predicate[T]) -> Iterable[T]:
+def filter_by[T](iterable: Iterable[T], predicate: Predicate[T]) -> Iterable[T]:
     for value in iterable:
         if predicate(value):
             yield value
 
 
 @curry
-def range(stop: int, start: int) -> Iterable[int]:
+def range_to_from(stop: int, start: int) -> Iterable[int]:
     return builtins.range(start, stop)

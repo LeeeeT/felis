@@ -14,14 +14,14 @@ __all__ = [
     "Pure",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -47,17 +47,17 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def map[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], To]) -> FreeDict[K, To]: ...
+    def map_by[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], To]) -> FreeDict[K, To]: ...
 
 else:
-    map = free_t.map(dict.map)
+    map_by = free_t.map_by(dict.map_by)
 
 
 if TYPE_CHECKING:
     # [K : *] -> [T : *] -> T -> FreeDict K T
-    identity: FreeDict[Any, Any]
+    pure: FreeDict[Any, Any]
 else:
-    from felis.free_t import identity
+    from felis.free_t import pure
 
 
 if TYPE_CHECKING:
@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     def apply[K, From, To](free_dict_value: FreeDict[K, From], free_dict_function: FreeDict[K, Callable[[From], To]]) -> FreeDict[K, To]: ...
 
 else:
-    apply = free_t.apply(dict.map)
+    apply = free_t.apply(dict.map_by)
 
 
 if TYPE_CHECKING:
@@ -80,13 +80,13 @@ if TYPE_CHECKING:
     ) -> FreeDict[K, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -98,10 +98,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[K](bool: bool, free_dict_none: FreeDict[K, None]) -> FreeDict[K, None]: ...
+    def when[K](free_dict_none: FreeDict[K, None], bool: bool) -> FreeDict[K, None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -109,19 +109,19 @@ if TYPE_CHECKING:
     def join[K, T](free_dict_free_dict_value: FreeDict[K, FreeDict[K, T]], /) -> FreeDict[K, T]: ...
 
 else:
-    join = free_t.join(dict.map)
+    join = free_t.join(dict.map_by)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], FreeDict[K, To]]) -> FreeDict[K, To]: ...
+    def bind_to[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], FreeDict[K, To]]) -> FreeDict[K, To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:

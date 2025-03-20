@@ -5,7 +5,7 @@ from felis import option
 from felis.currying import curry
 from felis.option import Option
 
-__all__ = ["Dict", "add", "get", "map", "neutral", "set"]
+__all__ = ["Dict", "add_to", "in_get", "in_to_set", "map_by", "neutral"]
 
 
 Dict = dict
@@ -17,20 +17,20 @@ neutral: dict[Any, Any] = {}
 
 @curry
 @curry
-def set[K, V](dict: Dict[K, V], value: V, key: K) -> Dict[K, V]:
+def in_to_set[K, V](dict: Dict[K, V], value: V, key: K) -> Dict[K, V]:
     return {**dict, key: value}
 
 
 @curry
-def get[K, V](dict: Dict[K, V], key: K) -> Option[V]:
+def in_get[K, V](dict: Dict[K, V], key: K) -> Option[V]:
     return option.Some(dict[key]) if key in dict else None
 
 
 @curry
-def add[K, V](augend: Dict[K, V], addend: Dict[K, V]) -> Dict[K, V]:
+def add_to[K, V](augend: Dict[K, V], addend: Dict[K, V]) -> Dict[K, V]:
     return {**augend, **addend}
 
 
 @curry
-def map[K, From, To](dict_value: Dict[K, From], function: Callable[[From], To]) -> Dict[K, To]:
+def map_by[K, From, To](dict_value: Dict[K, From], function: Callable[[From], To]) -> Dict[K, To]:
     return {key: function(value) for key, value in dict_value.items()}

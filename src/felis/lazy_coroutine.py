@@ -11,15 +11,15 @@ __all__ = [
     "LazyCoroutine",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "identity",
     "join",
     "lift",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -32,16 +32,16 @@ type LazyCoroutine[T] = Lazy[Coroutine[T]]
 if TYPE_CHECKING:
 
     @curry
-    def map[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], To]) -> LazyCoroutine[To]: ...
+    def map_by[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], To]) -> LazyCoroutine[To]: ...
 
 else:
-    map = felis.identity.compose(lazy.map)(coroutine.map)
+    map_by = felis.identity.compose(lazy.map_by)(coroutine.map_by)
 
 
-identity = felis.identity.compose(lazy.identity)(coroutine.identity)
+pure = felis.identity.compose(lazy.pure)(coroutine.pure)
 
 
-lift = lazy.map(coroutine.identity)
+lift = lazy.map_by(coroutine.pure)  # TODO
 
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     def apply[From, To](lazy_coroutine_value: LazyCoroutine[From], lazy_coroutine_function: LazyCoroutine[Callable[[From], To]]) -> LazyCoroutine[To]: ...
 
 else:
-    apply = lazy_t.apply(coroutine.identity)(coroutine.bind)
+    apply = lazy_t.apply(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -65,13 +65,13 @@ if TYPE_CHECKING:
     ) -> LazyCoroutine[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -83,10 +83,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, lazy_coroutine_none: LazyCoroutine[None]) -> LazyCoroutine[None]: ...
+    def when(lazy_coroutine_none: LazyCoroutine[None], bool: bool) -> LazyCoroutine[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -94,19 +94,19 @@ if TYPE_CHECKING:
     def join[T](lazy_coroutine_lazy_coroutine_value: LazyCoroutine[LazyCoroutine[T]]) -> LazyCoroutine[T]: ...
 
 else:
-    join = lazy_t.join(coroutine.identity)(coroutine.bind)
+    join = lazy_t.join(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], LazyCoroutine[To]]) -> LazyCoroutine[To]: ...
+    def bind_to[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], LazyCoroutine[To]]) -> LazyCoroutine[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:

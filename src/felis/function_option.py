@@ -11,15 +11,15 @@ __all__ = [
     "FunctionOption",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
     "guard",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -32,13 +32,13 @@ type FunctionOption[From, To] = Function[From, Option[To]]
 if TYPE_CHECKING:
 
     @curry
-    def map[T, From, To](function_option_value: FunctionOption[T, From], function: Callable[[From], To]) -> FunctionOption[T, To]: ...
+    def map_by[T, From, To](function_option_value: FunctionOption[T, From], function: Callable[[From], To]) -> FunctionOption[T, To]: ...
 
 else:
-    map = felis.identity.compose(function.map)(option.map)
+    map_by = felis.identity.compose(function.map_by)(option.map_by)
 
 
-identity = felis.identity.compose(function.identity)(option.identity)
+pure = felis.identity.compose(function.pure)(option.pure)
 
 
 apply = function.lift2(option.apply)
@@ -55,13 +55,13 @@ if TYPE_CHECKING:
     ) -> FunctionOption[T, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -73,10 +73,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[T](bool: bool, function_option_none: FunctionOption[T, None]) -> FunctionOption[T, None]: ...
+    def when[T](function_option_none: FunctionOption[T, None], bool: bool) -> FunctionOption[T, None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -84,22 +84,22 @@ if TYPE_CHECKING:
     def join[T, From, To](function_option_function_option_value: FunctionOption[T, FunctionOption[T, From]]) -> FunctionOption[T, To]: ...
 
 else:
-    join = option_t.join(function.identity)(function.bind)
+    join = option_t.join(function.pure)(function.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[T, From, To](
+    def bind_to[T, From, To](
         function_option_value: FunctionOption[T, From],
         function: Callable[[From], FunctionOption[T, To]],
     ) -> FunctionOption[T, To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -116,4 +116,4 @@ else:
     compose = monad.compose(bind)
 
 
-guard = felis.identity.compose(function.identity)(option.guard)
+guard = felis.identity.compose(function.pure)(option.guard)

@@ -9,20 +9,20 @@ from felis.lazy_coroutine import LazyCoroutine
 
 __all__ = [
     "LazyCoroutineEither",
-    "add",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
-    "default",
+    "default_to",
     "discard_after",
     "discard_before",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
+    "to_add",
     "when",
 ]
 
@@ -33,25 +33,25 @@ type LazyCoroutineEither[L, R] = LazyCoroutine[Either[L, R]]
 if TYPE_CHECKING:
 
     @curry
-    def add[L, R](
+    def to_add[L, R](
         lazy_coroutine_either_augend: LazyCoroutineEither[L, R],
         lazy_coroutine_either_addend: LazyCoroutineEither[L, R],
     ) -> LazyCoroutineEither[L, R]: ...
 
 else:
-    add = either_t.add(lazy_coroutine.identity)(lazy_coroutine.bind)
+    to_add = either_t.to_add(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def map[L, From, To](lazy_coroutine_either_value: LazyCoroutineEither[L, From], function: Callable[[From], To]) -> LazyCoroutineEither[L, To]: ...
+    def map_by[L, From, To](lazy_coroutine_either_value: LazyCoroutineEither[L, From], function: Callable[[From], To]) -> LazyCoroutineEither[L, To]: ...
 
 else:
-    map = felis.identity.compose(lazy_coroutine.map)(either.map)
+    map_by = felis.identity.compose(lazy_coroutine.map_by)(either.map_by)
 
 
-identity = felis.identity.compose(lazy_coroutine.identity)(either.identity)
+pure = felis.identity.compose(lazy_coroutine.pure)(either.pure)
 
 
 apply = lazy_coroutine.lift2(either.apply)
@@ -68,13 +68,13 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineEither[L, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -86,10 +86,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when[L](bool: bool, lazy_coroutine_either_none: LazyCoroutineEither[L, None]) -> LazyCoroutineEither[L, None]: ...
+    def when[L](lazy_coroutine_either_none: LazyCoroutineEither[L, None], bool: bool) -> LazyCoroutineEither[L, None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -97,22 +97,22 @@ if TYPE_CHECKING:
     def join[L, R](lazy_coroutine_either_lazy_coroutine_either_value: LazyCoroutineEither[L, LazyCoroutineEither[L, R]]) -> LazyCoroutineEither[L, R]: ...
 
 else:
-    join = either_t.join(lazy_coroutine.identity)(lazy_coroutine.bind)
+    join = either_t.join(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[L, From, To](
+    def bind_to[L, From, To](
         lazy_coroutine_either_value: LazyCoroutineEither[L, From],
         function: Callable[[From], LazyCoroutineEither[L, To]],
     ) -> LazyCoroutineEither[L, To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -132,7 +132,7 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def default[L, R](lazy_coroutine_either_value: LazyCoroutineEither[L, R], default_value: LazyCoroutine[R]) -> LazyCoroutine[R]: ...
+    def default_to[L, R](lazy_coroutine_either_value: LazyCoroutineEither[L, R], default_value: LazyCoroutine[R]) -> LazyCoroutine[R]: ...
 
 else:
-    default = either_t.default(lazy_coroutine.identity)(lazy_coroutine.bind)
+    default_to = either_t.default_to(lazy_coroutine.pure)(lazy_coroutine.bind)

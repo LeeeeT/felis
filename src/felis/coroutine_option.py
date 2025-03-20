@@ -9,21 +9,21 @@ from felis.option import Option
 
 __all__ = [
     "CoroutineOption",
-    "add",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
-    "default",
+    "default_to",
     "discard_after",
     "discard_before",
     "guard",
-    "identity",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
+    "to_add",
     "when",
 ]
 
@@ -34,22 +34,22 @@ type CoroutineOption[T] = Coroutine[Option[T]]
 if TYPE_CHECKING:
 
     @curry
-    def add[T](coroutine_option_augend: CoroutineOption[T], coroutine_option_addend: CoroutineOption[T]) -> CoroutineOption[T]: ...
+    def to_add[T](coroutine_option_augend: CoroutineOption[T], coroutine_option_addend: CoroutineOption[T]) -> CoroutineOption[T]: ...
 
 else:
-    add = option_t.add(coroutine.identity)(coroutine.bind)
+    to_add = option_t.to_add(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def map[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], To]) -> CoroutineOption[To]: ...
+    def map_by[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], To]) -> CoroutineOption[To]: ...
 
 else:
-    map = felis.identity.compose(coroutine.map)(option.map)
+    map_by = felis.identity.compose(coroutine.map_by)(option.map_by)
 
 
-identity = felis.identity.compose(coroutine.identity)(option.identity)
+pure = felis.identity.compose(coroutine.pure)(option.pure)
 
 
 apply = coroutine.lift2(option.apply)
@@ -66,13 +66,13 @@ if TYPE_CHECKING:
     ) -> CoroutineOption[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.identity))
+take_after = lift2(function.flip(function.pure))
 
 
-discard_after = lift2(function.identity)
+discard_after = lift2(function.pure)
 
 
 take_before = function.flip(discard_after)
@@ -84,10 +84,10 @@ discard_before = function.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, coroutine_option_none: CoroutineOption[None]) -> CoroutineOption[None]: ...
+    def when(coroutine_option_none: CoroutineOption[None], bool: bool) -> CoroutineOption[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
 if TYPE_CHECKING:
@@ -95,19 +95,19 @@ if TYPE_CHECKING:
     def join[T](coroutine_option_coroutine_option_value: CoroutineOption[CoroutineOption[T]]) -> CoroutineOption[T]: ...
 
 else:
-    join = option_t.join(coroutine.identity)(coroutine.bind)
+    join = option_t.join(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], CoroutineOption[To]]) -> CoroutineOption[To]: ...
+    def bind_to[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], CoroutineOption[To]]) -> CoroutineOption[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bound)
+bind = function.flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -124,13 +124,13 @@ else:
     compose = monad.compose(bind)
 
 
-guard = felis.identity.compose(coroutine.identity)(option.guard)
+guard = felis.identity.compose(coroutine.pure)(option.guard)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def default[T](coroutine_option_value: CoroutineOption[T], default_value: Coroutine[T]) -> Coroutine[T]: ...
+    def default_to[T](coroutine_option_value: CoroutineOption[T], default_value: Coroutine[T]) -> Coroutine[T]: ...
 
 else:
-    default = option_t.default(coroutine.identity)(coroutine.bind)
+    default_to = option_t.default_to(coroutine.pure)(coroutine.bind)

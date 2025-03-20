@@ -3,21 +3,21 @@ from typing import TYPE_CHECKING, Any
 
 from felis import applicative, monad
 from felis.currying import curry
-from felis.function import flip_, identity_
+from felis.function import flip_, pure_
 
 __all__ = [
     "Identity",
     "apply",
     "bind",
-    "bound",
+    "bind_to",
     "compose",
     "discard_after",
     "discard_before",
-    "identity",
     "inject",
     "join",
     "lift2",
-    "map",
+    "map_by",
+    "pure",
     "take_after",
     "take_before",
     "when",
@@ -28,11 +28,11 @@ type Identity[T] = T
 
 
 @curry
-def map[From, To](identity_value: Identity[From], function: Callable[[From], To]) -> Identity[To]:
+def map_by[From, To](identity_value: Identity[From], function: Callable[[From], To]) -> Identity[To]:
     return function(identity_value)
 
 
-def identity[T](value: T) -> Identity[T]:
+def pure[T](value: T) -> Identity[T]:
     return value
 
 
@@ -52,13 +52,13 @@ if TYPE_CHECKING:
     ) -> Identity[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map)(apply)
+    lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(flip_.flip(identity_.identity))
+take_after = lift2(flip_.flip(pure_.pure))
 
 
-discard_after = lift2(identity_.identity)
+discard_after = lift2(pure_.pure)
 
 
 take_before = flip_.flip(discard_after)
@@ -70,12 +70,13 @@ discard_before = flip_.flip(take_after)
 if TYPE_CHECKING:
 
     @curry
-    def when(bool: bool, identity_none: Identity[None]) -> Identity[None]: ...
+    def when(identity_none: Identity[None], bool: bool) -> Identity[None]: ...
 
 else:
-    when = applicative.when(identity)
+    when = applicative.when(pure)
 
 
+# TODO
 # [M : * -> *] -> [T : *] -> Identity (M T) -> M T
 def inject(identity_m_identity_value: Identity[Any]) -> Any:
     return identity_m_identity_value
@@ -87,13 +88,13 @@ join = inject
 if TYPE_CHECKING:
 
     @curry
-    def bound[From, To](identity_value: Identity[From], function: Callable[[From], Identity[To]]) -> Identity[To]: ...
+    def bind_to[From, To](identity_value: Identity[From], function: Callable[[From], Identity[To]]) -> Identity[To]: ...
 
 else:
-    bound = monad.bound(map)(join)
+    bind_to = monad.bind_to(map_by)(join)
 
 
-bind = flip_.flip(bound)
+bind = flip_.flip(bind_to)
 
 
 if TYPE_CHECKING:
