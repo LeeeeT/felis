@@ -41,7 +41,7 @@ else:
 pure = felis.identity.compose(lazy.pure)(coroutine.pure)
 
 
-lift = lazy.map_by(coroutine.pure)  # TODO
+lift = lazy.map_by(coroutine.pure)
 
 
 if TYPE_CHECKING:
