@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from felis import applicative, monad
 from felis.currying import curry
@@ -13,7 +13,6 @@ __all__ = [
     "compose",
     "discard_after",
     "discard_before",
-    "inject",
     "join",
     "lift2",
     "map_by",
@@ -76,13 +75,8 @@ else:
     when = applicative.when(pure)
 
 
-# TODO
-# [M : * -> *] -> [T : *] -> Identity (M T) -> M T
-def inject(identity_m_identity_value: Identity[Any]) -> Any:
-    return identity_m_identity_value
-
-
-join = inject
+def join[T](identity_identity_value: Identity[Identity[T]]) -> Identity[T]:
+    return identity_identity_value
 
 
 if TYPE_CHECKING:
