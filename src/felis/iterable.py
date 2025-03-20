@@ -3,7 +3,6 @@ from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
 import felis.identity
-import felis.order
 from felis import applicative, function, monad
 from felis.currying import curry
 from felis.predicate import Predicate
