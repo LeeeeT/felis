@@ -24,28 +24,28 @@ def lift2(
 
 # [A : * -> *] ->
 # ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
-# [First : *] -> [Second : *] -> A First -> A Second -> A Second
+# [First : *] -> A First -> [Second : *] -> A Second -> A Second
 def take_after(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
     return lift2(lambda first: lambda second: second)
 
 
 # [A : * -> *] ->
 # ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
-# [First : *] -> [Second : *] -> A Second -> A First -> A Second
+# [Second : *] -> A Second -> [First : *] -> A First -> A Second
 def discard_before(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
     return flip(take_after(lift2))
 
 
 # [A : * -> *] ->
 # ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
-# [First : *] -> [Second : *] -> A First -> A Second -> A First
+# [First : *] -> A First -> [Second : *] -> A Second -> A First
 def discard_after(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
     return lift2(lambda first: lambda second: first)
 
 
 # [A : * -> *] ->
 # ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
-# [First : *] -> [Second : *] -> A Second -> A First -> A First
+# [Second : *] -> A Second -> [First : *] -> A First -> A First
 def take_before(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
     return flip(discard_after(lift2))
 
