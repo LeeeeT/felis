@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
@@ -6,6 +8,9 @@ from felis import applicative, lazy_coroutine, monad, option, option_t
 from felis.currying import curry, flip
 from felis.lazy_coroutine import LazyCoroutine
 from felis.option import Option
+
+if TYPE_CHECKING:
+    from felis import Either
 
 __all__ = [
     "LazyCoroutineOption",
@@ -25,6 +30,7 @@ __all__ = [
     "take_after",
     "take_before",
     "to_add",
+    "to_either",
     "when",
 ]
 
@@ -176,3 +182,12 @@ if TYPE_CHECKING:
 
 else:
     default_to = option_t.default_to(lazy_coroutine.pure)(lazy_coroutine.bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def to_either[L, R](coroutine_option_value: LazyCoroutineOption[R], left: LazyCoroutine[L]) -> LazyCoroutine[Either[L, R]]: ...
+
+else:
+    to_either = option_t.to_either(lazy_coroutine.pure)(lazy_coroutine.bind)

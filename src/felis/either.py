@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -5,6 +7,9 @@ import felis.identity
 from felis import applicative, either_t, monad
 from felis.currying import curry, flip
 from felis.either_t import Either, Left, Right
+
+if TYPE_CHECKING:
+    from felis import Option
 
 __all__ = [
     "Either",
@@ -27,6 +32,7 @@ __all__ = [
     "take_after",
     "take_before",
     "to_add",
+    "to_option",
     "traverse",
     "when",
 ]
@@ -221,3 +227,14 @@ def catch[E: BaseException, From, To](value: From, function: Callable[[From], To
         return Right(function(value))
     except exception_type as exception:
         return Left(exception)
+
+
+# [L : *] -> Either L R -> Option R
+def to_option[R](either_value: Either[Any, R]) -> Option[R]:
+    from felis import option
+
+    match either_value:
+        case Left(_):
+            return None
+        case Right(value):
+            return option.Some(value)

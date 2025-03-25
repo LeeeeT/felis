@@ -4,7 +4,7 @@ from typing import Any
 
 from felis.currying import curry
 
-__all__ = ["Option", "Some", "apply", "default_to", "join", "neutral", "to_add"]
+__all__ = ["Option", "Some", "apply", "default_to", "join", "neutral", "to_add", "to_either"]
 
 
 type Option[T] = None | Some[T]
@@ -105,5 +105,25 @@ def default_to(
                 return default_value
             case Some(value):
                 return m_pure(value)
+
+    return m_bind(m_option_value)(binder)
+
+
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [L : *] -> M L -> [R : *] -> M (Option R) -> M (Either L R)
+@curry
+@curry
+@curry
+def to_either(m_option_value: Option[Any], m_left: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
+    from felis import either
+
+    def binder(option_value: Option[Any]) -> Any:
+        match option_value:
+            case None:
+                return m_bind(m_left)(lambda left: m_pure(either.Left(left)))
+            case Some(value):
+                return m_pure(either.Right(value))
 
     return m_bind(m_option_value)(binder)

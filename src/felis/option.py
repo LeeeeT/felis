@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -5,6 +7,9 @@ import felis.identity
 from felis import applicative, monad, option_t
 from felis.currying import curry, flip
 from felis.option_t import Option, Some
+
+if TYPE_CHECKING:
+    from felis import Either
 
 __all__ = [
     "Option",
@@ -27,6 +32,7 @@ __all__ = [
     "take_after",
     "take_before",
     "to_add",
+    "to_either",
     "traverse",
     "when",
 ]
@@ -225,3 +231,12 @@ if TYPE_CHECKING:
 
 else:
     default_to = option_t.default_to(felis.identity.pure)(felis.identity.bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def to_either[L, R](option_value: Option[R], left: L) -> Either[L, R]: ...
+
+else:
+    to_either = option_t.to_either(felis.identity.pure)(felis.identity.bind)
