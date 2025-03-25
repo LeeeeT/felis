@@ -12,7 +12,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "default_to",
     "discard_after",
     "discard_before",
@@ -48,10 +49,10 @@ if TYPE_CHECKING:
     def map_by[L, From, To](lazy_coroutine_either_value: LazyCoroutineEither[L, From], function: Callable[[From], To]) -> LazyCoroutineEither[L, To]: ...
 
 else:
-    map_by = felis.identity.compose(lazy_coroutine.map_by)(either.map_by)
+    map_by = felis.identity.compose_before(lazy_coroutine.map_by)(either.map_by)
 
 
-pure = felis.identity.compose(lazy_coroutine.pure)(either.pure)
+pure = felis.identity.compose_before(lazy_coroutine.pure)(either.pure)
 
 
 apply = lazy_coroutine.lift2(either.apply)
@@ -143,14 +144,28 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[L, From, Intermediate, To](
+    def compose_after[L, From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], LazyCoroutineEither[L, To]],
+        first: Callable[[From], LazyCoroutineEither[L, Intermediate]],
+    ) -> LazyCoroutineEither[L, To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[L, From, Intermediate, To](
         value: From,
         first: Callable[[From], LazyCoroutineEither[L, Intermediate]],
         second: Callable[[Intermediate], LazyCoroutineEither[L, To]],
     ) -> LazyCoroutineEither[L, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
 if TYPE_CHECKING:

@@ -12,7 +12,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "discard_after",
     "discard_before",
     "join",
@@ -22,7 +23,7 @@ __all__ = [
     "reversed_apply",
     "reversed_bind",
     "reversed_bind_to",
-    "reversed_compose",
+    "reversed_compose_before",
     "reversed_discard_after",
     "reversed_discard_before",
     "reversed_join",
@@ -164,14 +165,28 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[S, From, Intermediate, To](
+    def compose_after[S, From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], State[S, To]],
+        first: Callable[[From], State[S, Intermediate]],
+    ) -> State[S, To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[S, From, Intermediate, To](
         value: From,
         first: Callable[[From], State[S, Intermediate]],
         second: Callable[[Intermediate], State[S, To]],
     ) -> State[S, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
 if TYPE_CHECKING:
@@ -263,11 +278,11 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def reversed_compose[S, From, Intermediate, To](
+    def reversed_compose_before[S, From, Intermediate, To](
         value: From,
         first: Callable[[From], ReversedState[S, Intermediate]],
         second: Callable[[Intermediate], ReversedState[S, To]],
     ) -> ReversedState[S, To]: ...
 
 else:
-    reversed_compose = monad.compose(reversed_bind)
+    reversed_compose_before = monad.compose_before(reversed_bind)

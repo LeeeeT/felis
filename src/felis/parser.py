@@ -22,7 +22,8 @@ __all__ = [
     "chain_right",
     "chain_right_1",
     "character",
-    "compose",
+    "compose_after",
+    "compose_before",
     "digit",
     "discard_after",
     "discard_before",
@@ -116,16 +117,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = applicative.take_after(lift2)
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[First, Second](second: Parser[Second], first: Parser[First]) -> Parser[Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = applicative.discard_after(lift2)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[First, Second](first: Parser[First], second: Parser[Second]) -> Parser[Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = applicative.take_before(lift2)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[First, Second](second: Parser[Second], first: Parser[First]) -> Parser[First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = applicative.discard_before(lift2)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[First, Second](first: Parser[First], second: Parser[Second]) -> Parser[First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -161,14 +186,28 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[From, Intermediate, To](
+    def compose_after[From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], Parser[To]],
+        first: Callable[[From], Parser[Intermediate]],
+    ) -> Parser[To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[From, Intermediate, To](
         value: From,
         first: Callable[[From], Parser[Intermediate]],
         second: Callable[[Intermediate], Parser[To]],
     ) -> Parser[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
 if TYPE_CHECKING:

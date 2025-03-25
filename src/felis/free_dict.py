@@ -15,7 +15,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "discard_after",
     "discard_before",
     "join",
@@ -152,11 +153,25 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[K, From, Intermediate, To](
+    def compose_after[K, From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], FreeDict[K, To]],
+        first: Callable[[From], FreeDict[K, Intermediate]],
+    ) -> FreeDict[K, To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[K, From, Intermediate, To](
         value: From,
         first: Callable[[From], FreeDict[K, Intermediate]],
         second: Callable[[Intermediate], FreeDict[K, To]],
     ) -> FreeDict[K, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)

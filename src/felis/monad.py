@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from typing import Any
 
-from felis.currying import curry
+from felis.currying import curry, flip
 
-__all__ = ["bind_to", "compose", "guard"]
+__all__ = ["bind_to", "compose_after", "compose_before", "guard"]
 
 
 # [M : * -> *] ->
@@ -24,17 +24,26 @@ def bind_to(
 
 # [M : * -> *] ->
 # ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [Intermediate : *] -> [To : *] -> (Intermediate -> M To) -> [From : *] -> (From -> M Intermediate) -> From -> M To
+# [From : *] -> [Intermediate : *] -> (From -> M Intermediate) -> [To : *] -> (Intermediate -> M To) -> From -> M To
 @curry
 @curry
 @curry
-def compose[From](
+def compose_after[From](
     value: From,
-    first: Callable[[From], Any],
     second: Callable[[Any], Any],
+    first: Callable[[From], Any],
     bind: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Any:
     return bind(first(value))(second)
+
+
+# [M : * -> *] ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [Intermediate : *] -> [To : *] -> (Intermediate -> M To) -> [From : *] -> (From -> M Intermediate) -> From -> M To
+def compose_before(
+    bind: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
+) -> Callable[[Callable[[Any], Any]], Callable[[Callable[[Any], Any]], Callable[[Any], Any]]]:
+    return flip(compose_after(bind))
 
 
 # [A : * -> *] -> ([T : *] -> A T) -> ([T : *] -> T -> A T) -> bool -> A None

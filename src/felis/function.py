@@ -10,7 +10,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "discard_after",
     "discard_before",
     "join",
@@ -36,7 +37,7 @@ def neutral[M](_: object, m_neutral: M) -> M:
     return m_neutral
 
 
-neutral2 = felis.identity.compose(neutral)(neutral)
+neutral2 = felis.identity.compose_before(neutral)(neutral)
 
 
 @curry
@@ -46,7 +47,7 @@ def to_add[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add
     return m_add(addend(value))(augend(value))
 
 
-to_add2 = felis.identity.compose(to_add)(to_add)
+to_add2 = felis.identity.compose_before(to_add)(to_add)
 
 
 @curry
@@ -55,7 +56,7 @@ def map_by[T, From, To](value: T, function_value: Function[T, From], function: C
     return function(function_value(value))
 
 
-map_by2 = felis.identity.compose(map_by)(map_by)
+map_by2 = felis.identity.compose_before(map_by)(map_by)
 
 
 @curry
@@ -149,11 +150,25 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[T, From, Intermediate, To](
+    def compose_after[T, From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], Function[T, To]],
+        first: Callable[[From], Function[T, Intermediate]],
+    ) -> Function[T, To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[T, From, Intermediate, To](
         value: From,
         first: Callable[[From], Function[T, Intermediate]],
         second: Callable[[Intermediate], Function[T, To]],
     ) -> Function[T, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)

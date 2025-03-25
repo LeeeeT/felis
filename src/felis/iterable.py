@@ -12,7 +12,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "discard_after",
     "discard_before",
     "filter_by",
@@ -144,7 +145,7 @@ def traverse[From](
     a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
     a_identity: Callable[[Any], Any],
 ) -> Callable[[Iterable[From]], Any]:
-    return fold(a_identity(neutral))(felis.identity.compose(a_lift2(to_append))(function))
+    return fold(a_identity(neutral))(felis.identity.compose_before(a_lift2(to_append))(function))
 
 
 if TYPE_CHECKING:
@@ -171,14 +172,28 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[From, Intermediate, To](
+    def compose_after[From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], Iterable[To]],
+        first: Callable[[From], Iterable[Intermediate]],
+    ) -> Iterable[To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[From, Intermediate, To](
         value: From,
         first: Callable[[From], Iterable[Intermediate]],
         second: Callable[[Intermediate], Iterable[To]],
     ) -> Iterable[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
 if TYPE_CHECKING:

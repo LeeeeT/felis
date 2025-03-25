@@ -14,7 +14,8 @@ __all__ = [
     "bind",
     "bind_to",
     "catch",
-    "compose",
+    "compose_after",
+    "compose_before",
     "default_to",
     "discard_after",
     "discard_before",
@@ -180,14 +181,28 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[L, From, Intermediate, To](
+    def compose_after[L, From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], Either[L, To]],
+        first: Callable[[From], Either[L, Intermediate]],
+    ) -> Either[L, To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[L, From, Intermediate, To](
         value: From,
         first: Callable[[From], Either[L, Intermediate]],
         second: Callable[[Intermediate], Either[L, To]],
     ) -> Either[L, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
 if TYPE_CHECKING:

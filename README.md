@@ -51,7 +51,7 @@ def safe_reciprocal(number: float) -> float:
     return 1 / number
 
 
-safe_reciprocal_of_str = either.compose(safe_reciprocal)(safe_int)
+safe_reciprocal_of_str = either.compose_after(safe_int)(safe_reciprocal)
 
 
 match safe_reciprocal_of_str(input("Enter a number: ")):

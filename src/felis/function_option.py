@@ -12,7 +12,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "discard_after",
     "discard_before",
     "guard",
@@ -35,10 +36,10 @@ if TYPE_CHECKING:
     def map_by[T, From, To](function_option_value: FunctionOption[T, From], function: Callable[[From], To]) -> FunctionOption[T, To]: ...
 
 else:
-    map_by = felis.identity.compose(function.map_by)(option.map_by)
+    map_by = felis.identity.compose_before(function.map_by)(option.map_by)
 
 
-pure = felis.identity.compose(function.pure)(option.pure)
+pure = felis.identity.compose_before(function.pure)(option.pure)
 
 
 apply = function.lift2(option.apply)
@@ -130,14 +131,28 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[T, From, Intermediate, To](
+    def compose_after[T, From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], FunctionOption[T, To]],
+        first: Callable[[From], FunctionOption[T, Intermediate]],
+    ) -> FunctionOption[T, To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[T, From, Intermediate, To](
         value: From,
         first: Callable[[From], FunctionOption[T, Intermediate]],
         second: Callable[[Intermediate], FunctionOption[T, To]],
     ) -> FunctionOption[T, To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
-guard = felis.identity.compose(function.pure)(option.guard)
+guard = felis.identity.compose_before(function.pure)(option.guard)

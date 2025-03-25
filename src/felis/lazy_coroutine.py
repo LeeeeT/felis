@@ -12,7 +12,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "discard_after",
     "discard_before",
     "join",
@@ -35,10 +36,10 @@ if TYPE_CHECKING:
     def map_by[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], To]) -> LazyCoroutine[To]: ...
 
 else:
-    map_by = felis.identity.compose(lazy.map_by)(coroutine.map_by)
+    map_by = felis.identity.compose_before(lazy.map_by)(coroutine.map_by)
 
 
-pure = felis.identity.compose(lazy.pure)(coroutine.pure)
+pure = felis.identity.compose_before(lazy.pure)(coroutine.pure)
 
 
 lift = lazy.map_by(coroutine.pure)
@@ -137,11 +138,25 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[From, Intermediate, To](
+    def compose_after[From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], LazyCoroutine[To]],
+        first: Callable[[From], LazyCoroutine[Intermediate]],
+    ) -> LazyCoroutine[To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[From, Intermediate, To](
         value: From,
         first: Callable[[From], LazyCoroutine[Intermediate]],
         second: Callable[[Intermediate], LazyCoroutine[To]],
     ) -> LazyCoroutine[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)

@@ -12,7 +12,8 @@ __all__ = [
     "apply",
     "bind",
     "bind_to",
-    "compose",
+    "compose_after",
+    "compose_before",
     "default_to",
     "discard_after",
     "discard_before",
@@ -46,10 +47,10 @@ if TYPE_CHECKING:
     def map_by[From, To](coroutine_option_value: CoroutineOption[From], function: Callable[[From], To]) -> CoroutineOption[To]: ...
 
 else:
-    map_by = felis.identity.compose(coroutine.map_by)(option.map_by)
+    map_by = felis.identity.compose_before(coroutine.map_by)(option.map_by)
 
 
-pure = felis.identity.compose(coroutine.pure)(option.pure)
+pure = felis.identity.compose_before(coroutine.pure)(option.pure)
 
 
 apply = coroutine.lift2(option.apply)
@@ -138,17 +139,31 @@ if TYPE_CHECKING:
 
     @curry
     @curry
-    def compose[From, Intermediate, To](
+    def compose_after[From, Intermediate, To](
+        value: From,
+        second: Callable[[Intermediate], CoroutineOption[To]],
+        first: Callable[[From], CoroutineOption[Intermediate]],
+    ) -> CoroutineOption[To]: ...
+
+else:
+    compose_after = monad.compose_after(bind)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    @curry
+    def compose_before[From, Intermediate, To](
         value: From,
         first: Callable[[From], CoroutineOption[Intermediate]],
         second: Callable[[Intermediate], CoroutineOption[To]],
     ) -> CoroutineOption[To]: ...
 
 else:
-    compose = monad.compose(bind)
+    compose_before = monad.compose_before(bind)
 
 
-guard = felis.identity.compose(coroutine.pure)(option.guard)
+guard = felis.identity.compose_before(coroutine.pure)(option.guard)
 
 
 if TYPE_CHECKING:
