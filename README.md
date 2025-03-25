@@ -102,12 +102,12 @@ literal = map_by(int)(map_by("".join)(some(digit)))
 factor = lambda string: bracket(character("("))(character(")"))(expression)(string)
 term_priority_1 = to_add(literal)(factor)
 
-multiplication = take_after(character("*"))(pure(lambda a: lambda b: a * b))
-division = take_after(character("/"))(pure(lambda a: lambda b: a / b))
+multiplication = take_after(character("*"))(pure(lambda b: lambda a: a * b))
+division = take_after(character("/"))(pure(lambda b: lambda a: a / b))
 term_priority_2 = chain_left_1(to_add(division)(multiplication))(term_priority_1)
 
-addition = take_after(character("+"))(pure(lambda a: lambda b: a + b))
-subtraction = take_after(character("-"))(pure(lambda a: lambda b: a - b))
+addition = take_after(character("+"))(pure(lambda b: lambda a: a + b))
+subtraction = take_after(character("-"))(pure(lambda b: lambda a: a - b))
 term_priority_3 = chain_left_1(to_add(subtraction)(addition))(term_priority_2)
 
 expression = term_priority_3

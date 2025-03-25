@@ -279,7 +279,7 @@ def chain_right[R, T](parser_value: Parser[T], parser_function: Parser[Callable[
 def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[T], T]]]) -> Parser[T]:
     def rest(accumulator: T) -> Parser[T]:
         return to_add(pure(accumulator))(
-            bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: pure(function(accumulator)(value))))),
+            bind(parser_function)(lambda function: bind(parser_value)(lambda value: bind(rest(value))(lambda value: pure(function(value)(accumulator))))),
         )
 
     return bind(parser_value)(rest)
@@ -287,9 +287,9 @@ def chain_right_1[T](parser_value: Parser[T], parser_function: Parser[Callable[[
 
 @curry
 @curry
-def chain_left[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[R], Callable[[T], R]]], accumulator: R) -> Parser[R]:
+def chain_left[R, T](parser_value: Parser[T], parser_function: Parser[Callable[[T], Callable[[R], R]]], accumulator: R) -> Parser[R]:
     return to_add(pure(accumulator))(
-        bind(parser_function)(lambda function: bind(parser_value)(lambda value: chain_left(function(accumulator)(value))(parser_function)(parser_value))),
+        bind(parser_function)(lambda function: bind(parser_value)(lambda value: chain_left(function(value)(accumulator))(parser_function)(parser_value))),
     )
 
 
