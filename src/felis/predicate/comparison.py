@@ -1,7 +1,7 @@
 from felis.currying import curry
 from felis.typing import SupportsRichComparison
 
-__all__ = ["different", "greater_than", "greater_than_or_same_as", "less_than", "less_than_or_same_as", "same"]
+__all__ = ["equal_to", "greater_than", "greater_than_or_equal_to", "less_than", "less_than_or_equal_to", "not_equal_to"]
 
 
 @curry
@@ -10,22 +10,22 @@ def less_than[T: SupportsRichComparison](first: T, second: T) -> bool:
 
 
 @curry
-def less_than_or_same_as[T: SupportsRichComparison](first: T, second: T) -> bool:
+def less_than_or_equal_to[T: SupportsRichComparison](first: T, second: T) -> bool:
     return first <= second
 
 
 @curry
-def same[T: SupportsRichComparison](first: T, second: T) -> bool:
+def equal_to[T: SupportsRichComparison](first: T, second: T) -> bool:
     return first == second
 
 
 @curry
-def different[T: SupportsRichComparison](first: T, second: T) -> bool:
+def not_equal_to[T: SupportsRichComparison](first: T, second: T) -> bool:
     return first != second
 
 
 @curry
-def greater_than_or_same_as[T: SupportsRichComparison](first: T, second: T) -> bool:
+def greater_than_or_equal_to[T: SupportsRichComparison](first: T, second: T) -> bool:
     return first >= second
 
 

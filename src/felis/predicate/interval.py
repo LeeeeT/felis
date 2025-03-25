@@ -1,25 +1,25 @@
 from felis.currying import curry
-from felis.predicate import Predicate, both, comparison
+from felis.predicate import Predicate, both_and, comparison
 from felis.typing import SupportsRichComparison
 
-__all__ = ["exclusive", "exclusive_inclusive", "inclusive", "inclusive_exclusive"]
+__all__ = ["to_exclusively_from_exclusively", "to_exclusively_from_inclusively", "to_inclusively_from_exclusively", "to_inclusively_from_inclusively"]
 
 
 @curry
-def inclusive[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
-    return both(comparison.greater_than_or_same_as(minimum))(comparison.less_than_or_same_as(maximum))
+def to_inclusively_from_inclusively[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
+    return both_and(comparison.less_than_or_equal_to(maximum))(comparison.greater_than_or_equal_to(minimum))
 
 
 @curry
-def inclusive_exclusive[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
-    return both(comparison.greater_than_or_same_as(minimum))(comparison.less_than(maximum))
+def to_exclusively_from_inclusively[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
+    return both_and(comparison.less_than(maximum))(comparison.greater_than_or_equal_to(minimum))
 
 
 @curry
-def exclusive_inclusive[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
-    return both(comparison.greater_than(minimum))(comparison.less_than_or_same_as(maximum))
+def to_inclusively_from_exclusively[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
+    return both_and(comparison.less_than_or_equal_to(maximum))(comparison.greater_than(minimum))
 
 
 @curry
-def exclusive[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
-    return both(comparison.greater_than(minimum))(comparison.less_than(maximum))
+def to_exclusively_from_exclusively[T: SupportsRichComparison](maximum: T, minimum: T) -> Predicate[T]:
+    return both_and(comparison.less_than(maximum))(comparison.greater_than(minimum))

@@ -1,10 +1,10 @@
 from felis.predicate import negate
 
-__all__ = ["falsey", "truthy"]
+__all__ = ["falsy", "truthy"]
 
 
 def truthy(value: object) -> bool:
     return bool(value)
 
 
-falsey = negate(truthy)
+falsy = negate(truthy)
