@@ -2,8 +2,8 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, function, monad, state_t
-from felis.currying import curry
+from felis import applicative, monad, state_t
+from felis.currying import curry, flip
 from felis.lazy import Lazy
 
 __all__ = [
@@ -94,16 +94,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[S, First, Second](second: State[S, Second], first: State[S, First]) -> State[S, Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[S, First, Second](first: State[S, First], second: State[S, Second]) -> State[S, Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[S, First, Second](second: State[S, Second], first: State[S, First]) -> State[S, First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[S, First, Second](first: State[S, First], second: State[S, Second]) -> State[S, First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -133,7 +157,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:
@@ -178,16 +202,40 @@ else:
     reversed_lift2 = applicative.lift2(map_by)(reversed_apply)
 
 
-reversed_take_after = reversed_lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def reversed_take_after[S, First, Second](second: ReversedState[S, Second], first: ReversedState[S, First]) -> ReversedState[S, Second]: ...
+
+else:
+    reversed_take_after = applicative.take_after(lift2)
 
 
-reversed_discard_after = reversed_lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def reversed_discard_before[S, First, Second](first: ReversedState[S, First], second: ReversedState[S, Second]) -> ReversedState[S, Second]: ...
+
+else:
+    reversed_discard_before = applicative.discard_before(lift2)
 
 
-reversed_take_before = function.flip(reversed_discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def reversed_discard_after[S, First, Second](second: ReversedState[S, Second], first: ReversedState[S, First]) -> ReversedState[S, First]: ...
+
+else:
+    reversed_discard_after = applicative.discard_after(lift2)
 
 
-reversed_discard_before = function.flip(reversed_take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def reversed_take_before[S, First, Second](first: ReversedState[S, First], second: ReversedState[S, Second]) -> ReversedState[S, First]: ...
+
+else:
+    reversed_take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -208,7 +256,7 @@ else:
     reversed_bind_to = monad.bind_to(map_by)(reversed_join)
 
 
-reversed_bind = function.flip(reversed_bind_to)
+reversed_bind = flip(reversed_bind_to)
 
 
 if TYPE_CHECKING:

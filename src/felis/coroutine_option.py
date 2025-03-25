@@ -2,9 +2,9 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, coroutine, function, monad, option, option_t
+from felis import applicative, coroutine, monad, option, option_t
 from felis.coroutine import Coroutine
-from felis.currying import curry
+from felis.currying import curry, flip
 from felis.option import Option
 
 __all__ = [
@@ -69,16 +69,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[First, Second](second: CoroutineOption[Second], first: CoroutineOption[First]) -> CoroutineOption[Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[First, Second](first: CoroutineOption[First], second: CoroutineOption[Second]) -> CoroutineOption[Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[First, Second](second: CoroutineOption[Second], first: CoroutineOption[First]) -> CoroutineOption[First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[First, Second](first: CoroutineOption[First], second: CoroutineOption[Second]) -> CoroutineOption[First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -107,7 +131,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

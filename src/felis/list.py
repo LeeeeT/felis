@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 import felis.identity
 import felis.order
-from felis import applicative, function, list_t, monad
-from felis.currying import curry
+from felis import applicative, list_t, monad
+from felis.currying import curry, flip
 from felis.list_t import List
 from felis.order import Order
 from felis.predicate import Predicate
@@ -79,16 +79,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[First, Second](second: List[Second], first: List[First]) -> List[Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[First, Second](first: List[First], second: List[Second]) -> List[Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[First, Second](second: List[Second], first: List[First]) -> List[First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[First, Second](first: List[First], second: List[Second]) -> List[First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -155,7 +179,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

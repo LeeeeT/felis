@@ -2,8 +2,8 @@ import collections.abc
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from felis import applicative, function, monad
-from felis.currying import curry
+from felis import applicative, monad
+from felis.currying import curry, flip
 
 __all__ = [
     "Coroutine",
@@ -54,16 +54,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[First, Second](second: Coroutine[Second], first: Coroutine[First]) -> Coroutine[Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[First, Second](first: Coroutine[First], second: Coroutine[Second]) -> Coroutine[Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[First, Second](second: Coroutine[Second], first: Coroutine[First]) -> Coroutine[First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[First, Second](first: Coroutine[First], second: Coroutine[Second]) -> Coroutine[First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -88,7 +112,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

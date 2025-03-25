@@ -3,8 +3,8 @@ from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
 import felis.identity
-from felis import applicative, function, monad
-from felis.currying import curry
+from felis import applicative, monad
+from felis.currying import curry, flip
 from felis.predicate import Predicate
 
 __all__ = [
@@ -80,16 +80,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[First, Second](second: Iterable[Second], first: Iterable[First]) -> Iterable[Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[First, Second](first: Iterable[First], second: Iterable[Second]) -> Iterable[Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[First, Second](second: Iterable[Second], first: Iterable[First]) -> Iterable[First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[First, Second](first: Iterable[First], second: Iterable[Second]) -> Iterable[First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -140,7 +164,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

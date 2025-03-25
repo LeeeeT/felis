@@ -1,11 +1,9 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
 from felis import applicative, monad
-from felis.currying import curry
-from felis.function.flip_ import flip
-from felis.function.pure_ import pure
+from felis.currying import curry, flip
 
 __all__ = [
     "Function",
@@ -15,7 +13,6 @@ __all__ = [
     "compose",
     "discard_after",
     "discard_before",
-    "flip",
     "join",
     "lift2",
     "map_by",
@@ -62,6 +59,11 @@ map_by2 = felis.identity.compose(map_by)(map_by)
 
 
 @curry
+def pure[T](_: Any, value: T) -> T:
+    return value
+
+
+@curry
 @curry
 def apply[T, From, To](value: T, function_value: Function[T, From], function: Function[T, Callable[[From], To]]) -> To:
     return function(value)(function_value(value))
@@ -81,16 +83,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(flip(pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[T, First, Second](second: Function[T, Second], first: Function[T, First]) -> Function[T, Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[T, First, Second](first: Function[T, First], second: Function[T, Second]) -> Function[T, Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[T, First, Second](second: Function[T, Second], first: Function[T, First]) -> Function[T, First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[T, First, Second](first: Function[T, First], second: Function[T, Second]) -> Function[T, First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:

@@ -2,8 +2,8 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, function, lazy_coroutine_either, list, list_t, monad
-from felis.currying import curry
+from felis import applicative, lazy_coroutine_either, list, list_t, monad
+from felis.currying import curry, flip
 from felis.lazy_coroutine_either import LazyCoroutineEither
 from felis.list import List
 
@@ -60,16 +60,48 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[L, First, Second](
+        second: LazyCoroutineEitherList[L, Second], first: LazyCoroutineEitherList[L, First],
+    ) -> LazyCoroutineEitherList[L, Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[L, First, Second](
+        first: LazyCoroutineEitherList[L, First], second: LazyCoroutineEitherList[L, Second],
+    ) -> LazyCoroutineEitherList[L, Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[L, First, Second](
+        second: LazyCoroutineEitherList[L, Second], first: LazyCoroutineEitherList[L, First],
+    ) -> LazyCoroutineEitherList[L, First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[L, First, Second](
+        first: LazyCoroutineEitherList[L, First], second: LazyCoroutineEitherList[L, Second],
+    ) -> LazyCoroutineEitherList[L, First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -103,7 +135,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

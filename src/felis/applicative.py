@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from typing import Any
 
-from felis.currying import curry
+from felis.currying import curry, flip
 
-__all__ = ["lift2", "when"]
+__all__ = ["discard_after", "discard_before", "lift2", "take_after", "take_before", "when"]
 
 
 # [A : * -> *] ->
@@ -20,6 +20,34 @@ def lift2(
     map_by: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
 ) -> Callable[[Any], Any]:
     return apply(map_by(function)(first))
+
+
+# [A : * -> *] ->
+# ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
+# [First : *] -> [Second : *] -> A First -> A Second -> A Second
+def take_after(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
+    return lift2(lambda first: lambda second: second)
+
+
+# [A : * -> *] ->
+# ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
+# [First : *] -> [Second : *] -> A Second -> A First -> A Second
+def discard_before(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
+    return flip(take_after(lift2))
+
+
+# [A : * -> *] ->
+# ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
+# [First : *] -> [Second : *] -> A First -> A Second -> A First
+def discard_after(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
+    return lift2(lambda first: lambda second: first)
+
+
+# [A : * -> *] ->
+# ([First : *] -> [Second : *] -> [Result : *] -> (First -> Second -> Result) -> A First -> A Second -> A Result) ->
+# [First : *] -> [Second : *] -> A Second -> A First -> A First
+def take_before(lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]]) -> Callable[[Any], Callable[[Any], Any]]:
+    return flip(discard_after(lift2))
 
 
 # [A : * -> *] -> ([T : *] -> T -> A T) -> bool -> A None -> A None

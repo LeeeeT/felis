@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import felis.bool
-from felis import function, identity
+from felis import function
 
 __all__ = ["Predicate", "both_and", "different_from", "either_or", "false", "negate", "same_as", "true"]
 
@@ -21,7 +21,7 @@ both_and = function.to_add(felis.bool.both_and)
 either_or = function.to_add(felis.bool.either_or)
 
 
-negate = identity.compose(felis.bool.negate)
+negate = function.map_by(felis.bool.negate)
 
 
 same_as = function.to_add(felis.bool.same_as)

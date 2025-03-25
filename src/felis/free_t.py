@@ -2,8 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-import felis.function
-from felis.currying import curry
+from felis.currying import curry, flip
 
 __all__ = ["Bind", "Free", "Pure", "apply", "join", "map_by", "pure"]
 
@@ -56,7 +55,7 @@ def apply[From, To](
         case Pure(function):
             return map_by(f_map_by)(function)(free_value)
         case Bind(f_free_function):
-            return Bind(f_map_by(felis.function.flip(apply(f_map_by))(free_value))(f_free_function))
+            return Bind(f_map_by(flip(apply(f_map_by))(free_value))(f_free_function))
 
 
 # [F : * -> *] -> ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) -> [T : *] -> Free F (Free F T) -> Free F T

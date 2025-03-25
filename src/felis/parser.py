@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 import felis.list
 import felis.option
 from felis import applicative, function, monad, option_t, state_t
-from felis.currying import curry
+from felis.currying import curry, flip
 from felis.option import Option
 from felis.predicate import Predicate
 
@@ -116,16 +116,16 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+discard_after = applicative.discard_after(lift2)
 
 
-take_before = function.flip(discard_after)
+take_before = applicative.take_before(lift2)
 
 
-discard_before = function.flip(take_after)
+discard_before = applicative.discard_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -154,7 +154,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:

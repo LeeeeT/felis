@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import felis.identity
 from felis import applicative, function, monad, option, option_t
-from felis.currying import curry
+from felis.currying import curry, flip
 from felis.function import Function
 from felis.option import Option
 
@@ -58,16 +58,40 @@ else:
     lift2 = applicative.lift2(map_by)(apply)
 
 
-take_after = lift2(function.flip(function.pure))
+if TYPE_CHECKING:
+
+    @curry
+    def take_after[T, First, Second](second: FunctionOption[T, Second], first: FunctionOption[T, First]) -> FunctionOption[T, Second]: ...
+
+else:
+    take_after = applicative.take_after(lift2)
 
 
-discard_after = lift2(function.pure)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_before[T, First, Second](first: FunctionOption[T, First], second: FunctionOption[T, Second]) -> FunctionOption[T, Second]: ...
+
+else:
+    discard_before = applicative.discard_before(lift2)
 
 
-take_before = function.flip(discard_after)
+if TYPE_CHECKING:
+
+    @curry
+    def discard_after[T, First, Second](second: FunctionOption[T, Second], first: FunctionOption[T, First]) -> FunctionOption[T, First]: ...
+
+else:
+    discard_after = applicative.discard_after(lift2)
 
 
-discard_before = function.flip(take_after)
+if TYPE_CHECKING:
+
+    @curry
+    def take_before[T, First, Second](first: FunctionOption[T, First], second: FunctionOption[T, Second]) -> FunctionOption[T, First]: ...
+
+else:
+    take_before = applicative.take_before(lift2)
 
 
 if TYPE_CHECKING:
@@ -99,7 +123,7 @@ else:
     bind_to = monad.bind_to(map_by)(join)
 
 
-bind = function.flip(bind_to)
+bind = flip(bind_to)
 
 
 if TYPE_CHECKING:
