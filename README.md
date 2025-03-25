@@ -95,19 +95,20 @@ print(pythags)
 Parsing (and evaluating) an arithmetic expression with `felis.parser`:
 
 ```python
+from felis import float, Float
 from felis.option import Some
 from felis.parser import *
 
-literal = map_by(int)(map_by("".join)(some(digit)))
-factor = lambda string: bracket(character("("))(character(")"))(expression)(string)
+literal = map_by(Float)(map_by("".join)(some(digit)))
+factor: Parser[Float] = lambda string: bracket(character("("))(character(")"))(expression)(string)
 term_priority_1 = to_add(literal)(factor)
 
-multiplication = take_after(character("*"))(pure(lambda b: lambda a: a * b))
-division = take_after(character("/"))(pure(lambda b: lambda a: a / b))
+multiplication = take_after(character("*"))(pure(float.by_multiply))
+division = take_after(character("/"))(pure(float.by_divide))
 term_priority_2 = chain_left_1(to_add(division)(multiplication))(term_priority_1)
 
-addition = take_after(character("+"))(pure(lambda b: lambda a: a + b))
-subtraction = take_after(character("-"))(pure(lambda b: lambda a: a - b))
+addition = take_after(character("+"))(pure(float.to_add))
+subtraction = take_after(character("-"))(pure(float.from_subtract))
 term_priority_3 = chain_left_1(to_add(subtraction)(addition))(term_priority_2)
 
 expression = term_priority_3

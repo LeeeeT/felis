@@ -3,6 +3,7 @@ from felis.coroutine import Coroutine
 from felis.coroutine_option import CoroutineOption
 from felis.dict import Dict
 from felis.either import Either
+from felis.float import Float
 from felis.free import Free
 from felis.free_dict import FreeDict
 from felis.function import Function
@@ -29,6 +30,7 @@ __all__ = [
     "CoroutineOption",
     "Dict",
     "Either",
+    "Float",
     "Free",
     "FreeDict",
     "Function",
