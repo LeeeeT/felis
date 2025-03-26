@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 import felis.identity
 from felis import applicative, free_t, monad
@@ -32,9 +31,11 @@ __all__ = [
 
 if TYPE_CHECKING:
 
-    @dataclass(frozen=True)
     class Bind[T]:
-        f_free_value: felis.identity.Identity[Free[T]]
+        __match_args__ = ("f_free_value",)
+
+        def __init__(self, f_free_value: felis.identity.Identity[Free[T]]):
+            self.f_free_value: Final = f_free_value
 
 else:
     from felis.free_t import Bind

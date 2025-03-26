@@ -1,6 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Self
+from typing import Final, Self
 
 from felis import function, ordering
 from felis.currying import curry, flip
@@ -74,9 +73,9 @@ def dunder[T: SupportsRichComparison](first: T, second: T) -> Ordering:
 
 
 def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]:
-    @dataclass(frozen=True)
     class RichComparison:
-        value: T
+        def __init__(self, value: T):
+            self.value: Final = value
 
         def __eq__(self, other: object, /) -> bool:
             if isinstance(other, RichComparison):

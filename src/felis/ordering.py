@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from felis import predicate
 from felis.currying import curry, flip
 
@@ -26,17 +24,14 @@ __all__ = [
 type Ordering = Worse | Same | Better
 
 
-@dataclass(frozen=True)
 class Worse:
     pass
 
 
-@dataclass(frozen=True)
 class Same:
     pass
 
 
-@dataclass(frozen=True)
 class Better:
     pass
 

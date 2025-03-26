@@ -1,21 +1,24 @@
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 from felis.currying import curry, flip
 
 __all__ = ["Bind", "Free", "Pure", "apply", "join", "map_by", "pure"]
 
 
-@dataclass(frozen=True)
 class Pure[T]:
-    value: T
+    __match_args__ = ("value",)
+
+    def __init__(self, value: T):
+        self.value: Final = value
 
 
 # [F : * -> *] -> [T : *] -> F (Free F T) -> Free F T
-@dataclass(frozen=True)
 class Bind:
-    f_free_value: Any
+    __match_args__ = ("f_free_value",)
+
+    def __init__(self, f_free_value: Any):
+        self.f_free_value: Final = f_free_value
 
 
 type Free[T] = Pure[T] | Bind

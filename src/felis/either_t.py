@@ -1,6 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Any
+from typing import Any, Final
 
 from felis.currying import curry
 
@@ -10,14 +9,18 @@ __all__ = ["Either", "Left", "Right", "apply", "default_to", "join", "to_add"]
 type Either[L, R] = Left[L] | Right[R]
 
 
-@dataclass(frozen=True)
 class Left[T]:
-    value: T
+    __match_args__ = ("value",)
+
+    def __init__(self, value: T):
+        self.value: Final = value
 
 
-@dataclass(frozen=True)
 class Right[T]:
-    value: T
+    __match_args__ = ("value",)
+
+    def __init__(self, value: T):
+        self.value: Final = value
 
 
 # [M : * -> *] ->

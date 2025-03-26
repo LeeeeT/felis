@@ -1,9 +1,11 @@
-from dataclasses import dataclass
+from typing import Final
 
 __all__ = ["Pair"]
 
 
-@dataclass(frozen=True)
 class Pair[L, R]:
-    left: L
-    right: R
+    __match_args__ = ("left", "right")
+
+    def __init__(self, left: L, right: R):
+        self.left: Final = left
+        self.right: Final = right

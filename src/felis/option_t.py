@@ -1,6 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Any
+from typing import Any, Final
 
 from felis.currying import curry
 
@@ -10,9 +9,11 @@ __all__ = ["Option", "Some", "apply", "default_to", "join", "neutral", "to_add",
 type Option[T] = None | Some[T]
 
 
-@dataclass(frozen=True)
 class Some[T]:
-    value: T
+    __match_args__ = ("value",)
+
+    def __init__(self, value: T):
+        self.value: Final = value
 
 
 # [M : * -> *] -> ([T : *] -> T -> M T) -> [T : *] -> M (Option T)
