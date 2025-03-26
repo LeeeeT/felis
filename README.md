@@ -101,15 +101,15 @@ from felis.parser import *
 
 literal = map_by(Float)(map_by("".join)(some(digit)))
 factor: Parser[Float] = lambda string: bracket(character("("))(character(")"))(expression)(string)
-term_priority_1 = to_add(literal)(factor)
+term_priority_1 = add_to(factor)(literal)
 
 multiplication = take_after(character("*"))(pure(float.multiply_by))
 division = take_after(character("/"))(pure(float.divide_by))
-term_priority_2 = chain_left_1(to_add(division)(multiplication))(term_priority_1)
+term_priority_2 = chain_left_1(add_to(multiplication)(division))(term_priority_1)
 
 addition = take_after(character("+"))(pure(float.to_add))
 subtraction = take_after(character("-"))(pure(float.from_subtract))
-term_priority_3 = chain_left_1(to_add(subtraction)(addition))(term_priority_2)
+term_priority_3 = chain_left_1(add_to(addition)(subtraction))(term_priority_2)
 
 expression = term_priority_3
 

@@ -7,6 +7,8 @@ from felis.currying import curry, flip
 
 __all__ = [
     "Function",
+    "add_to",
+    "add_to2",
     "apply",
     "bind",
     "bind_to",
@@ -47,7 +49,13 @@ def to_add[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add
     return m_add(addend(value))(augend(value))
 
 
+add_to = flip(to_add)
+
+
 to_add2 = felis.identity.compose_before(to_add)(to_add)
+
+
+add_to2 = flip(to_add2)
 
 
 @curry

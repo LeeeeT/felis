@@ -1,12 +1,15 @@
-from felis.currying import curry
+from felis.currying import curry, flip
 
-__all__ = ["Float", "divide_by", "multiply_by", "from_subtract", "to_add"]
+__all__ = ["Float", "add_to", "divide_by", "from_subtract", "multiply_by", "to_add"]
 
 
 Float = float
 
 
 to_add = curry(float.__add__)
+
+
+add_to = flip(to_add)
 
 
 from_subtract = curry(float.__sub__)

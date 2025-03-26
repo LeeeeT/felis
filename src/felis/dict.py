@@ -2,10 +2,10 @@ from collections.abc import Callable
 from typing import Any
 
 from felis import option
-from felis.currying import curry
+from felis.currying import curry, flip
 from felis.option import Option
 
-__all__ = ["Dict", "in_get", "in_to_set", "map_by", "neutral", "to_add"]
+__all__ = ["Dict", "add_to", "in_get", "in_to_set", "map_by", "neutral", "to_add"]
 
 
 Dict = dict
@@ -29,6 +29,9 @@ def in_get[K, V](dict: Dict[K, V], key: K) -> Option[V]:
 @curry
 def to_add[K, V](augend: Dict[K, V], addend: Dict[K, V]) -> Dict[K, V]:
     return {**augend, **addend}
+
+
+add_to = flip(to_add)
 
 
 @curry

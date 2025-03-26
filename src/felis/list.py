@@ -12,6 +12,7 @@ from felis.predicate import Predicate
 
 __all__ = [
     "List",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -50,6 +51,9 @@ def to_append[T](list: List[T], value: T) -> List[T]:
 @curry
 def to_add[T](augend: List[T], addend: List[T]) -> List[T]:
     return augend + addend
+
+
+add_to = flip(to_add)
 
 
 @curry

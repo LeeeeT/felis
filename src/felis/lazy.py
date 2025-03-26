@@ -8,6 +8,7 @@ from felis.lazy_t import Lazy
 
 __all__ = [
     "Lazy",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -35,6 +36,9 @@ def run[T](lazy_value: Lazy[T]) -> T:
 @curry
 def to_add[M](first: Lazy[M], second: Lazy[M], m_add: Callable[[M], Callable[[M], M]]) -> Lazy[M]:
     return lambda: m_add(second())(first())
+
+
+add_to = flip(to_add)
 
 
 @curry

@@ -15,6 +15,7 @@ __all__ = [
     "Either",
     "Left",
     "Right",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -45,6 +46,9 @@ if TYPE_CHECKING:
 
 else:
     to_add = either_t.to_add(felis.identity.pure)(felis.identity.bind)
+
+
+add_to = flip(to_add)
 
 
 @curry

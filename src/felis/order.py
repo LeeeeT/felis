@@ -3,12 +3,13 @@ from dataclasses import dataclass
 from typing import Self
 
 from felis import function, ordering
-from felis.currying import curry
+from felis.currying import curry, flip
 from felis.ordering import Ordering
 from felis.typing import SupportsRichComparison
 
 __all__ = [
     "Order",
+    "add_to",
     "better_than",
     "different_from",
     "dunder",
@@ -54,6 +55,9 @@ neutral = function.neutral2(ordering.neutral)
 
 
 to_add = function.to_add2(ordering.to_add)
+
+
+add_to = flip(to_add)
 
 
 def map_by[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> Ordering:

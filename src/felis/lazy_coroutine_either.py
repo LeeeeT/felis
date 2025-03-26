@@ -9,6 +9,7 @@ from felis.lazy_coroutine import LazyCoroutine
 
 __all__ = [
     "LazyCoroutineEither",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -41,6 +42,9 @@ if TYPE_CHECKING:
 
 else:
     to_add = either_t.to_add(lazy_coroutine.pure)(lazy_coroutine.bind)
+
+
+add_to = flip(to_add)
 
 
 if TYPE_CHECKING:

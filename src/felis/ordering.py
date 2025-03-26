@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 
 from felis import predicate
-from felis.currying import curry
+from felis.currying import curry, flip
 
 __all__ = [
     "Better",
     "Ordering",
     "Same",
     "Worse",
+    "add_to",
     "better",
     "different",
     "neutral",
@@ -78,3 +79,6 @@ def to_add(augend: Ordering, addend: Ordering) -> Ordering:
             return addend
         case _:
             return augend
+
+
+add_to = flip(to_add)

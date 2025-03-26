@@ -9,6 +9,7 @@ from felis.predicate import Predicate
 
 __all__ = [
     "Iterable",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -48,6 +49,9 @@ def to_append[T](iterable: Iterable[T], value: T) -> Iterable[T]:
 def to_add[T](augend: Iterable[T], addend: Iterable[T]) -> Iterable[T]:
     yield from augend
     yield from addend
+
+
+add_to = flip(to_add)
 
 
 @curry

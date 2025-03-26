@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "LazyCoroutineOption",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -45,6 +46,9 @@ if TYPE_CHECKING:
 
 else:
     to_add = option_t.to_add(lazy_coroutine.pure)(lazy_coroutine.bind)
+
+
+add_to = flip(to_add)
 
 
 if TYPE_CHECKING:

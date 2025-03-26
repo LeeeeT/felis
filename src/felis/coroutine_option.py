@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CoroutineOption",
+    "add_to",
     "apply",
     "bind",
     "bind_to",
@@ -45,6 +46,9 @@ if TYPE_CHECKING:
 
 else:
     to_add = option_t.to_add(coroutine.pure)(coroutine.bind)
+
+
+add_to = flip(to_add)
 
 
 if TYPE_CHECKING:

@@ -10,6 +10,7 @@ from felis.predicate import Predicate
 
 __all__ = [
     "Parser",
+    "add_to",
     "alnum",
     "alpha",
     "any",
@@ -75,6 +76,9 @@ if TYPE_CHECKING:
 
 else:
     to_add = option_t.to_add(function.pure)(function.bind)
+
+
+add_to = flip(to_add)
 
 
 if TYPE_CHECKING:
