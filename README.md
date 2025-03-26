@@ -103,8 +103,8 @@ literal = map_by(Float)(map_by("".join)(some(digit)))
 factor: Parser[Float] = lambda string: bracket(character("("))(character(")"))(expression)(string)
 term_priority_1 = to_add(literal)(factor)
 
-multiplication = take_after(character("*"))(pure(float.by_multiply))
-division = take_after(character("/"))(pure(float.by_divide))
+multiplication = take_after(character("*"))(pure(float.multiply_by))
+division = take_after(character("/"))(pure(float.divide_by))
 term_priority_2 = chain_left_1(to_add(division)(multiplication))(term_priority_1)
 
 addition = take_after(character("+"))(pure(float.to_add))
