@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, lazy_coroutine, monad, option, option_t
+from felis import applicative, lazy_coroutine, monad, option
 from felis.currying import curry, flip
 from felis.lazy_coroutine import LazyCoroutine
 from felis.option import Option
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     def to_add[T](lazy_coroutine_option_augend: LazyCoroutineOption[T], lazy_coroutine_option_addend: LazyCoroutineOption[T]) -> LazyCoroutineOption[T]: ...
 
 else:
-    to_add = option_t.to_add(lazy_coroutine.pure)(lazy_coroutine.bind)
+    to_add = option.to_add_t(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 add_to = flip(to_add)
@@ -130,7 +130,7 @@ if TYPE_CHECKING:
     def join[T](lazy_coroutine_option_lazy_coroutine_option_value: LazyCoroutineOption[LazyCoroutineOption[T]]) -> LazyCoroutineOption[T]: ...
 
 else:
-    join = option_t.join(lazy_coroutine.pure)(lazy_coroutine.bind)
+    join = option.join_t(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -185,7 +185,7 @@ if TYPE_CHECKING:
     def default_to[T](lazy_coroutine_option_value: LazyCoroutineOption[T], default_value: LazyCoroutine[T]) -> LazyCoroutine[T]: ...
 
 else:
-    default_to = option_t.default_to(lazy_coroutine.pure)(lazy_coroutine.bind)
+    default_to = option.default_to_t(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -194,4 +194,4 @@ if TYPE_CHECKING:
     def to_either[L, R](coroutine_option_value: LazyCoroutineOption[R], left: LazyCoroutine[L]) -> LazyCoroutine[Either[L, R]]: ...
 
 else:
-    to_either = option_t.to_either(lazy_coroutine.pure)(lazy_coroutine.bind)
+    to_either = option.to_either_t(lazy_coroutine.pure)(lazy_coroutine.bind)

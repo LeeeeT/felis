@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 import felis.list
 import felis.option
-from felis import applicative, function, monad, option_t, state_t
+from felis import applicative, function, monad, state
 from felis.currying import curry, flip
 from felis.option import Option
 from felis.predicate import Predicate
@@ -58,7 +58,7 @@ if TYPE_CHECKING:
     def parse_as[T](string: str, parser_value: Parser[T]) -> Option[T]: ...
 
 else:
-    parse_as = state_t.starting_with_run(felis.option.map_by)
+    parse_as = state.starting_with_run_t(felis.option.map_by)
 
 
 if TYPE_CHECKING:
@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     def neutral(string: str, /) -> Option[tuple[Any, str]]: ...
 
 else:
-    neutral = option_t.neutral(function.pure)
+    neutral = felis.option.neutral_t(function.pure)
 
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ if TYPE_CHECKING:
     def to_add[T](first: Parser[T], second: Parser[T]) -> Parser[T]: ...
 
 else:
-    to_add = option_t.to_add(function.pure)(function.bind)
+    to_add = felis.option.to_add_t(function.pure)(function.bind)
 
 
 add_to = flip(to_add)
@@ -87,7 +87,7 @@ if TYPE_CHECKING:
     def map_by[From, To](parser_value: Parser[From], function: Callable[[From], To]) -> Parser[To]: ...
 
 else:
-    map_by = state_t.map_by(felis.option.map_by)
+    map_by = state.map_by_t(felis.option.map_by)
 
 
 if TYPE_CHECKING:
@@ -95,7 +95,7 @@ if TYPE_CHECKING:
     def pure[T](value: T, /) -> Parser[T]: ...
 
 else:
-    pure = state_t.pure(felis.option.pure)
+    pure = state.pure_t(felis.option.pure)
 
 
 if TYPE_CHECKING:
@@ -104,7 +104,7 @@ if TYPE_CHECKING:
     def apply[From, To](parser_value: Parser[From], parser_function: Parser[Callable[[From], To]]) -> Parser[To]: ...
 
 else:
-    apply = state_t.apply(felis.option.pure)(felis.option.bind)
+    apply = state.apply_t(felis.option.pure)(felis.option.bind)
 
 
 if TYPE_CHECKING:
@@ -171,7 +171,7 @@ if TYPE_CHECKING:
     def join[T](parser_value: Parser[Parser[T]], /) -> Parser[T]: ...
 
 else:
-    join = state_t.join(felis.option.pure)(felis.option.bind)
+    join = state.join_t(felis.option.pure)(felis.option.bind)
 
 
 if TYPE_CHECKING:

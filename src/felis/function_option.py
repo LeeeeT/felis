@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, function, monad, option, option_t
+from felis import applicative, function, monad, option
 from felis.currying import curry, flip
 from felis.function import Function
 from felis.option import Option
@@ -109,7 +109,7 @@ if TYPE_CHECKING:
     def join[T, From, To](function_option_function_option_value: FunctionOption[T, FunctionOption[T, From]]) -> FunctionOption[T, To]: ...
 
 else:
-    join = option_t.join(function.pure)(function.bind)
+    join = option.join_t(function.pure)(function.bind)
 
 
 if TYPE_CHECKING:

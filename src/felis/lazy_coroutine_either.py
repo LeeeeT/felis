@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, either, either_t, lazy_coroutine, monad
+from felis import applicative, either, lazy_coroutine, monad
 from felis.currying import curry, flip
 from felis.either import Either
 from felis.lazy_coroutine import LazyCoroutine
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineEither[L, R]: ...
 
 else:
-    to_add = either_t.to_add(lazy_coroutine.pure)(lazy_coroutine.bind)
+    to_add = either.to_add_t(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 add_to = flip(to_add)
@@ -126,7 +126,7 @@ if TYPE_CHECKING:
     def join[L, R](lazy_coroutine_either_lazy_coroutine_either_value: LazyCoroutineEither[L, LazyCoroutineEither[L, R]]) -> LazyCoroutineEither[L, R]: ...
 
 else:
-    join = either_t.join(lazy_coroutine.pure)(lazy_coroutine.bind)
+    join = either.join_t(lazy_coroutine.pure)(lazy_coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -178,4 +178,4 @@ if TYPE_CHECKING:
     def default_to[L, R](lazy_coroutine_either_value: LazyCoroutineEither[L, R], default_value: LazyCoroutine[R]) -> LazyCoroutine[R]: ...
 
 else:
-    default_to = either_t.default_to(lazy_coroutine.pure)(lazy_coroutine.bind)
+    default_to = either.default_to_t(lazy_coroutine.pure)(lazy_coroutine.bind)

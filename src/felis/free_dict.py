@@ -3,9 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Final
 
-from felis import applicative, dict, free_t, monad
+from felis import applicative, dict, free, monad
 from felis.currying import curry, flip
-from felis.free_t import Pure
 
 __all__ = [
     "Bind",
@@ -28,22 +27,24 @@ __all__ = [
 ]
 
 
+type FreeDict[K, T] = Pure[T] | Bind[K, T]
+
+
+Pure = free.PureT
+
+
 if TYPE_CHECKING:
 
     class Bind[K, T]:
-        __match_args__ = ("f_free_dict_value",)
+        __match_args__ = ("f_free_value",)
 
-        def __init__(self, f_free_dict_value: dict.Dict[K, FreeDict[K, T]]):
-            self.f_free_dict_value: Final = f_free_dict_value
+        def __init__(self, f_free_value: dict.Dict[K, FreeDict[K, T]]):
+            self.f_free_value: Final = f_free_value
 
 else:
-    from felis.free_t import Bind
 
-
-if TYPE_CHECKING:
-    type FreeDict[K, T] = Pure[T] | Bind[K, T]
-else:
-    from felis.free_t import Free as FreeDict
+    class Bind[K, T](free.BindT[T]):
+        pass
 
 
 if TYPE_CHECKING:
@@ -52,14 +53,14 @@ if TYPE_CHECKING:
     def map_by[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], To]) -> FreeDict[K, To]: ...
 
 else:
-    map_by = free_t.map_by(dict.map_by)
+    map_by = free.map_by_t(dict.map_by)
 
 
 if TYPE_CHECKING:
     # [K : *] -> [T : *] -> T -> FreeDict K T
     pure: FreeDict[Any, Any]
 else:
-    from felis.free_t import pure
+    pure = free.pure
 
 
 if TYPE_CHECKING:
@@ -68,7 +69,7 @@ if TYPE_CHECKING:
     def apply[K, From, To](free_dict_value: FreeDict[K, From], free_dict_function: FreeDict[K, Callable[[From], To]]) -> FreeDict[K, To]: ...
 
 else:
-    apply = free_t.apply(dict.map_by)
+    apply = free.apply_t(dict.map_by)
 
 
 if TYPE_CHECKING:
@@ -135,7 +136,7 @@ if TYPE_CHECKING:
     def join[K, T](free_dict_free_dict_value: FreeDict[K, FreeDict[K, T]], /) -> FreeDict[K, T]: ...
 
 else:
-    join = free_t.join(dict.map_by)
+    join = free.join_t(dict.map_by)
 
 
 if TYPE_CHECKING:

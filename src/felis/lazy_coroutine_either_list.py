@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, lazy_coroutine_either, list, list_t, monad
+from felis import applicative, lazy_coroutine_either, list, monad
 from felis.currying import curry, flip
 from felis.lazy_coroutine_either import LazyCoroutineEither
 from felis.list import List
@@ -125,7 +125,7 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineEitherList[L, R]: ...
 
 else:
-    join = list_t.join(lazy_coroutine_either.pure)(lazy_coroutine_either.bind)
+    join = list.join_t(lazy_coroutine_either.pure)(lazy_coroutine_either.bind)
 
 
 if TYPE_CHECKING:

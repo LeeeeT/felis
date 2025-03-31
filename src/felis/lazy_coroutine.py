@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, coroutine, lazy, lazy_t, monad
+from felis import applicative, coroutine, lazy, monad
 from felis.coroutine import Coroutine
 from felis.currying import curry, flip
 from felis.lazy import Lazy
@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     def apply[From, To](lazy_coroutine_value: LazyCoroutine[From], lazy_coroutine_function: LazyCoroutine[Callable[[From], To]]) -> LazyCoroutine[To]: ...
 
 else:
-    apply = lazy_t.apply(coroutine.pure)(coroutine.bind)
+    apply = lazy.apply_t(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -119,7 +119,7 @@ if TYPE_CHECKING:
     def join[T](lazy_coroutine_lazy_coroutine_value: LazyCoroutine[LazyCoroutine[T]]) -> LazyCoroutine[T]: ...
 
 else:
-    join = lazy_t.join(coroutine.pure)(coroutine.bind)
+    join = lazy.join_t(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:

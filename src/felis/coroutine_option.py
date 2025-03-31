@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import felis.identity
-from felis import applicative, coroutine, monad, option, option_t
+from felis import applicative, coroutine, monad, option
 from felis.coroutine import Coroutine
 from felis.currying import curry, flip
 from felis.option import Option
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     def to_add[T](coroutine_option_augend: CoroutineOption[T], coroutine_option_addend: CoroutineOption[T]) -> CoroutineOption[T]: ...
 
 else:
-    to_add = option_t.to_add(coroutine.pure)(coroutine.bind)
+    to_add = option.to_add_t(coroutine.pure)(coroutine.bind)
 
 
 add_to = flip(to_add)
@@ -130,7 +130,7 @@ if TYPE_CHECKING:
     def join[T](coroutine_option_coroutine_option_value: CoroutineOption[CoroutineOption[T]]) -> CoroutineOption[T]: ...
 
 else:
-    join = option_t.join(coroutine.pure)(coroutine.bind)
+    join = option.join_t(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -182,7 +182,7 @@ if TYPE_CHECKING:
     def default_to[T](coroutine_option_value: CoroutineOption[T], default_value: Coroutine[T]) -> Coroutine[T]: ...
 
 else:
-    default_to = option_t.default_to(coroutine.pure)(coroutine.bind)
+    default_to = option.default_to_t(coroutine.pure)(coroutine.bind)
 
 
 if TYPE_CHECKING:
@@ -191,4 +191,4 @@ if TYPE_CHECKING:
     def to_either[L, R](coroutine_option_value: CoroutineOption[R], left: Coroutine[L]) -> Coroutine[Either[L, R]]: ...
 
 else:
-    to_either = option_t.to_either(coroutine.pure)(coroutine.bind)
+    to_either = option.to_either_t(coroutine.pure)(coroutine.bind)

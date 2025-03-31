@@ -1,15 +1,14 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import felis.identity
-from felis import applicative, lazy_t, monad
+from felis import applicative, monad
 from felis.currying import curry, flip
-from felis.lazy_t import Lazy
 
 __all__ = [
     "Lazy",
-    "add_to",
     "apply",
+    "apply_t",
     "bind",
     "bind_to",
     "compose_after",
@@ -17,15 +16,19 @@ __all__ = [
     "discard_after",
     "discard_before",
     "join",
+    "join_t",
     "lift2",
     "map_by",
     "pure",
     "run",
     "take_after",
     "take_before",
-    "to_add",
+    "to_add_t",
     "when",
 ]
+
+
+type Lazy[T] = Callable[[], T]
 
 
 def run[T](lazy_value: Lazy[T]) -> T:
@@ -34,11 +37,8 @@ def run[T](lazy_value: Lazy[T]) -> T:
 
 @curry
 @curry
-def to_add[M](first: Lazy[M], second: Lazy[M], m_add: Callable[[M], Callable[[M], M]]) -> Lazy[M]:
+def to_add_t[M](first: Lazy[M], second: Lazy[M], m_add: Callable[[M], Callable[[M], M]]) -> Lazy[M]:
     return lambda: m_add(second())(first())
-
-
-add_to = flip(to_add)
 
 
 @curry
@@ -50,13 +50,30 @@ def pure[T](value: T) -> Lazy[T]:
     return lambda: value
 
 
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [From : *] -> [To : *] -> Lazy (M (From -> To)) -> Lazy (M From) -> Lazy (M To)
+@curry
+@curry
+@curry
+@curry
+def apply_t(
+    lazy_m_value: Lazy[Any],
+    lazy_m_function: Lazy[Any],
+    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
+    m_pure: Callable[[Any], Any],
+) -> Lazy[Any]:
+    return lambda: m_bind(lazy_m_function())(lambda function: m_bind(lazy_m_value())(lambda value: m_pure(function(value))))
+
+
 if TYPE_CHECKING:
 
     @curry
     def apply[From, To](lazy_value: Lazy[From], lazy_function: Lazy[Callable[[From], To]]) -> Lazy[To]: ...
 
 else:
-    apply = lazy_t.apply(felis.identity.pure)(felis.identity.bind)
+    apply = apply_t(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
@@ -114,12 +131,22 @@ else:
     when = applicative.when(pure)
 
 
+# [M : * -> *] ->
+# ([T : *] -> T -> M T) ->
+# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
+# [T : *] -> Lazy (M (Lazy (M T))) -> Lazy (M T)
+@curry
+@curry
+def join_t(lazy_m_lazy_m_value: Lazy[Any], m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Lazy[Any]:
+    return lambda: m_bind(lazy_m_lazy_m_value())(lambda m_lazy_value: m_lazy_value())
+
+
 if TYPE_CHECKING:
 
     def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]: ...
 
 else:
-    join = lazy_t.join(felis.identity.pure)(felis.identity.bind)
+    join = join_t(felis.identity.pure)(felis.identity.bind)
 
 
 if TYPE_CHECKING:
