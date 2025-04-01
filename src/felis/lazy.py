@@ -5,12 +5,10 @@ import felis.applicative
 import felis.functor
 import felis.identity
 import felis.monad
-import felis.semigroup
 from felis.applicative import Applicative
 from felis.currying import curry
 from felis.functor import Functor
 from felis.monad import Monad
-from felis.semigroup import Semigroup
 
 __all__ = [
     "Lazy",
@@ -32,7 +30,6 @@ __all__ = [
     "run",
     "take_after",
     "take_before",
-    "to_add_t",
     "to_apply",
     "to_apply_t",
     "to_bind",
@@ -45,12 +42,6 @@ type Lazy[T] = Callable[[], T]
 
 def run[T](lazy_value: Lazy[T]) -> T:
     return lazy_value()
-
-
-@curry
-@curry
-def to_add_t[S](first: Lazy[S], second: Lazy[S], s: Semigroup[S]) -> Lazy[S]:
-    return lambda: felis.semigroup.to_add(s)(second())(first())
 
 
 @curry
