@@ -341,12 +341,12 @@ else:
 @curry
 @curry
 def reversed_to_apply_t[S](state: Lazy[S], reversed_state_value: Callable[[Lazy[S]], Any], reversed_state_function: Callable[[Lazy[S]], Any], m: Monad) -> Any:
-    def function_binder(function_and_new_state: tuple[Callable[[Any], Any], Lazy[S]], /) -> Any:
+    def function_binder(function_and_new_state: tuple[Callable[[Any], Any], Lazy[S]]) -> Any:
         nonlocal state
 
         function, new_state = function_and_new_state
 
-        def value_binder(value_and_state: tuple[Any, Lazy[S]], /) -> Any:
+        def value_binder(value_and_state: tuple[Any, Lazy[S]]) -> Any:
             nonlocal state
             value, state = value_and_state
             return felis.monad.pure(m)((function(value), new_state))
