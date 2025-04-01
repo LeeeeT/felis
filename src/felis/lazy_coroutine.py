@@ -62,7 +62,12 @@ else:
     by_map = felis.functor.by_map(functor)
 
 
-pure = lazy.map_by(coroutine.pure)
+if TYPE_CHECKING:
+
+    def pure[T](value: T, /) -> LazyCoroutine[T]: ...
+
+else:
+    pure = lazy.pure_t(coroutine.applicative)
 
 
 if TYPE_CHECKING:

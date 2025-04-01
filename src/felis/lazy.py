@@ -27,6 +27,7 @@ __all__ = [
     "map_by",
     "monad",
     "pure",
+    "pure_t",
     "run",
     "take_after",
     "take_before",
@@ -62,8 +63,18 @@ else:
     by_map = felis.functor.by_map(functor)
 
 
-def pure[T](value: T) -> Lazy[T]:
-    return lambda: value
+# [A : * -> *] -> Applicative A -> [T : *] -> T -> Lazy (A T)
+@curry
+def pure_t(value: Any, applicative: Applicative) -> Lazy[Any]:
+    return lambda: felis.applicative.pure(applicative)(value)
+
+
+if TYPE_CHECKING:
+
+    def pure[T](value: T, /) -> Lazy[T]: ...
+
+else:
+    pure = pure_t(felis.identity.applicative)
 
 
 # [M : * -> *] -> Monad M -> [From : *] -> [To : *] -> Lazy (M (From -> To)) -> Lazy (M From) -> Lazy (M To)

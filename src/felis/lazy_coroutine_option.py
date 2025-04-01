@@ -108,7 +108,7 @@ else:
     by_map = felis.functor.by_map(functor)
 
 
-pure = lazy_coroutine.map_by(option.pure)
+pure = felis.identity.compose_before(lazy_coroutine.pure)(option.pure)
 
 
 if TYPE_CHECKING:

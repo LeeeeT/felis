@@ -103,7 +103,7 @@ else:
     by_map = felis.functor.by_map(functor)
 
 
-pure = function.map_by(option.pure)
+pure = felis.identity.compose_before(function.pure)(option.pure)
 
 
 if TYPE_CHECKING:
