@@ -1,18 +1,27 @@
 from collections.abc import Callable
-from typing import Final, Self
+from typing import TYPE_CHECKING, Any, Final, Self
 
+import felis.functor
+import felis.semigroup
 from felis import function, ordering
-from felis.currying import curry, flip
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monoid import Monoid
 from felis.ordering import Ordering
+from felis.semigroup import Semigroup
 from felis.typing import SupportsRichComparison
 
 __all__ = [
     "Order",
     "add_to",
+    "add_to",
     "better_than",
+    "by_map",
     "different_from",
     "dunder",
+    "functor",
     "map_by",
+    "monoid",
     "neutral",
     "not_better_than",
     "not_worse_than",
@@ -21,6 +30,7 @@ __all__ = [
     "same_as",
     "same_as_or_better_than",
     "same_as_or_worse_than",
+    "semigroup",
     "to_add",
     "worse_than",
 ]
@@ -50,17 +60,53 @@ same_as_or_worse_than = not_better_than = function.map_by2(ordering.not_better)
 reverse = function.map_by2(ordering.reverse)
 
 
-neutral = function.pure(ordering.neutral)
+if TYPE_CHECKING:
+
+    @curry
+    def to_add[T](augend: Order[T], addend: Order[T]) -> Order[T]: ...
+
+else:
+    to_add = function.lift(ordering.to_add)
 
 
-to_add = function.lift(ordering.to_add)
+# [T : *] -> Semigroup (Order T)
+semigroup: Semigroup[Order[Any]] = Semigroup(to_add)
 
 
-add_to = flip(to_add)
+if TYPE_CHECKING:
+
+    @curry
+    def add_to[T](addend: Order[T], augend: Order[T]) -> Order[T]: ...
+
+else:
+    add_to = felis.semigroup.add_to(semigroup)
 
 
+neutral = function.pure(function.pure(ordering.neutral))
+
+
+# [T : *] -> Monoid (Order T)
+monoid = Monoid(semigroup, neutral)
+
+
+@curry
+@curry
+@curry
 def map_by[From, To](first: To, second: To, order: Order[From], function: Callable[[To], From]) -> Ordering:
     return order(function(second))(function(first))
+
+
+# Functor Order
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[From, To](function: Callable[[To], From], order: Order[From]) -> Order[To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
 
 
 @curry
