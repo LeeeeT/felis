@@ -2,24 +2,34 @@ import collections.abc
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from felis import applicative, monad
-from felis.currying import curry, flip
+import felis.applicative
+import felis.functor
+import felis.monad
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
 
 __all__ = [
     "Coroutine",
-    "apply",
-    "bind",
+    "applicative",
+    "apply_to",
     "bind_to",
+    "by_map",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
     "join",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
     "pure",
     "take_after",
     "take_before",
+    "to_apply",
+    "to_bind",
     "when",
 ]
 
@@ -32,27 +42,51 @@ async def map_by[From, To](coroutine_value: Coroutine[From], function: Callable[
     return function(await coroutine_value)
 
 
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[From, To](function: Callable[[From], To], coroutine_value: Coroutine[From]) -> Coroutine[To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
+
+
 async def pure[T](value: T) -> T:
     return value
 
 
 @curry
-async def apply[From, To](coroutine_value: Coroutine[From], coroutine_function: Coroutine[Callable[[From], To]]) -> To:
+async def to_apply[From, To](coroutine_value: Coroutine[From], coroutine_function: Coroutine[Callable[[From], To]]) -> To:
     return await map_by(await coroutine_function)(coroutine_value)
+
+
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    async def apply_to[From, To](coroutine_function: Coroutine[Callable[[From], To]], coroutine_value: Coroutine[From]) -> To: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](
+    def lift[First, Second, Result](
         second: Coroutine[Second],
         first: Coroutine[First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> Coroutine[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -61,7 +95,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: Coroutine[Second], first: Coroutine[First]) -> Coroutine[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -70,7 +104,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: Coroutine[First], second: Coroutine[Second]) -> Coroutine[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -79,7 +113,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: Coroutine[Second], first: Coroutine[First]) -> Coroutine[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -88,7 +122,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: Coroutine[First], second: Coroutine[Second]) -> Coroutine[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -97,11 +131,14 @@ if TYPE_CHECKING:
     def when(coroutine_none: Coroutine[None], bool: bool) -> Coroutine[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
 async def join[T](coroutine_coroutine_value: Coroutine[Coroutine[T]]) -> T:
     return await (await coroutine_coroutine_value)
+
+
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -110,10 +147,16 @@ if TYPE_CHECKING:
     def bind_to[From, To](coroutine_value: Coroutine[From], function: Callable[[From], Coroutine[To]]) -> Coroutine[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](function: Callable[[From], Coroutine[To]], coroutine_value: Coroutine[From]) -> Coroutine[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -127,7 +170,7 @@ if TYPE_CHECKING:
     ) -> Coroutine[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -141,4 +184,4 @@ if TYPE_CHECKING:
     ) -> Coroutine[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)

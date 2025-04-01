@@ -1,29 +1,41 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, monad
-from felis.currying import curry, flip
+import felis.monad
+import felis.semigroup
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
+from felis.semigroup import Semigroup
 
 __all__ = [
     "Lazy",
-    "apply",
-    "apply_t",
-    "bind",
+    "applicative",
+    "apply_to",
     "bind_to",
+    "by_map",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
     "join",
     "join_t",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
     "pure",
     "run",
     "take_after",
     "take_before",
     "to_add_t",
+    "to_apply",
+    "to_apply_t",
+    "to_bind",
     "when",
 ]
 
@@ -37,8 +49,8 @@ def run[T](lazy_value: Lazy[T]) -> T:
 
 @curry
 @curry
-def to_add_t[M](first: Lazy[M], second: Lazy[M], m_add: Callable[[M], Callable[[M], M]]) -> Lazy[M]:
-    return lambda: m_add(second())(first())
+def to_add_t[S](first: Lazy[S], second: Lazy[S], s: Semigroup[S]) -> Lazy[S]:
+    return lambda: felis.semigroup.to_add(s)(second())(first())
 
 
 @curry
@@ -46,44 +58,62 @@ def map_by[From, To](lazy_value: Lazy[From], function: Callable[[From], To]) -> 
     return lambda: function(lazy_value())
 
 
+# Functor Lazy
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[From, To](function: Callable[[From], To], lazy_value: Lazy[From]) -> Lazy[To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
+
+
 def pure[T](value: T) -> Lazy[T]:
     return lambda: value
 
 
-# [M : * -> *] ->
-# ([T : *] -> T -> M T) ->
-# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [From : *] -> [To : *] -> Lazy (M (From -> To)) -> Lazy (M From) -> Lazy (M To)
+# [M : * -> *] -> Monad M -> [From : *] -> [To : *] -> Lazy (M (From -> To)) -> Lazy (M From) -> Lazy (M To)
 @curry
 @curry
-@curry
-@curry
-def apply_t(
-    lazy_m_value: Lazy[Any],
-    lazy_m_function: Lazy[Any],
-    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_pure: Callable[[Any], Any],
-) -> Lazy[Any]:
-    return lambda: m_bind(lazy_m_function())(lambda function: m_bind(lazy_m_value())(lambda value: m_pure(function(value))))
+def to_apply_t(lazy_m_value: Lazy[Any], lazy_m_function: Lazy[Any], m: Monad) -> Lazy[Any]:
+    return lambda: felis.monad.to_bind(m)(lazy_m_function())(
+        lambda function: felis.monad.to_bind(m)(lazy_m_value())(lambda value: felis.monad.pure(m)(function(value))),
+    )
 
 
 if TYPE_CHECKING:
 
     @curry
-    def apply[From, To](lazy_value: Lazy[From], lazy_function: Lazy[Callable[[From], To]]) -> Lazy[To]: ...
+    def to_apply[From, To](lazy_value: Lazy[From], lazy_function: Lazy[Callable[[From], To]]) -> Lazy[To]: ...
 
 else:
-    apply = apply_t(felis.identity.pure)(felis.identity.bind)
+    to_apply = to_apply_t(felis.identity.monad)
+
+
+# Applicative Lazy
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def apply_to[From, To](lazy_function: Lazy[Callable[[From], To]], lazy_value: Lazy[From]) -> Lazy[To]: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](second: Lazy[Second], first: Lazy[First], function: Callable[[First], Callable[[Second], Result]]) -> Lazy[Result]: ...
+    def lift[First, Second, Result](second: Lazy[Second], first: Lazy[First], function: Callable[[First], Callable[[Second], Result]]) -> Lazy[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -92,7 +122,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: Lazy[Second], first: Lazy[First]) -> Lazy[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -101,7 +131,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: Lazy[First], second: Lazy[Second]) -> Lazy[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -110,7 +140,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: Lazy[Second], first: Lazy[First]) -> Lazy[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -119,7 +149,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: Lazy[First], second: Lazy[Second]) -> Lazy[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -128,25 +158,25 @@ if TYPE_CHECKING:
     def when(lazy_none: Lazy[None], bool: bool) -> Lazy[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
-# [M : * -> *] ->
-# ([T : *] -> T -> M T) ->
-# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [T : *] -> Lazy (M (Lazy (M T))) -> Lazy (M T)
+# [M : * -> *] -> Monad M -> [T : *] -> Lazy (M (Lazy (M T))) -> Lazy (M T)
 @curry
-@curry
-def join_t(lazy_m_lazy_m_value: Lazy[Any], m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Lazy[Any]:
-    return lambda: m_bind(lazy_m_lazy_m_value())(lambda m_lazy_value: m_lazy_value())
+def join_t(lazy_m_lazy_m_value: Lazy[Any], m: Monad) -> Lazy[Any]:
+    return lambda: felis.monad.to_bind(m)(lazy_m_lazy_m_value())(lambda m_lazy_value: m_lazy_value())
 
 
 if TYPE_CHECKING:
 
-    def join[T](lazy_lazy_value: Lazy[Lazy[T]]) -> Lazy[T]: ...
+    def join[T](lazy_lazy_value: Lazy[Lazy[T]], /) -> Lazy[T]: ...
 
 else:
-    join = join_t(felis.identity.pure)(felis.identity.bind)
+    join = join_t(felis.identity.monad)
+
+
+# Monad Lazy
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -155,10 +185,16 @@ if TYPE_CHECKING:
     def bind_to[From, To](lazy_value: Lazy[From], function: Callable[[From], Lazy[To]]) -> Lazy[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](function: Callable[[From], Lazy[To]], lazy_value: Lazy[From]) -> Lazy[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -172,7 +208,7 @@ if TYPE_CHECKING:
     ) -> Lazy[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -186,4 +222,4 @@ if TYPE_CHECKING:
     ) -> Lazy[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)

@@ -2,41 +2,55 @@ import builtins
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
+import felis.alternative
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, monad
-from felis.currying import curry, flip
+import felis.monad
+import felis.semigroup
+from felis.alternative import Alternative
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
+from felis.monoid import Monoid
 from felis.predicate import Predicate
+from felis.semigroup import Semigroup
 
 __all__ = [
     "Iterable",
     "add_to",
-    "apply",
-    "bind",
+    "alternative",
+    "applicative",
+    "apply_to",
     "bind_to",
+    "by_map",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
     "filter_by",
     "fold",
+    "functor",
     "guard",
     "join",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
+    "monoid",
     "neutral",
     "pure",
     "range_to_from",
+    "semigroup",
     "take_after",
     "take_before",
     "to_add",
     "to_append",
+    "to_apply",
+    "to_bind",
     "traverse",
     "when",
 ]
-
-
-# [T : *] -> Iterable T
-neutral: Iterable[Any] = ()
 
 
 @curry
@@ -51,7 +65,24 @@ def to_add[T](augend: Iterable[T], addend: Iterable[T]) -> Iterable[T]:
     yield from addend
 
 
-add_to = flip(to_add)
+# [T : *] -> Semigroup (Iterable T)
+semigroup: Semigroup[Any] = Semigroup(to_add)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def add_to[T](addend: Iterable[T], augend: Iterable[T]) -> Iterable[T]: ...
+
+else:
+    add_to = felis.semigroup.add_to(semigroup)
+
+
+# [T : *] -> Iterable T
+neutral: Iterable[Any] = ()
+
+
+monoid = Monoid(semigroup, neutral)
 
 
 @curry
@@ -60,29 +91,55 @@ def map_by[From, To](iterable_value: Iterable[From], function: Callable[[From], 
         yield function(value)
 
 
+# Functor Iterable
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[From, To](function: Callable[[From], To], iterable_value: Iterable[From]) -> Iterable[To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
+
+
 def pure[T](value: T) -> Iterable[T]:
     yield value
 
 
 @curry
-def apply[From, To](iterable_value: Iterable[From], iterable_function: Iterable[Callable[[From], To]]) -> Iterable[To]:
+def to_apply[From, To](iterable_value: Iterable[From], iterable_function: Iterable[Callable[[From], To]]) -> Iterable[To]:
     for function in iterable_function:
         for value in iterable_value:
             yield function(value)
+
+
+# Applicative Iterable
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def apply_to[From, To](iterable_function: Iterable[Callable[[From], To]], iterable_value: Iterable[From]) -> Iterable[To]: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](
+    def lift[First, Second, Result](
         second: Iterable[Second],
         first: Iterable[First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> Iterable[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -91,7 +148,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: Iterable[Second], first: Iterable[First]) -> Iterable[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -100,7 +157,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: Iterable[First], second: Iterable[Second]) -> Iterable[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -109,7 +166,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: Iterable[Second], first: Iterable[First]) -> Iterable[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -118,7 +175,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: Iterable[First], second: Iterable[Second]) -> Iterable[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -127,7 +184,19 @@ if TYPE_CHECKING:
     def when(iterable_none: Iterable[None], bool: bool) -> Iterable[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
+
+
+# Alternative List
+alternative = Alternative(monoid, applicative)
+
+
+if TYPE_CHECKING:
+
+    def guard(bool: bool, /) -> Iterable[None]: ...
+
+else:
+    guard = felis.alternative.guard(alternative)
 
 
 @curry
@@ -138,26 +207,23 @@ def fold[A, T](iterable_value: Iterable[T], function: Callable[[T], Callable[[A]
     return accumulator
 
 
-# [A : * -> *] ->
-# ([From : *] -> [To : *] -> (From -> To) -> A From -> A To) ->
-# ([T : *] -> T -> A T) ->
-# [From : *] -> [To : *] -> (From -> A To) -> Iterable From -> A (Iterable To)
+# [A : * -> *] -> Applicative A -> [From : *] -> [To : *] -> (From -> A To) -> Iterable From -> A (Iterable To)
 @curry
 @curry
-def traverse[From](
-    function: Callable[[From], Any],
-    a_lift2: Callable[[Callable[[Any], Callable[[Any], Any]]], Callable[[Any], Callable[[Any], Any]]],
-    a_identity: Callable[[Any], Any],
-) -> Callable[[Iterable[From]], Any]:
-    return fold(a_identity(neutral))(felis.identity.compose_before(a_lift2(to_append))(function))
+def traverse[From](function: Callable[[From], Any], a: Applicative) -> Callable[[Iterable[From]], Any]:
+    return fold(felis.applicative.pure(a)(neutral))(felis.identity.compose_before(felis.applicative.lift(a)(to_append))(function))
 
 
 if TYPE_CHECKING:
 
-    def join[T](iterable_iterable_value: Iterable[Iterable[T]]) -> Iterable[T]: ...
+    def join[T](iterable_iterable_value: Iterable[Iterable[T]], /) -> Iterable[T]: ...
 
 else:
     join = fold(neutral)(to_add)
+
+
+# Monad Iterable
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -166,10 +232,16 @@ if TYPE_CHECKING:
     def bind_to[From, To](iterable_value: Iterable[From], function: Callable[[From], Iterable[To]]) -> Iterable[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](function: Callable[[From], Iterable[To]], iterable_value: Iterable[From]) -> Iterable[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -183,7 +255,7 @@ if TYPE_CHECKING:
     ) -> Iterable[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -197,15 +269,7 @@ if TYPE_CHECKING:
     ) -> Iterable[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
-
-
-if TYPE_CHECKING:
-
-    def guard(bool: bool) -> Iterable[None]: ...
-
-else:
-    guard = monad.guard(neutral)(pure)
+    compose_before = felis.monad.compose_before(monad)
 
 
 @curry

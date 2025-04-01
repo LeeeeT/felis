@@ -3,9 +3,16 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Final
 
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, monad
-from felis.currying import curry, flip
+import felis.monad
+import felis.semigroup
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
+from felis.semigroup import Semigroup
 
 if TYPE_CHECKING:
     from felis import Option
@@ -15,9 +22,7 @@ __all__ = [
     "Left",
     "Right",
     "add_to",
-    "apply",
-    "apply_t",
-    "bind",
+    "applicative",
     "bind_to",
     "catch",
     "compose_after",
@@ -27,15 +32,21 @@ __all__ = [
     "discard_after",
     "discard_before",
     "fold",
+    "functor",
     "join",
     "join_t",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
     "pure",
+    "semigroup",
     "take_after",
     "take_before",
     "to_add",
     "to_add_t",
+    "to_apply",
+    "to_apply_t",
+    "to_bind",
     "to_option",
     "traverse",
     "traverse_t",
@@ -60,22 +71,18 @@ class Right[R]:
         self.value: Final = value
 
 
-# [M : * -> *] ->
-# ([T : *] -> T -> M T) ->
-# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [L : *] -> [R : *] -> M (Either L R) -> M (Either L R) -> M (Either L R)
+# [L : *] -> [M : * -> *] -> Monad M -> [R : *] -> M (Either L R) -> M (Either L R) -> M (Either L R)
 @curry
 @curry
-@curry
-def to_add_t(m_augend: Any, m_addend: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
+def to_add_t(m_augend: Any, m_addend: Any, m: Monad) -> Any:
     def augend_binder(augend: Either[Any, Any]) -> Any:
         match augend:
             case Left(_):
                 return m_addend
             case Right(right):
-                return m_pure(Right(right))
+                return felis.monad.pure(m)(Right(right))
 
-    return m_bind(m_augend)(augend_binder)
+    return felis.monad.to_bind(m)(m_augend)(augend_binder)
 
 
 if TYPE_CHECKING:
@@ -84,10 +91,20 @@ if TYPE_CHECKING:
     def to_add[L, R](augend: Either[L, R], addend: Either[L, R]) -> Either[L, R]: ...
 
 else:
-    to_add = to_add_t(felis.identity.pure)(felis.identity.bind)
+    to_add = to_add_t(felis.identity.monad)
 
 
-add_to = flip(to_add)
+# [L : *] -> [R : *] -> Semigroup (Either L R)
+semigroup: Semigroup[Any] = Semigroup(to_add)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def add_to[L, R](addend: Either[L, R], augend: Either[L, R]) -> Either[L, R]: ...
+
+else:
+    add_to = felis.semigroup.add_to(semigroup)
 
 
 @curry
@@ -99,6 +116,19 @@ def map_by[L, From, To](either_value: Either[L, From], function: Callable[[From]
             return Right(function(value))
 
 
+# [L : *] -> Functor (Either L)
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[L, From, To](function: Callable[[From], To], either_value: Either[L, From]) -> Either[L, To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
+
+
 if TYPE_CHECKING:
     # [L : *] -> [R : *] -> R -> Either L R
     def pure[R](value: R) -> Either[Any, R]: ...
@@ -107,58 +137,65 @@ else:
     pure = Right
 
 
+# [L : *] ->
 # [M : * -> *] ->
-# ([T : *] -> T -> M T) ->
-# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [L : *] -> [From : *] -> [To : *] -> M (Either L (From -> To)) -> M (Either L From) -> M (Either L To)
+# Monad M ->
+# [From : *] -> [To : *] -> M (Either L (From -> To)) -> M (Either L From) -> M (Either L To)
 @curry
 @curry
-@curry
-def apply_t(
-    m_either_value: Any,
-    m_either_function: Any,
-    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_pure: Callable[[Any], Any],
-) -> Any:
+def to_apply_t(m_either_value: Any, m_either_function: Any, m: Monad) -> Any:
     def either_function_binder(either_function: Either[Any, Any]) -> Any:
         match either_function:
             case Left(left):
-                return m_pure(Left(left))
+                return felis.monad.pure(m)(Left(left))
             case Right(function):
 
                 def either_value_binder(either_value: Either[Any, Any]) -> Any:
                     match either_value:
                         case Left(left):
-                            return m_pure(Left(left))
+                            return felis.monad.pure(m)(Left(left))
                         case Right(value):
-                            return m_pure(Right(function(value)))
+                            return felis.monad.pure(m)(Right(function(value)))
 
-                return m_bind(m_either_value)(either_value_binder)
+                return felis.monad.to_bind(m)(m_either_value)(either_value_binder)
 
-    return m_bind(m_either_function)(either_function_binder)
+    return felis.monad.to_bind(m)(m_either_function)(either_function_binder)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def apply[L, From, To](either_value: Either[L, From], either_function: Either[L, Callable[[From], To]]) -> Either[L, To]: ...
+    def to_apply[L, From, To](either_value: Either[L, From], either_function: Either[L, Callable[[From], To]]) -> Either[L, To]: ...
 
 else:
-    apply = apply_t(felis.identity.pure)(felis.identity.bind)
+    to_apply = to_apply_t(felis.identity.monad)
+
+
+# [L : *] -> Applicative (Either L)
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def apply_to[L, From, To](either_function: Either[L, Callable[[From], To]], either_value: Either[L, From]) -> Either[L, To]: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[L, First, Second, Result](
+    def lift[L, First, Second, Result](
         second: Either[L, Second],
         first: Either[L, First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> Either[L, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -167,7 +204,7 @@ if TYPE_CHECKING:
     def take_after[L, First, Second](second: Either[L, Second], first: Either[L, First]) -> Either[L, Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -176,7 +213,7 @@ if TYPE_CHECKING:
     def discard_before[L, First, Second](first: Either[L, First], second: Either[L, Second]) -> Either[L, Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -185,7 +222,7 @@ if TYPE_CHECKING:
     def discard_after[L, First, Second](second: Either[L, Second], first: Either[L, First]) -> Either[L, First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -194,7 +231,7 @@ if TYPE_CHECKING:
     def take_before[L, First, Second](first: Either[L, First], second: Either[L, Second]) -> Either[L, First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -203,24 +240,23 @@ if TYPE_CHECKING:
     def when[L](either_none: Either[L, None], bool: bool) -> Either[L, None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
+# [L : *] ->
 # [M : * -> *] ->
-# ([T : *] -> T -> M T) ->
-# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [L : *] -> [R : *] -> M (Either L (M (Either L R))) -> M (Either L R)
+# Monad M ->
+# [R : *] -> M (Either L (M (Either L R))) -> M (Either L R)
 @curry
-@curry
-def join_t(m_either_m_either_value: Any, m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]], m_pure: Callable[[Any], Any]) -> Any:
+def join_t(m_either_m_either_value: Any, m: Monad) -> Any:
     def either_m_either_binder(either_m_either_value: Either[Any, Any]) -> Any:
         match either_m_either_value:
             case Left(left):
-                return m_pure(Left(left))
+                return felis.monad.pure(m)(Left(left))
             case Right(m_either_value):
                 return m_either_value
 
-    return m_bind(m_either_m_either_value)(either_m_either_binder)
+    return felis.monad.to_bind(m)(m_either_m_either_value)(either_m_either_binder)
 
 
 if TYPE_CHECKING:
@@ -228,7 +264,11 @@ if TYPE_CHECKING:
     def join[L, R](either_either_value: Either[L, Either[L, R]], /) -> Either[L, R]: ...
 
 else:
-    join = join_t(felis.identity.pure)(felis.identity.bind)
+    join = join_t(felis.identity.monad)
+
+
+# [L : *] -> Monad (Either L)
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -237,10 +277,16 @@ if TYPE_CHECKING:
     def bind_to[L, From, To](either_value: Either[L, From], function: Callable[[From], Either[L, To]]) -> Either[L, To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[L, From, To](function: Callable[[From], Either[L, To]], either_value: Either[L, From]) -> Either[L, To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -254,7 +300,7 @@ if TYPE_CHECKING:
     ) -> Either[L, To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -268,7 +314,7 @@ if TYPE_CHECKING:
     ) -> Either[L, To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)
 
 
 # [L : *] -> [A : *] -> A -> [R : *] -> (R -> A -> A) -> Either L R -> A
@@ -282,24 +328,18 @@ def fold[A, R](either_value: Either[Any, R], function: Callable[[R], Callable[[A
             return function(value)(accumulator)
 
 
-# [L : *] -> [A : * -> *] ->
-# ([From : *] -> [To : *] -> (From -> To) -> A From -> A To) ->
-# ([T : *] -> T -> A T) ->
+# [L : *] ->
+# [A : * -> *] ->
+# Applicative A ->
 # [From : *] -> [To : *] -> (From -> A To) -> Either L From -> A (Either L To)
 @curry
 @curry
-@curry
-def traverse_t[From](
-    either_value: Either[Any, From],
-    function: Callable[[From], Any],
-    a_identity: Callable[[Any], Any],
-    a_map_by: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-) -> Any:
+def traverse_t[From](either_value: Either[Any, From], function: Callable[[From], Any], a: Applicative) -> Any:
     match either_value:
         case Left(value):
-            return a_identity(Left(value))
+            return felis.applicative.pure(a)(Left(value))
         case Right(value):
-            return a_map_by(pure)(function(value))
+            return felis.applicative.map_by(a)(pure)(function(value))
 
 
 if TYPE_CHECKING:
@@ -308,30 +348,24 @@ if TYPE_CHECKING:
     def traverse[L, From, To](either_value: Either[L, From], function: Callable[[From], To]) -> Either[L, To]: ...
 
 else:
-    traverse = traverse_t(felis.identity.map_by)(felis.identity.pure)
+    traverse = traverse_t(felis.identity.applicative)
 
 
+# [L : *] ->
 # [M : * -> *] ->
-# ([T : *] -> T -> M T) ->
-# ([From : *] -> [To : *] -> M From -> (From -> M To) -> M To) ->
-# [L : *] -> [R : *] -> M R -> M (Either L R) -> M R
+# Monad M ->
+# [R : *] -> M R -> M (Either L R) -> M R
 @curry
 @curry
-@curry
-def default_to_t(
-    m_either_value: Any,
-    default_value: Any,
-    m_bind: Callable[[Any], Callable[[Callable[[Any], Any]], Any]],
-    m_pure: Callable[[Any], Any],
-) -> Any:
+def default_to_t(m_either_value: Any, default_value: Any, m: Monad) -> Any:
     def either_binder(either_value: Either[Any, Any]) -> Any:
         match either_value:
             case Left(_):
                 return default_value
             case Right(value):
-                return m_pure(value)
+                return felis.monad.pure(m)(value)
 
-    return m_bind(m_either_value)(either_binder)
+    return felis.monad.to_bind(m)(m_either_value)(either_binder)
 
 
 if TYPE_CHECKING:
@@ -340,7 +374,7 @@ if TYPE_CHECKING:
     def default_to[L, R](either_value: Either[L, R], default_value: R) -> R: ...
 
 else:
-    default_to = default_to_t(felis.identity.pure)(felis.identity.bind)
+    default_to = default_to_t(felis.identity.monad)
 
 
 @curry

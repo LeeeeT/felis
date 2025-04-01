@@ -50,10 +50,10 @@ same_as_or_worse_than = not_better_than = function.map_by2(ordering.not_better)
 reverse = function.map_by2(ordering.reverse)
 
 
-neutral = function.neutral2(ordering.neutral)
+neutral = function.neutral2_t(ordering.neutral)
 
 
-to_add = function.to_add2(ordering.to_add)
+to_add = function.to_add2_t(ordering.to_add)
 
 
 add_to = flip(to_add)

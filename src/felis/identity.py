@@ -1,24 +1,34 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from felis import applicative, monad
-from felis.currying import curry, flip
+import felis.applicative
+import felis.functor
+import felis.monad
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
 
 __all__ = [
     "Identity",
-    "apply",
-    "bind",
+    "applicative",
+    "apply_to",
     "bind_to",
+    "by_map",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
     "join",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
     "pure",
     "take_after",
     "take_before",
+    "to_apply",
+    "to_bind",
     "when",
 ]
 
@@ -31,27 +41,53 @@ def map_by[From, To](identity_value: Identity[From], function: Callable[[From], 
     return function(identity_value)
 
 
+# Functor Identity
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[From, To](function: Callable[[From], To], identity_value: Identity[From]) -> Identity[To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
+
+
 def pure[T](value: T) -> Identity[T]:
     return value
 
 
 @curry
-def apply[From, To](identity_value: Identity[From], identity_function: Identity[Callable[[From], To]]) -> Identity[To]:
+def to_apply[From, To](identity_value: Identity[From], identity_function: Identity[Callable[[From], To]]) -> Identity[To]:
     return identity_function(identity_value)
+
+
+# Applicative Identity
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def apply_to[From, To](identity_function: Identity[Callable[[From], To]], identity_value: Identity[From]) -> Identity[To]: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](
+    def lift[First, Second, Result](
         second: Identity[Second],
         first: Identity[First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> Identity[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -60,7 +96,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: Identity[Second], first: Identity[First]) -> Identity[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -69,7 +105,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: Identity[First], second: Identity[Second]) -> Identity[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -78,7 +114,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: Identity[Second], first: Identity[First]) -> Identity[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -87,7 +123,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: Identity[First], second: Identity[Second]) -> Identity[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -96,11 +132,15 @@ if TYPE_CHECKING:
     def when(identity_none: Identity[None], bool: bool) -> Identity[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
 def join[T](identity_identity_value: Identity[Identity[T]]) -> Identity[T]:
     return identity_identity_value
+
+
+# Monad Identity
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -109,10 +149,16 @@ if TYPE_CHECKING:
     def bind_to[From, To](identity_value: Identity[From], function: Callable[[From], Identity[To]]) -> Identity[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](function: Callable[[From], Identity[To]], identity_value: Identity[From]) -> Identity[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -126,7 +172,7 @@ if TYPE_CHECKING:
     ) -> Identity[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -140,4 +186,4 @@ if TYPE_CHECKING:
     ) -> Identity[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)

@@ -1,28 +1,38 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, coroutine, lazy, monad
+import felis.monad
+from felis import coroutine, lazy
+from felis.applicative import Applicative
 from felis.coroutine import Coroutine
-from felis.currying import curry, flip
+from felis.currying import curry
+from felis.functor import Functor
 from felis.lazy import Lazy
+from felis.monad import Monad
 
 __all__ = [
     "LazyCoroutine",
-    "apply",
-    "bind",
+    "applicative",
+    "apply_to",
     "bind_to",
+    "by_map",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
     "join",
     "lift",
-    "lift2",
     "map_by",
+    "monad",
     "pure",
     "take_after",
     "take_before",
+    "to_apply",
+    "to_bind",
     "when",
 ]
 
@@ -36,37 +46,59 @@ if TYPE_CHECKING:
     def map_by[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], To]) -> LazyCoroutine[To]: ...
 
 else:
-    map_by = felis.identity.compose_before(lazy.map_by)(coroutine.map_by)
+    map_by = felis.identity.compose_after(coroutine.map_by)(lazy.map_by)
 
 
-pure = felis.identity.compose_before(lazy.pure)(coroutine.pure)
-
-
-lift = lazy.map_by(coroutine.pure)
+# Functor LazyCoroutine
+functor = Functor(map_by)
 
 
 if TYPE_CHECKING:
 
     @curry
-    @curry
-    def apply[From, To](lazy_coroutine_value: LazyCoroutine[From], lazy_coroutine_function: LazyCoroutine[Callable[[From], To]]) -> LazyCoroutine[To]: ...
+    def by_map[From, To](function: Callable[[From], To], lazy_coroutine_value: LazyCoroutine[From]) -> LazyCoroutine[To]: ...
 
 else:
-    apply = lazy.apply_t(coroutine.pure)(coroutine.bind)
+    by_map = felis.functor.by_map(functor)
+
+
+pure = lazy.map_by(coroutine.pure)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def to_apply[From, To](lazy_coroutine_value: LazyCoroutine[From], lazy_coroutine_function: LazyCoroutine[Callable[[From], To]]) -> LazyCoroutine[To]: ...
+
+else:
+    to_apply = lazy.to_apply_t(coroutine.monad)
+
+
+# Applicative LazyCoroutine
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def apply_to[From, To](lazy_coroutine_function: LazyCoroutine[Callable[[From], To]], lazy_coroutine_value: LazyCoroutine[From]) -> LazyCoroutine[To]: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](
+    def lift[First, Second, Result](
         second: LazyCoroutine[Second],
         first: LazyCoroutine[First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> LazyCoroutine[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -75,7 +107,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: LazyCoroutine[Second], first: LazyCoroutine[First]) -> LazyCoroutine[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -84,7 +116,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: LazyCoroutine[First], second: LazyCoroutine[Second]) -> LazyCoroutine[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -93,7 +125,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: LazyCoroutine[Second], first: LazyCoroutine[First]) -> LazyCoroutine[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -102,7 +134,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: LazyCoroutine[First], second: LazyCoroutine[Second]) -> LazyCoroutine[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -111,15 +143,19 @@ if TYPE_CHECKING:
     def when(lazy_coroutine_none: LazyCoroutine[None], bool: bool) -> LazyCoroutine[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
 if TYPE_CHECKING:
 
-    def join[T](lazy_coroutine_lazy_coroutine_value: LazyCoroutine[LazyCoroutine[T]]) -> LazyCoroutine[T]: ...
+    def join[T](lazy_coroutine_lazy_coroutine_value: LazyCoroutine[LazyCoroutine[T]], /) -> LazyCoroutine[T]: ...
 
 else:
-    join = lazy.join_t(coroutine.pure)(coroutine.bind)
+    join = lazy.join_t(coroutine.monad)
+
+
+# Monad LazyCoroutine
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -128,10 +164,16 @@ if TYPE_CHECKING:
     def bind_to[From, To](lazy_coroutine_value: LazyCoroutine[From], function: Callable[[From], LazyCoroutine[To]]) -> LazyCoroutine[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](function: Callable[[From], LazyCoroutine[To]], lazy_coroutine_value: LazyCoroutine[From]) -> LazyCoroutine[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -145,7 +187,7 @@ if TYPE_CHECKING:
     ) -> LazyCoroutine[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -159,4 +201,4 @@ if TYPE_CHECKING:
     ) -> LazyCoroutine[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)

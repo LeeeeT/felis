@@ -68,7 +68,7 @@ from felis.lazy import *
 
 main = \
     take_after(lambda: print("What's your name?"))(
-    bind(input)(lambda name:
+    to_bind(input)(lambda name:
     lambda: print(f"Hi, {name}!")
 ))
 
@@ -81,9 +81,9 @@ Finding pythagorean triples (analogue to list comprehension) with `felis.list`:
 from felis.list import *
 
 pythags = \
-    bind(range_to_from(1)(20))(lambda z:
-    bind(range_to_from(1)(z))(lambda x:
-    bind(range_to_from(x)(z))(lambda y:
+    to_bind(range_to_from(1)(20))(lambda z:
+    to_bind(range_to_from(1)(z))(lambda x:
+    to_bind(range_to_from(x)(z))(lambda y:
     take_after(guard(x**2 + y**2 == z**2))(
     pure((x, y, z))
 ))))

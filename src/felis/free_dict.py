@@ -1,28 +1,39 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Final
 
-from felis import applicative, dict, free, monad
-from felis.currying import curry, flip
+import felis.applicative
+import felis.monad
+from felis import dict, free
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
 
 __all__ = [
+    "Applicative",
     "Bind",
     "FreeDict",
+    "Functor",
+    "Monad",
     "Pure",
-    "apply",
-    "bind",
+    "applicative",
     "bind_to",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
     "join",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
     "pure",
     "take_after",
     "take_before",
+    "to_apply",
+    "to_bind",
     "when",
 ]
 
@@ -53,12 +64,17 @@ if TYPE_CHECKING:
     def map_by[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], To]) -> FreeDict[K, To]: ...
 
 else:
-    map_by = free.map_by_t(dict.map_by)
+    map_by = free.map_by_t(dict.functor)
+
+
+# [K : *] -> Functor (FreeDict K)
+functor = Functor(map_by)
 
 
 if TYPE_CHECKING:
     # [K : *] -> [T : *] -> T -> FreeDict K T
-    pure: FreeDict[Any, Any]
+    def pure[K, T](value: T, /) -> FreeDict[K, T]: ...
+
 else:
     pure = free.pure
 
@@ -66,24 +82,28 @@ else:
 if TYPE_CHECKING:
 
     @curry
-    def apply[K, From, To](free_dict_value: FreeDict[K, From], free_dict_function: FreeDict[K, Callable[[From], To]]) -> FreeDict[K, To]: ...
+    def to_apply[K, From, To](free_dict_value: FreeDict[K, From], free_dict_function: FreeDict[K, Callable[[From], To]]) -> FreeDict[K, To]: ...
 
 else:
-    apply = free.apply_t(dict.map_by)
+    to_apply = free.to_apply_t(dict.functor)
+
+
+# [K : *] -> Applicative (FreeDict K)
+applicative = Applicative(functor, pure, to_apply)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[K, First, Second, Result](
+    def lift[K, First, Second, Result](
         second: FreeDict[K, Second],
         first: FreeDict[K, First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> FreeDict[K, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -92,7 +112,7 @@ if TYPE_CHECKING:
     def take_after[K, First, Second](second: FreeDict[K, Second], first: FreeDict[K, First]) -> FreeDict[K, Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -101,7 +121,7 @@ if TYPE_CHECKING:
     def discard_before[K, First, Second](first: FreeDict[K, First], second: FreeDict[K, Second]) -> FreeDict[K, Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -110,7 +130,7 @@ if TYPE_CHECKING:
     def discard_after[K, First, Second](second: FreeDict[K, Second], first: FreeDict[K, First]) -> FreeDict[K, First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -119,7 +139,7 @@ if TYPE_CHECKING:
     def take_before[K, First, Second](first: FreeDict[K, First], second: FreeDict[K, Second]) -> FreeDict[K, First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -128,7 +148,7 @@ if TYPE_CHECKING:
     def when[K](free_dict_none: FreeDict[K, None], bool: bool) -> FreeDict[K, None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
 if TYPE_CHECKING:
@@ -136,7 +156,11 @@ if TYPE_CHECKING:
     def join[K, T](free_dict_free_dict_value: FreeDict[K, FreeDict[K, T]], /) -> FreeDict[K, T]: ...
 
 else:
-    join = free.join_t(dict.map_by)
+    join = free.join_t(dict.functor)
+
+
+# [K : *] -> Monad (FreeDict K)
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -145,10 +169,16 @@ if TYPE_CHECKING:
     def bind_to[K, From, To](free_dict_value: FreeDict[K, From], function: Callable[[From], FreeDict[K, To]]) -> FreeDict[K, To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[K, From, To](function: Callable[[From], FreeDict[K, To]], free_dict_value: FreeDict[K, From]) -> FreeDict[K, To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -162,7 +192,7 @@ if TYPE_CHECKING:
     ) -> FreeDict[K, To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -176,4 +206,4 @@ if TYPE_CHECKING:
     ) -> FreeDict[K, To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)

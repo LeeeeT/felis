@@ -1,13 +1,24 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+import felis.alternative
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, lazy_coroutine, monad, option
-from felis.currying import curry, flip
+import felis.monad
+import felis.semigroup
+from felis import lazy_coroutine, option
+from felis.alternative import Alternative
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
 from felis.lazy_coroutine import LazyCoroutine
+from felis.monad import Monad
+from felis.monoid import Monoid
 from felis.option import Option
+from felis.semigroup import Semigroup
 
 if TYPE_CHECKING:
     from felis import Either
@@ -15,22 +26,28 @@ if TYPE_CHECKING:
 __all__ = [
     "LazyCoroutineOption",
     "add_to",
-    "apply",
-    "bind",
+    "alternative",
+    "applicative",
     "bind_to",
     "compose_after",
     "compose_before",
     "default_to",
     "discard_after",
     "discard_before",
+    "functor",
     "guard",
     "join",
-    "lift2",
+    "lift",
     "map_by",
+    "monad",
+    "neutral",
     "pure",
+    "semigroup",
     "take_after",
     "take_before",
     "to_add",
+    "to_apply",
+    "to_bind",
     "to_either",
     "when",
 ]
@@ -45,10 +62,28 @@ if TYPE_CHECKING:
     def to_add[T](lazy_coroutine_option_augend: LazyCoroutineOption[T], lazy_coroutine_option_addend: LazyCoroutineOption[T]) -> LazyCoroutineOption[T]: ...
 
 else:
-    to_add = option.to_add_t(lazy_coroutine.pure)(lazy_coroutine.bind)
+    to_add = option.to_add_t(lazy_coroutine.monad)
 
 
-add_to = flip(to_add)
+# [T : *] -> Semigroup (LazyCoroutineOption T)
+semigroup: Semigroup[Any] = Semigroup(to_add)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def add_to[T](lazy_coroutine_option_addend: LazyCoroutineOption[T], lazy_coroutine_option_augend: LazyCoroutineOption[T]) -> LazyCoroutineOption[T]: ...
+
+else:
+    add_to = felis.semigroup.add_to(semigroup)
+
+
+# [T : *] -> LazyCoroutineOption T
+neutral: LazyCoroutineOption[Any] = option.neutral_t(lazy_coroutine.monad)
+
+
+# [T : *] -> Monoid (LazyCoroutineOption T)
+monoid = Monoid(semigroup, neutral)
 
 
 if TYPE_CHECKING:
@@ -57,27 +92,53 @@ if TYPE_CHECKING:
     def map_by[From, To](lazy_coroutine_option_value: LazyCoroutineOption[From], function: Callable[[From], To]) -> LazyCoroutineOption[To]: ...
 
 else:
-    map_by = felis.identity.compose_before(lazy_coroutine.map_by)(option.map_by)
+    map_by = felis.identity.compose_after(option.map_by)(lazy_coroutine.map_by)
 
 
-pure = felis.identity.compose_before(lazy_coroutine.pure)(option.pure)
+# Functor LazyCoroutineOption
+functor = Functor(map_by)
 
 
-apply = lazy_coroutine.lift2(option.apply)
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[From, To](function: Callable[[From], To], lazy_coroutine_option_value: LazyCoroutineOption[From]) -> LazyCoroutineOption[To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
+
+
+pure = lazy_coroutine.map_by(option.pure)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def to_apply[From, To](
+        lazy_coroutine_option_value: LazyCoroutineOption[From],
+        lazy_coroutine_option_function: LazyCoroutineOption[Callable[[From], To]],
+    ) -> LazyCoroutineOption[To]: ...
+
+else:
+    to_apply = option.to_apply_t(lazy_coroutine.monad)
+
+
+# Applicative LazyCoroutineOption
+applicative = Applicative(functor, pure, to_apply)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](
+    def lift[First, Second, Result](
         second: LazyCoroutineOption[Second],
         first: LazyCoroutineOption[First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> LazyCoroutineOption[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -86,7 +147,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: LazyCoroutineOption[Second], first: LazyCoroutineOption[First]) -> LazyCoroutineOption[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -95,7 +156,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: LazyCoroutineOption[First], second: LazyCoroutineOption[Second]) -> LazyCoroutineOption[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -104,7 +165,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: LazyCoroutineOption[Second], first: LazyCoroutineOption[First]) -> LazyCoroutineOption[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -113,7 +174,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: LazyCoroutineOption[First], second: LazyCoroutineOption[Second]) -> LazyCoroutineOption[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -122,15 +183,31 @@ if TYPE_CHECKING:
     def when(lazy_coroutine_option_none: LazyCoroutineOption[None], bool: bool) -> LazyCoroutineOption[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
+
+
+# Alternative LazyCoroutineOption
+alternative = Alternative(monoid, applicative)
 
 
 if TYPE_CHECKING:
 
-    def join[T](lazy_coroutine_option_lazy_coroutine_option_value: LazyCoroutineOption[LazyCoroutineOption[T]]) -> LazyCoroutineOption[T]: ...
+    def guard(bool: bool, /) -> LazyCoroutineOption[None]: ...
 
 else:
-    join = option.join_t(lazy_coroutine.pure)(lazy_coroutine.bind)
+    guard = felis.alternative.guard(alternative)
+
+
+if TYPE_CHECKING:
+
+    def join[T](lazy_coroutine_option_lazy_coroutine_option_value: LazyCoroutineOption[LazyCoroutineOption[T]], /) -> LazyCoroutineOption[T]: ...
+
+else:
+    join = option.join_t(lazy_coroutine.monad)
+
+
+# Monad LazyCoroutineOption
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -142,10 +219,19 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineOption[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](
+        function: Callable[[From], LazyCoroutineOption[To]],
+        lazy_coroutine_option_value: LazyCoroutineOption[From],
+    ) -> LazyCoroutineOption[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -159,7 +245,7 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineOption[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -173,10 +259,7 @@ if TYPE_CHECKING:
     ) -> LazyCoroutineOption[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
-
-
-guard = felis.identity.compose_before(lazy_coroutine.pure)(option.guard)
+    compose_before = felis.monad.compose_before(monad)
 
 
 if TYPE_CHECKING:
@@ -185,7 +268,7 @@ if TYPE_CHECKING:
     def default_to[T](lazy_coroutine_option_value: LazyCoroutineOption[T], default_value: LazyCoroutine[T]) -> LazyCoroutine[T]: ...
 
 else:
-    default_to = option.default_to_t(lazy_coroutine.pure)(lazy_coroutine.bind)
+    default_to = option.default_to_t(lazy_coroutine.monad)
 
 
 if TYPE_CHECKING:
@@ -194,4 +277,4 @@ if TYPE_CHECKING:
     def to_either[L, R](coroutine_option_value: LazyCoroutineOption[R], left: LazyCoroutine[L]) -> LazyCoroutine[Either[L, R]]: ...
 
 else:
-    to_either = option.to_either_t(lazy_coroutine.pure)(lazy_coroutine.bind)
+    to_either = option.to_either_t(lazy_coroutine.monad)

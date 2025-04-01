@@ -1,33 +1,46 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Final
 
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, monad
+import felis.monad
+from felis.applicative import Applicative
 from felis.currying import curry, flip
+from felis.functor import Functor
+from felis.monad import Monad
 
 __all__ = [
+    "Applicative",
     "Bind",
     "BindT",
     "Free",
     "FreeT",
+    "Functor",
+    "Monad",
     "Pure",
     "PureT",
-    "apply",
-    "apply_t",
-    "bind",
+    "applicative",
     "bind_to",
+    "by_map",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
     "join",
     "join_t",
-    "lift2",
+    "lift",
     "map_by",
     "map_by_t",
+    "monad",
     "pure",
+    "pure_t",
     "take_after",
     "take_before",
+    "to_apply",
+    "to_apply_t",
+    "to_bind",
     "when",
 ]
 
@@ -68,24 +81,15 @@ else:
     Bind = BindT
 
 
-# [F : * -> *] ->
-# ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) ->
-# [From : *] -> [To : *] -> (From -> To) -> Free F From -> Free F To
+# [F : * -> *] -> Functor F -> [From : *] -> [To : *] -> (From -> To) -> FreeT F From -> FreeT F To
 @curry
 @curry
-def map_by_t[From, To](free_value: FreeT[From], function: Callable[[From], To], f_map_by: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> FreeT[To]:
+def map_by_t[From, To](free_value: FreeT[From], function: Callable[[From], To], f: Functor) -> FreeT[To]:
     match free_value:
         case PureT(value):
             return PureT(function(value))
         case BindT(f_free_value):
-            return BindT(f_map_by(map_by_t(f_map_by)(function))(f_free_value))
-
-
-if TYPE_CHECKING:
-    # [F : * -> *] -> [T : *] -> T -> Free F T
-    pure: FreeT[Any]
-else:
-    pure = PureT
+            return BindT(felis.functor.map_by(f)(map_by_t(f)(function))(f_free_value))
 
 
 if TYPE_CHECKING:
@@ -94,47 +98,74 @@ if TYPE_CHECKING:
     def map_by[From, To](free_value: Free[From], function: Callable[[From], To]) -> Free[To]: ...
 
 else:
-    map_by = map_by_t(felis.identity.map_by)
+    map_by = map_by_t(felis.identity.functor)
 
 
-# [F : * -> *] ->
-# ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) ->
-# [From : *] -> [To : *] -> Free F (From -> To) -> Free F From -> Free F To
-@curry
-@curry
-def apply_t[From, To](
-    free_value: FreeT[From],
-    free_function: FreeT[Callable[[From], To]],
-    f_map_by: Callable[[Callable[[Any], Any]], Callable[[Any], Any]],
-) -> FreeT[To]:
-    match free_function:
-        case PureT(function):
-            return map_by_t(f_map_by)(function)(free_value)
-        case BindT(f_free_function):
-            return BindT(f_map_by(flip(apply_t(f_map_by))(free_value))(f_free_function))
+# Functor Free
+functor = Functor(map_by)
 
 
 if TYPE_CHECKING:
 
     @curry
-    def apply[From, To](free_value: Free[From], free_function: Free[Callable[[From], To]]) -> Free[To]: ...
+    def by_map[From, To](function: Callable[[From], To], free_value: Free[From]) -> Free[To]: ...
 
 else:
-    apply = apply_t(felis.identity.map_by)
+    by_map = felis.functor.by_map(functor)
+
+
+if TYPE_CHECKING:
+    # [F : * -> *] -> [T : *] -> T -> FreeT F T
+    def pure_t(value: Any, /) -> FreeT[Any]: ...
+
+else:
+    pure_t = PureT
+
+
+if TYPE_CHECKING:
+    # [T : *] -> T -> Free T
+    def pure(value: Any, /) -> Free[Any]: ...
+
+else:
+    pure = PureT
+
+
+# [F : * -> *] -> Functor F -> [From : *] -> [To : *] -> FreeT F (From -> To) -> FreeT F From -> FreeT F To
+@curry
+@curry
+def to_apply_t[From, To](free_value: FreeT[From], free_function: FreeT[Callable[[From], To]], f: Functor) -> FreeT[To]:
+    match free_function:
+        case PureT(function):
+            return map_by_t(f)(function)(free_value)
+        case BindT(f_free_function):
+            return BindT(felis.functor.map_by(f)(flip(to_apply_t(f))(free_value))(f_free_function))
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def to_apply[From, To](free_value: Free[From], free_function: Free[Callable[[From], To]]) -> Free[To]: ...
+
+else:
+    to_apply = to_apply_t(felis.identity.functor)
+
+
+# Applicative Free
+applicative = Applicative(functor, pure, to_apply)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[First, Second, Result](
+    def lift[First, Second, Result](
         second: Free[Second],
         first: Free[First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> Free[Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -143,7 +174,7 @@ if TYPE_CHECKING:
     def take_after[First, Second](second: Free[Second], first: Free[First]) -> Free[Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -152,7 +183,7 @@ if TYPE_CHECKING:
     def discard_before[First, Second](first: Free[First], second: Free[Second]) -> Free[Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -161,7 +192,7 @@ if TYPE_CHECKING:
     def discard_after[First, Second](second: Free[Second], first: Free[First]) -> Free[First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -170,7 +201,7 @@ if TYPE_CHECKING:
     def take_before[First, Second](first: Free[First], second: Free[Second]) -> Free[First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -179,17 +210,17 @@ if TYPE_CHECKING:
     def when(free_none: Free[None], bool: bool) -> Free[None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
-# [F : * -> *] -> ([From : *] -> [To : *] -> (From -> To) -> F From -> F To) -> [T : *] -> Free F (Free F T) -> Free F T
+# [F : * -> *] -> Functor F -> [T : *] -> FreeT F (FreeT F T) -> FreeT F T
 @curry
-def join_t[T](free_free_value: FreeT[FreeT[T]], f_map_by: Callable[[Callable[[Any], Any]], Callable[[Any], Any]]) -> FreeT[T]:
+def join_t[T](free_free_value: FreeT[FreeT[T]], f: Functor) -> FreeT[T]:
     match free_free_value:
         case PureT(free_value):
             return free_value
         case BindT(f_free_free_value):
-            return BindT(f_map_by(join_t(f_map_by))(f_free_free_value))
+            return BindT(felis.functor.map_by(f)(join_t(f))(f_free_free_value))
 
 
 if TYPE_CHECKING:
@@ -197,7 +228,11 @@ if TYPE_CHECKING:
     def join[T](free_free_value: Free[Free[T]], /) -> Free[T]: ...
 
 else:
-    join = join_t(felis.identity.map_by)
+    join = join_t(felis.identity.functor)
+
+
+# Monad Free
+monad = Monad(applicative, join)
 
 
 if TYPE_CHECKING:
@@ -206,10 +241,16 @@ if TYPE_CHECKING:
     def bind_to[From, To](free_value: Free[From], function: Callable[[From], Free[To]]) -> Free[To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[From, To](function: Callable[[From], Free[To]], free_value: Free[From]) -> Free[To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -223,7 +264,7 @@ if TYPE_CHECKING:
     ) -> Free[To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -237,4 +278,4 @@ if TYPE_CHECKING:
     ) -> Free[To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)

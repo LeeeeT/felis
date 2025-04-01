@@ -1,32 +1,43 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+import felis.applicative
+import felis.functor
 import felis.identity
-from felis import applicative, monad
-from felis.currying import curry, flip
+import felis.monad
+from felis.applicative import Applicative
+from felis.currying import curry
+from felis.functor import Functor
+from felis.monad import Monad
 
 __all__ = [
     "Function",
-    "add_to",
-    "add_to2",
-    "apply",
-    "bind",
+    "Function2",
+    "applicative",
+    "apply_to",
     "bind_to",
+    "by_map",
+    "by_map2",
     "compose_after",
     "compose_before",
     "discard_after",
     "discard_before",
+    "functor",
+    "functor2",
     "join",
-    "lift2",
+    "lift",
     "map_by",
     "map_by2",
-    "neutral",
-    "neutral2",
+    "monad",
+    "neutral2_t",
+    "neutral_t",
     "pure",
     "take_after",
     "take_before",
-    "to_add",
-    "to_add2",
+    "to_add2_t",
+    "to_add_t",
+    "to_apply",
+    "to_bind",
     "when",
 ]
 
@@ -35,27 +46,15 @@ type Function[From, To] = Callable[[From], To]
 
 
 @curry
-def neutral[M](_: object, m_neutral: M) -> M:
-    return m_neutral
-
-
-neutral2 = felis.identity.compose_before(neutral)(neutral)
-
-
 @curry
 @curry
-@curry
-def to_add[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
+def to_add_t[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
     return m_add(addend(value))(augend(value))
 
 
-add_to = flip(to_add)
-
-
-to_add2 = felis.identity.compose_before(to_add)(to_add)
-
-
-add_to2 = flip(to_add2)
+@curry
+def neutral_t[M](_: object, m_neutral: M) -> M:
+    return m_neutral
 
 
 @curry
@@ -64,7 +63,17 @@ def map_by[T, From, To](value: T, function_value: Function[T, From], function: C
     return function(function_value(value))
 
 
-map_by2 = felis.identity.compose_before(map_by)(map_by)
+# [T : *] -> Functor (Function T)
+functor = Functor(map_by)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map[T, From, To](function: Callable[[From], To], function_value: Function[T, From]) -> Function[T, To]: ...
+
+else:
+    by_map = felis.functor.by_map(functor)
 
 
 @curry
@@ -74,22 +83,35 @@ def pure[T](_: Any, value: T) -> T:
 
 @curry
 @curry
-def apply[T, From, To](value: T, function_value: Function[T, From], function: Function[T, Callable[[From], To]]) -> To:
+def to_apply[T, From, To](value: T, function_value: Function[T, From], function: Function[T, Callable[[From], To]]) -> To:
     return function(value)(function_value(value))
+
+
+# [T :*] -> Applicative (Function T)
+applicative = Applicative(functor, pure, to_apply)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def apply_to[T, From, To](function: Function[T, Callable[[From], To]], function_value: Function[T, From]) -> Function[T, To]: ...
+
+else:
+    apply_to = felis.applicative.apply_to(applicative)
 
 
 if TYPE_CHECKING:
 
     @curry
     @curry
-    def lift2[T, First, Second, Result](
+    def lift[T, First, Second, Result](
         second: Function[T, Second],
         first: Function[T, First],
         function: Callable[[First], Callable[[Second], Result]],
     ) -> Function[T, Result]: ...
 
 else:
-    lift2 = applicative.lift2(map_by)(apply)
+    lift = felis.applicative.lift(applicative)
 
 
 if TYPE_CHECKING:
@@ -98,7 +120,7 @@ if TYPE_CHECKING:
     def take_after[T, First, Second](second: Function[T, Second], first: Function[T, First]) -> Function[T, Second]: ...
 
 else:
-    take_after = applicative.take_after(lift2)
+    take_after = felis.applicative.take_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -107,7 +129,7 @@ if TYPE_CHECKING:
     def discard_before[T, First, Second](first: Function[T, First], second: Function[T, Second]) -> Function[T, Second]: ...
 
 else:
-    discard_before = applicative.discard_before(lift2)
+    discard_before = felis.applicative.discard_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -116,7 +138,7 @@ if TYPE_CHECKING:
     def discard_after[T, First, Second](second: Function[T, Second], first: Function[T, First]) -> Function[T, First]: ...
 
 else:
-    discard_after = applicative.discard_after(lift2)
+    discard_after = felis.applicative.discard_after(applicative)
 
 
 if TYPE_CHECKING:
@@ -125,7 +147,7 @@ if TYPE_CHECKING:
     def take_before[T, First, Second](first: Function[T, First], second: Function[T, Second]) -> Function[T, First]: ...
 
 else:
-    take_before = applicative.take_before(lift2)
+    take_before = felis.applicative.take_before(applicative)
 
 
 if TYPE_CHECKING:
@@ -134,7 +156,7 @@ if TYPE_CHECKING:
     def when[T](function_none: Function[T, None], bool: bool) -> Function[T, None]: ...
 
 else:
-    when = applicative.when(pure)
+    when = felis.applicative.when(applicative)
 
 
 @curry
@@ -142,16 +164,26 @@ def join[From, To](value: From, function_function_value: Function[From, Function
     return function_function_value(value)(value)
 
 
+# [T : *] -> Monad (Function T)
+monad = Monad(applicative, join)
+
+
 if TYPE_CHECKING:
 
     @curry
-    def bind_to[T, From, To](either_value: Function[T, From], function: Callable[[From], Function[T, To]]) -> Function[T, To]: ...
+    def bind_to[T, From, To](function_value: Function[T, From], function: Callable[[From], Function[T, To]]) -> Function[T, To]: ...
 
 else:
-    bind_to = monad.bind_to(map_by)(join)
+    bind_to = felis.monad.bind_to(monad)
 
 
-bind = flip(bind_to)
+if TYPE_CHECKING:
+
+    @curry
+    def to_bind[T, From, To](function: Callable[[From], Function[T, To]], function_value: Function[T, From]) -> Function[T, To]: ...
+
+else:
+    to_bind = felis.monad.to_bind(monad)
 
 
 if TYPE_CHECKING:
@@ -165,7 +197,7 @@ if TYPE_CHECKING:
     ) -> Function[T, To]: ...
 
 else:
-    compose_after = monad.compose_after(bind)
+    compose_after = felis.monad.compose_after(monad)
 
 
 if TYPE_CHECKING:
@@ -179,4 +211,29 @@ if TYPE_CHECKING:
     ) -> Function[T, To]: ...
 
 else:
-    compose_before = monad.compose_before(bind)
+    compose_before = felis.monad.compose_before(monad)
+
+
+type Function2[First, Second, Result] = Function[First, Function[Second, Result]]
+
+
+to_add2_t = felis.identity.compose_before(to_add_t)(to_add_t)
+
+
+neutral2_t = felis.identity.compose_before(neutral_t)(neutral_t)
+
+
+map_by2 = felis.identity.compose_before(map_by)(map_by)
+
+
+# [First : *] -> [Second : *] -> Functor (Function2 First Second)
+functor2 = Functor(map_by2)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def by_map2[First, Second, From, To](function: Callable[[From], To], function2_value: Function2[First, Second, From]) -> Function2[First, Second, To]: ...
+
+else:
+    by_map2 = felis.functor.by_map(functor2)
