@@ -28,10 +28,10 @@ __all__ = [
 # ([From : *] -> [To : *] -> A (From -> To) -> A From -> A To) ->
 # Applicative A
 class Applicative:
-    def __init__(self, functor: Functor, pure: Callable[[Any], Any], apply: Callable[[Any], Callable[[Any], Any]]):
+    def __init__(self, functor: Functor, pure: Callable[[Any], Any], to_apply: Callable[[Any], Callable[[Any], Any]]):
         self.functor: Final = functor
         self.pure: Final = pure
-        self.apply: Final = apply
+        self.to_apply: Final = to_apply
 
 
 # [A : * -> *] -> Applicative A -> Functor A
@@ -56,7 +56,7 @@ def pure(instance: Applicative) -> Callable[[Any], Any]:
 
 # [A : * -> *] -> Applicative A -> [From : *] -> [To : *] -> A (From -> To) -> A From -> A To
 def to_apply(instance: Applicative) -> Callable[[Any], Callable[[Any], Any]]:
-    return instance.apply
+    return instance.to_apply
 
 
 # [A : * -> *] -> Applicative A -> [From : *] -> A From -> [To : *] -> A (From -> To) -> A To
