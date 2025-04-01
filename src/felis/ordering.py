@@ -1,5 +1,10 @@
+from typing import TYPE_CHECKING
+
+import felis.semigroup
 from felis import predicate
-from felis.currying import curry, flip
+from felis.currying import curry
+from felis.monoid import Monoid
+from felis.semigroup import Semigroup
 
 __all__ = [
     "Better",
@@ -7,8 +12,10 @@ __all__ = [
     "Same",
     "Worse",
     "add_to",
+    "add_to",
     "better",
     "different",
+    "monoid",
     "neutral",
     "not_better",
     "not_worse",
@@ -16,6 +23,7 @@ __all__ = [
     "same",
     "same_or_better",
     "same_or_worse",
+    "semigroup",
     "to_add",
     "worse",
 ]
@@ -64,9 +72,6 @@ def reverse(ordering: Ordering) -> Ordering:
             return Worse()
 
 
-neutral = Same()
-
-
 @curry
 def to_add(augend: Ordering, addend: Ordering) -> Ordering:
     match augend:
@@ -76,4 +81,19 @@ def to_add(augend: Ordering, addend: Ordering) -> Ordering:
             return augend
 
 
-add_to = flip(to_add)
+semigroup = Semigroup(to_add)
+
+
+if TYPE_CHECKING:
+
+    @curry
+    def add_to(addend: Ordering, augend: Ordering) -> Ordering: ...
+
+else:
+    add_to = felis.semigroup.add_to(semigroup)
+
+
+neutral = Same()
+
+
+monoid = Monoid(semigroup, neutral)
