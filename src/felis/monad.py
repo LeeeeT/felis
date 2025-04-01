@@ -32,7 +32,7 @@ __all__ = [
 # [M : * -> *] ->
 # Applicative M ->
 # ([T : *] -> M (M T) -> M T) ->
-# Monad A
+# Monad M
 class Monad:
     def __init__(self, applicative: Applicative, join: Callable[[Any], Any]):
         self.applicative: Final = applicative
