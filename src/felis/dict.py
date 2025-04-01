@@ -34,7 +34,7 @@ def to_add[K, V](augend: Dict[K, V], addend: Dict[K, V]) -> Dict[K, V]:
 
 
 # [K : *] -> [V : *] -> Semigroup (Dict K V)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[Dict[Any, Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

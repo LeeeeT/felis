@@ -95,7 +95,7 @@ else:
 
 
 # [L : *] -> [R : *] -> Semigroup (Either L R)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[Either[Any, Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

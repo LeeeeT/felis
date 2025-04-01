@@ -90,7 +90,7 @@ else:
 
 
 # [T : *] -> Semigroup (Parser T)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[Parser[Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

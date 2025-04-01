@@ -97,7 +97,7 @@ else:
 
 
 # [T : *] -> Semigroup (Option T)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[Option[Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

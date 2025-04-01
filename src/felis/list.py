@@ -74,7 +74,7 @@ def to_add[T](augend: List[T], addend: List[T]) -> List[T]:
 
 
 # [T : *] -> Semigroup (List T)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[List[Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

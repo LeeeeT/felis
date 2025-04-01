@@ -66,7 +66,7 @@ else:
 
 
 # [T : *] -> Semigroup (LazyCoroutineOption T)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[LazyCoroutineOption[Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

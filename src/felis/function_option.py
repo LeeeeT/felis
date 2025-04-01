@@ -62,7 +62,7 @@ else:
 
 
 # [From : *] -> [To : *] -> Semigroup (FunctionOption From To)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[FunctionOption[Any, Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

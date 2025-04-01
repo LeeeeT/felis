@@ -56,7 +56,7 @@ else:
 
 
 # [L : *] -> [R : *] -> Semigroup (LazyCoroutineEither L R)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[LazyCoroutineEither[Any, Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:

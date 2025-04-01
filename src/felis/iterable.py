@@ -66,7 +66,7 @@ def to_add[T](augend: Iterable[T], addend: Iterable[T]) -> Iterable[T]:
 
 
 # [T : *] -> Semigroup (Iterable T)
-semigroup: Semigroup[Any] = Semigroup(to_add)
+semigroup: Semigroup[Iterable[Any]] = Semigroup(to_add)
 
 
 if TYPE_CHECKING:
