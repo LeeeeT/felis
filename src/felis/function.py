@@ -29,13 +29,9 @@ __all__ = [
     "map_by",
     "map_by2",
     "monad",
-    "neutral2_t",
-    "neutral_t",
     "pure",
     "take_after",
     "take_before",
-    "to_add2_t",
-    "to_add_t",
     "to_apply",
     "to_bind",
     "when",
@@ -43,18 +39,6 @@ __all__ = [
 
 
 type Function[From, To] = Callable[[From], To]
-
-
-@curry
-@curry
-@curry
-def to_add_t[M, T](value: T, augend: Function[T, M], addend: Function[T, M], m_add: Callable[[M], Callable[[M], M]]) -> M:
-    return m_add(addend(value))(augend(value))
-
-
-@curry
-def neutral_t[M](_: object, m_neutral: M) -> M:
-    return m_neutral
 
 
 @curry
@@ -215,12 +199,6 @@ else:
 
 
 type Function2[First, Second, Result] = Function[First, Function[Second, Result]]
-
-
-to_add2_t = felis.identity.compose_before(to_add_t)(to_add_t)
-
-
-neutral2_t = felis.identity.compose_before(neutral_t)(neutral_t)
 
 
 map_by2 = felis.identity.compose_before(map_by)(map_by)

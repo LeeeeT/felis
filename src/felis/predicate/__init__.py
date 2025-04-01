@@ -15,16 +15,16 @@ true = function.pure(True)
 false = function.pure(False)
 
 
-both_and = function.to_add_t(felis.bool.both_and)
+both_and = function.lift(felis.bool.both_and)
 
 
-either_or = function.to_add_t(felis.bool.either_or)
+either_or = function.lift(felis.bool.either_or)
 
 
 negate = function.map_by(felis.bool.negate)
 
 
-same_as = function.to_add_t(felis.bool.same_as)
+same_as = function.lift(felis.bool.same_as)
 
 
-different_from = function.to_add_t(felis.bool.different_from)
+different_from = function.lift(felis.bool.different_from)
