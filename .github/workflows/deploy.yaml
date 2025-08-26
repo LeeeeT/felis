@@ -24,7 +24,7 @@ jobs:
           node-version: latest
       - run: npm ci
       - run: npx quartz build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: public
 
