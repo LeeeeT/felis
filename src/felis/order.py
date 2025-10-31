@@ -153,4 +153,7 @@ def rich_comparison[T](order: Order[T]) -> Callable[[T], SupportsRichComparison]
                 return same_as_or_better_than(order)(other.value)(self.value)
             return NotImplemented
 
+        def __hash__(self) -> int:
+            return hash(self.value)
+
     return RichComparison
