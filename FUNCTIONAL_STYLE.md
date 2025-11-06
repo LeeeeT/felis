@@ -120,8 +120,10 @@ result = add(1, 2, 3)  # 6
 ```python
 from felis.currying import curry
 
-# Note: curry moves the first parameter to the last position
-# For a 3-parameter function, apply @curry twice to fully curry it
+# Note: Each @curry decorator transforms the function so the first parameter
+# becomes the last to be applied. For a 3-parameter function (x, y, z):
+# - One @curry makes it: (y, z) -> (x) -> result
+# - Two @curry makes it: (z) -> (y) -> (x) -> result
 @curry
 @curry
 def add(x, y, z):
@@ -632,7 +634,6 @@ from felis.list import to_bind, pure, range_to_from, guard, take_after
 # even_squares = [x**2 for x in range(1, 11) if x % 2 == 0]
 
 # Functional style with list monad:
-# range_to_from(stop)(start) creates range(start, stop)
 even_squares = to_bind(range_to_from(11)(1))(lambda x:
     take_after(guard(x % 2 == 0))(
         pure(x ** 2)
