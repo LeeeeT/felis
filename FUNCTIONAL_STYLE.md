@@ -120,6 +120,8 @@ result = add(1, 2, 3)  # 6
 ```python
 from felis.currying import curry
 
+# Note: curry moves the first parameter to the last position
+# For a 3-parameter function, apply @curry twice to fully curry it
 @curry
 @curry
 def add(x, y, z):
@@ -166,6 +168,7 @@ def curried_add(x, y, z):
     return x + y + z
 
 # Convert back to regular function
+# Need to uncurry twice (once for each @curry)
 regular_add = uncurry(uncurry(curried_add))
 result = regular_add(1, 2, 3)  # 6
 ```
@@ -509,9 +512,9 @@ from felis.list import to_bind, pure, range_to_from
 # List monad allows exploring multiple possibilities
 # Example: Finding Pythagorean triples
 
-pythags = to_bind(range_to_from(1)(20))(lambda z:
-    to_bind(range_to_from(1)(z))(lambda x:
-    to_bind(range_to_from(x)(z))(lambda y:
+pythags = to_bind(range_to_from(20)(1))(lambda z:
+    to_bind(range_to_from(z)(1))(lambda x:
+    to_bind(range_to_from(z)(x))(lambda y:
         pure((x, y, z)) if x**2 + y**2 == z**2 else []
     )))
 
@@ -629,7 +632,8 @@ from felis.list import to_bind, pure, range_to_from, guard, take_after
 # even_squares = [x**2 for x in range(1, 11) if x % 2 == 0]
 
 # Functional style with list monad:
-even_squares = to_bind(range_to_from(1)(11))(lambda x:
+# range_to_from(stop)(start) creates range(start, stop)
+even_squares = to_bind(range_to_from(11)(1))(lambda x:
     take_after(guard(x % 2 == 0))(
         pure(x ** 2)
     ))
@@ -637,8 +641,8 @@ even_squares = to_bind(range_to_from(1)(11))(lambda x:
 print(even_squares)  # [4, 16, 36, 64, 100]
 
 # More complex: pairs where sum equals 10
-pairs = to_bind(range_to_from(1)(11))(lambda x:
-    to_bind(range_to_from(1)(11))(lambda y:
+pairs = to_bind(range_to_from(11)(1))(lambda x:
+    to_bind(range_to_from(11)(1))(lambda y:
         take_after(guard(x + y == 10))(
             pure((x, y))
         )))
@@ -686,7 +690,7 @@ addition_parser = \
     )))
 
 # Test the parser
-match parse_as(addition_parser)("123+456"):
+match parse_as("123+456", addition_parser):
     case None:
         print("Parse failed")
     case Some(result):
