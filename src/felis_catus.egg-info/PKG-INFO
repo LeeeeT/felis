@@ -1,3 +1,39 @@
+Metadata-Version: 2.4
+Name: felis-catus
+Version: 0.dev5
+Summary: 🐈 Felis Catus – functional bits for Python
+Author-email: LeeeeT <me@LeeeeT.dev>
+License: Permission to use, copy, modify, and/or distribute this software for any
+        purpose with or without fee is hereby granted.
+        
+        THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+        WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+        MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+        ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+        WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+        ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+        OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/LeeeeT/felis
+Project-URL: Documentation, https://felis.LeeeeT.dev
+Project-URL: Repository, https://github.com/LeeeeT/felis
+Project-URL: PyPI, https://pypi.org/project/felis-catus
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: Zero-Clause BSD (0BSD)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Typing :: Typed
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
 ## 🐈 Felis Catus
 
 **Felis Catus** is your taxonomic nomenclature, an endothermic quadruped, carnivorous by nature; your visual, olfactory, and auditory senses contribute to your hunting skills and natural defenses. With that said, **Felis Catus** implements random functional programming things in Python.
@@ -15,10 +51,6 @@ Build and install from [source]:
 ```console
 pip install git+https://github.com/LeeeeT/felis
 ```
-
-## Documentation
-
-For a comprehensive guide to functional programming style with detailed explanations and examples, see [FUNCTIONAL_STYLE.md](FUNCTIONAL_STYLE.md).
 
 ## Examples
 
