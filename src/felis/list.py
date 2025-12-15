@@ -299,16 +299,16 @@ def fold[A, T](list_value: List[T], function: Callable[[T], Callable[[A], A]], a
 @curry
 @curry
 def fold_right[A, T](list_value: List[T], function: Callable[[T], Callable[[A], A]], accumulator: A) -> A:
-    if list_value:
-        return function(list_value[0])(fold_right(accumulator)(function)(list_value[1:]))
+    for value in reversed(list_value):
+        accumulator = function(value)(accumulator)
     return accumulator
 
 
 @curry
 @curry
 def fold_left[A, T](list_value: List[T], function: Callable[[A], Callable[[T], A]], accumulator: A) -> A:
-    if list_value:
-        return fold_left(function(accumulator)(list_value[0]))(function)(list_value[1:])
+    for value in list_value:
+        accumulator = function(accumulator)(value)
     return accumulator
 
 
