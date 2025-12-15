@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v6
       - run: pip install build
       - run: python -m build
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: release-dists
           path: dist/
