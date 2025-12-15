@@ -16,6 +16,10 @@ Build and install from [source]:
 pip install git+https://github.com/LeeeeT/felis
 ```
 
+## Documentation
+
+For a comprehensive guide to functional programming style with detailed explanations and examples, see [FUNCTIONAL_STYLE.md](FUNCTIONAL_STYLE.md).
+
 ## Examples
 
 Currying and uncurrying functions with `felis.currying`:
