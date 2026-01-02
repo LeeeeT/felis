@@ -187,7 +187,7 @@ else:
     when = felis.applicative.when(applicative)
 
 
-# Alternative List
+# Alternative Iterable
 alternative = Alternative(monoid, applicative)
 
 
@@ -282,3 +282,4 @@ def filter_by[T](iterable: Iterable[T], predicate: Predicate[T]) -> Iterable[T]:
 @curry
 def range_to_from(stop: int, start: int) -> Iterable[int]:
     return builtins.range(start, stop)
+
